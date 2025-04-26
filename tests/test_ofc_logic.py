@@ -1,6 +1,7 @@
-# tests/test_ofc_logic.py v1.0
+# tests/test_ofc_logic.py v1.1
 """
 Unit-тесты для модуля ofc_logic.py.
+Исправлены дубликаты в test_check_board_foul_logic.
 """
 
 import pytest
@@ -30,6 +31,7 @@ def hand_to_int(card_strs: List[Optional[str]]) -> List[Optional[int]]:
     return Card.hand_to_int(card_strs)
 
 # --- Тесты Card ---
+# (Без изменений)
 def test_card_from_str_valid():
     assert Card.from_str('As') > 0
     with pytest.raises(TypeError): Card.from_str(12) # type: ignore
@@ -60,7 +62,9 @@ def test_card_hand_conversion():
     assert ints == [Card.from_str('As'), Card.from_str('Td'), None, None, None]
     assert Card.hand_to_str(ints) == ['As', 'Td', CARD_PLACEHOLDER, CARD_PLACEHOLDER, CARD_PLACEHOLDER]
 
+
 # --- Тесты Deck ---
+# (Без изменений)
 def test_deck_init_full():
     deck = Deck()
     assert len(deck) == NUM_CARDS
@@ -105,7 +109,9 @@ def test_deck_copy():
     assert len(deck1) == NUM_CARDS - 10
     assert len(deck2) == NUM_CARDS - 15
 
+
 # --- Тесты PlayerBoard ---
+# (Без изменений)
 def test_playerboard_init():
     board = PlayerBoard()
     assert board.get_total_cards() == 0
@@ -127,7 +133,7 @@ def test_playerboard_set_full_board():
     board = PlayerBoard()
     top = hand_to_int(['Ah', 'Ad', 'Ac'])
     middle = hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s'])
-    bottom = hand_to_int(['As', 'Kh', 'Qs', 'Js', 'Ts'])
+    bottom = hand_to_int(['As', 'Kh', 'Qs', 'Js', 'Ts']) # Используем другие карты, чтобы не было дубликатов
     board.set_full_board(top, middle, bottom)
     assert board.is_complete()
     assert board.get_total_cards() == 13
@@ -154,7 +160,6 @@ def test_playerboard_get_board_state_tuple():
     board.add_card(Card.from_str('2c'), 'top', 2)
     board.add_card(Card.from_str('Kd'), 'middle', 1)
     state_tuple = board.get_board_state_tuple()
-    # Проверяем, что карты отсортированы внутри рядов (None в конце)
     assert state_tuple[0] == (Card.from_str('As'), Card.from_str('2c'), None)
     assert state_tuple[1] == (Card.from_str('Kd'), None, None, None, None)
     assert state_tuple[2] == (None, None, None, None, None)
@@ -171,14 +176,14 @@ def test_playerboard_copy():
     assert board1.get_total_cards() == 1
     assert board2.get_total_cards() == 2
 
-# --- Тесты Scoring ---
-# (Требуют импорта эвалюаторов)
 
+# --- Тесты Scoring ---
 @pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
                     reason="Evaluators not imported, skipping scoring tests")
 def test_check_board_foul_logic():
     # Валидная доска
     board_ok = PlayerBoard()
+    # --- ИСПРАВЛЕНО: Убраны дубликаты ---
     board_ok.set_full_board(hand_to_int(['Qh', 'Qd', '2c']), # Pair Q
                             hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', '9h']), # Flush K
                             hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])) # FH A over K
@@ -197,7 +202,7 @@ def test_check_board_foul_logic():
     board_foul_bm = PlayerBoard()
     board_foul_bm.set_full_board(hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A
                                  hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ
-                                 hand_to_int(['As', 'Kh', 'Qs', 'Js', 'Ts'])) # Flush A
+                                 hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])) # Flush K (ниже чем Two Pair KQ)
     board_foul_bm.is_foul = check_board_foul(board_foul_bm, evaluate_3_card_ofc, evaluator_5card)
     assert board_foul_bm.is_foul
 
