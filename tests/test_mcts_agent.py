@@ -1,7 +1,8 @@
-# tests/test_mcts_agent.py v1.2
+# tests/test_mcts_agent.py v1.3
 """
 Unit-тесты для модуля mcts_agent.py.
 Исправлены тесты MCTS цикла и правила "Без трипса на топе".
+Исправлен импорт hand_to_int.
 """
 
 import pytest
@@ -12,16 +13,16 @@ from unittest.mock import patch, MagicMock, PropertyMock, call
 try:
     from mcts_agent import MCTSAgent
     from mcts_node import MCTSNode, run_parallel_rollout # Импортируем воркер для мока
-    from ofc_logic import PlayerBoard, Card, Deck, CARD_PLACEHOLDER # <-- ДОБАВЛЕН ИМПОРТ CARD_PLACEHOLDER
+    # --- ИСПРАВЛЕНО: Убран импорт hand_to_int ---
+    from ofc_logic import PlayerBoard, Card, Deck, CARD_PLACEHOLDER
     from ofc_evaluators import evaluate_3_card_ofc, HAND_TYPE_TRIPS_3
 except ImportError:
     pytest.skip("Skipping MCTS agent tests due to missing imports", allow_module_level=True)
 
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> list:
-    # Используем хелпер из ofc_logic
-    from ofc_logic import hand_to_int as logic_hand_to_int
-    return logic_hand_to_int(card_strs)
+    # --- ИСПРАВЛЕНО: Используем Card.hand_to_int ---
+    return Card.hand_to_int(card_strs)
 
 # --- Тесты Инициализации ---
 def test_mcts_agent_init_defaults():
