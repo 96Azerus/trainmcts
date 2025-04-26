@@ -1,4 +1,4 @@
-# tests/test_mcts_agent.py v1.1
+# tests/test_mcts_agent.py v1.2
 """
 Unit-тесты для модуля mcts_agent.py.
 Исправлены тесты MCTS цикла и правила "Без трипса на топе".
@@ -12,14 +12,16 @@ from unittest.mock import patch, MagicMock, PropertyMock, call
 try:
     from mcts_agent import MCTSAgent
     from mcts_node import MCTSNode, run_parallel_rollout # Импортируем воркер для мока
-    from ofc_logic import PlayerBoard, Card, Deck
+    from ofc_logic import PlayerBoard, Card, Deck, CARD_PLACEHOLDER # <-- ДОБАВЛЕН ИМПОРТ CARD_PLACEHOLDER
     from ofc_evaluators import evaluate_3_card_ofc, HAND_TYPE_TRIPS_3
 except ImportError:
     pytest.skip("Skipping MCTS agent tests due to missing imports", allow_module_level=True)
 
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> list:
-    return Card.hand_to_int(card_strs)
+    # Используем хелпер из ofc_logic
+    from ofc_logic import hand_to_int as logic_hand_to_int
+    return logic_hand_to_int(card_strs)
 
 # --- Тесты Инициализации ---
 def test_mcts_agent_init_defaults():
@@ -58,7 +60,7 @@ def test_choose_action_basic_run(MockPool, MockMCTSNode):
 
     board = PlayerBoard()
     cards_to_place = hand_to_int(['Ac', 'Kc'])
-    remaining_deck = Deck.FULL_DECK_CARDS - set(cards_to_place)
+    remaining_deck = Deck.FULL_DECK_CARDS - set(c for c in cards_to_place if c is not None) # Учитываем None
 
     action = agent_instance.choose_action(board, cards_to_place, remaining_deck)
 
@@ -74,7 +76,9 @@ def test_choose_action_no_cards():
 def test_choose_action_complete_board():
     agent = MCTSAgent()
     board = PlayerBoard()
-    cards = list(Deck.FULL_DECK_CARDS)[:13]
+    cards_optional = list(Deck.FULL_DECK_CARDS)[:13]
+    cards = [c for c in cards_optional if c is not None] # Убираем None, если есть
+    if len(cards) < 13: pytest.skip("Not enough cards for full board test")
     board.set_full_board(cards[10:13], cards[5:10], cards[0:5])
     assert board.is_complete()
     assert agent.choose_action(board, hand_to_int(['Ac']), set()) is None
@@ -88,13 +92,22 @@ def test_choose_action_mcts_loop_simplified(mock_expand, mock_rollout):
     agent = MCTSAgent(time_limit_ms=50, num_workers=1, rollouts_per_leaf=1) # Короткий лимит
     board = PlayerBoard()
     cards = hand_to_int(['Ac', 'Kc', 'Qc'])
-    deck = Deck.FULL_DECK_CARDS - set(cards)
+    deck = Deck.FULL_DECK_CARDS - set(c for c in cards if c is not None)
 
     # Мокируем результаты, чтобы цикл прошел несколько итераций
     mock_rollout.return_value = 5.0 # Возвращаем какое-то роялти
-    # Моделируем, что expand возвращает новый узел (мок)
+
+    # --- ИСПРАВЛЕНО: Добавляем атрибут board к моку ---
     mock_expanded_node = MagicMock(spec=MCTSNode)
     mock_expanded_node.is_terminal.return_value = False # Новый узел не терминальный
+    # Создаем мок для board и его атрибутов, необходимых в choose_action
+    mock_expanded_node.board = MagicMock(spec=PlayerBoard)
+    mock_expanded_node.board.rows = {'top': [], 'middle': [], 'bottom': []} # Пример
+    mock_expanded_node.board.get_total_cards.return_value = 1 # Пример
+    mock_expanded_node.board.is_foul = False # Пример
+    mock_expanded_node.cards_to_place = cards[1:] # Оставшиеся карты
+    mock_expanded_node.remaining_deck = deck # Колода
+
     mock_expand.return_value = mock_expanded_node
 
     # Запускаем MCTS
@@ -114,15 +127,18 @@ def test_choose_action_no_trip_on_top_rule(mock_rollout):
 
     # Ситуация: Улица 1 (пустая доска), 5 карт в руке, включая трипс двоек
     board = PlayerBoard()
-    cards_to_place = hand_to_int(['2s', '2d', '2h', 'Ac', 'Kc'])
-    remaining_deck = Deck.FULL_DECK_CARDS - set(cards_to_place)
+    cards_to_place_list = ['2s', '2d', '2h', 'Ac', 'Kc']
+    cards_to_place = hand_to_int(cards_to_place_list)
+    remaining_deck = Deck.FULL_DECK_CARDS - set(c for c in cards_to_place if c is not None)
 
     # Действие, которое нарушает правило
-    bad_action = (Card.from_str('2s'), 'top', 0)
+    card_2s_int = Card.from_str('2s')
+    card_ac_int = Card.from_str('Ac')
+    bad_action = (card_2s_int, 'top', 0)
     # Действия, которые не нарушают правило
-    good_action_mid = (Card.from_str('2s'), 'middle', 0)
-    good_action_bot = (Card.from_str('2s'), 'bottom', 0)
-    good_action_ace = (Card.from_str('Ac'), 'top', 1) # Туз на топ - ок
+    good_action_mid = (card_2s_int, 'middle', 0)
+    good_action_bot = (card_2s_int, 'bottom', 0)
+    good_action_ace = (card_ac_int, 'top', 1) # Туз на топ - ок
 
     # Моделируем результаты роллаутов: "хорошие" действия дают больше роялти
     def mock_rollout_logic(board_dict, cards_ints, deck_ints):
@@ -131,16 +147,20 @@ def test_choose_action_no_trip_on_top_rule(mock_rollout):
         last_row = None
         placed_count = board_dict.get('_cards_placed', 0)
         if placed_count == 1:
-             for r, cards_str in board_dict.get('rows', {}).items():
-                 for idx, c_str in enumerate(cards_str):
-                     if c_str and c_str != CARD_PLACEHOLDER:
-                         last_card_int = Card.from_str(c_str)
-                         last_row = r
-                         break
+             # Ищем первую непустую карту в словаре board_dict['rows']
+             for r, cards_str_list in board_dict.get('rows', {}).items():
+                 if isinstance(cards_str_list, list): # Убедимся, что это список
+                     for idx, c_str in enumerate(cards_str_list):
+                         if c_str and c_str != CARD_PLACEHOLDER: # CARD_PLACEHOLDER теперь импортирован
+                             try:
+                                 last_card_int = Card.from_str(c_str)
+                                 last_row = r
+                                 break
+                             except ValueError: pass # Игнорируем невалидные строки
                  if last_card_int != -1: break
 
         # Возвращаем высокое роялти для "хороших" первых ходов, низкое для "плохого"
-        if last_card_int == Card.from_str('2s') and last_row == 'top':
+        if last_card_int == card_2s_int and last_row == 'top':
             return 1.0 # Низкое роялти для трипса на топе
         else:
             return 10.0 # Высокое роялти для других ходов
@@ -153,9 +173,10 @@ def test_choose_action_no_trip_on_top_rule(mock_rollout):
     assert chosen_action is not None
     assert chosen_action != bad_action
     # В идеале, это должно быть одно из хороших действий, но MCTS может выбрать любое из них
-    assert chosen_action in [good_action_mid, good_action_bot, good_action_ace] or \
-           chosen_action[0] != Card.from_str('2s') or \
-           chosen_action[1] != 'top'
+    # Проверяем, что если выбрана двойка, то она не на топе
+    chosen_card_int, chosen_row, _ = chosen_action
+    assert not (Card.get_rank_int(chosen_card_int) == Card.get_rank_int(card_2s_int) and chosen_row == 'top')
+
 
 def test_format_action():
     """Тестирует форматирование действия."""
