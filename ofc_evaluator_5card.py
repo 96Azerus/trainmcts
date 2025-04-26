@@ -1,24 +1,26 @@
-# ofc_evaluator_5card.py v1.0
+# ofc_evaluator_5card.py v1.1
 """
 Оценка 5-карточной руки OFC + генерация таблиц поиска.
-Использует вариант алгоритма Cactus Kev с простыми числами.
+Исправлен метод evaluate для unsuited рук.
 """
 import itertools
 import traceback
 import sys
 import logging
 from typing import Dict, List, Generator, Optional
+from collections import Counter # Добавлен Counter
 
 # Импортируем Card и PRIMES из ofc_logic
 try:
     from ofc_logic import Card, PRIMES, INT_RANKS, INVALID_CARD
 except ImportError:
-    # Заглушка для тестов или если структура нарушена
     class Card:
         PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
         INT_RANKS = range(13)
         @staticmethod
         def get_prime(c): return 1
+        @staticmethod
+        def get_rank_int(c): return 0
         @staticmethod
         def prime_product_from_rankbits(rankbits): return 1
         @staticmethod
@@ -177,7 +179,7 @@ class LookupTable5Card:
                 rightmost_block_shifted = (rightmost_block_of_ones // rightmost_one) >> 2
                 next_val = next_higher_one_bit | rightmost_block_shifted
             except Exception as e_gosper: logger.error(f"Error in Gosper's Hack: {e_gosper}", exc_info=True); break
-            if next_val >= (1 << 13): break # Выход за пределы 13 рангов
+            if next_val >= (1 << 13): break
             yield next_val
 
     def _prime_product_from_rankbits(self, rankbits: int) -> int:
@@ -213,8 +215,17 @@ class Evaluator5Card:
             if rank is None: logger.warning(f"Flush prime product {prime_product} not found."); return self.table.WORST_RANK_5CARD
             return rank
         else: # Не флеш
+            # --- ИСПРАВЛЕНО: Вычисляем prime_product на основе количества карт каждого ранга ---
             prime_product = 1
-            for c in valid_cards: prime_product *= Card.get_prime(c)
+            ranks = [Card.get_rank_int(c) for c in valid_cards]
+            rank_counts = Counter(ranks)
+            for rank_index, count in rank_counts.items():
+                try:
+                    prime_product *= PRIMES[rank_index] ** count
+                except IndexError:
+                    logger.error(f"Invalid rank index {rank_index} encountered during prime product calculation.")
+                    return self.table.WORST_RANK_5CARD
+
             rank = self.table.unsuited_lookup.get(prime_product)
             if rank is None: logger.warning(f"Unsuited prime product {prime_product} not found."); return self.table.WORST_RANK_5CARD
             return rank
