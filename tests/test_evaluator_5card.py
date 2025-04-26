@@ -1,7 +1,8 @@
-# tests/test_evaluator_5card.py v1.2
+# tests/test_evaluator_5card.py v1.3
 """
 Unit-тесты для модуля ofc_evaluator_5card.py.
 Исправлены ошибки импорта и передачи типов.
+Исправлен импорт hand_to_int.
 """
 
 import pytest
@@ -15,7 +16,8 @@ except ImportError:
 
 # Импорты из ofc_logic для создания карт и констант
 try:
-    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, PRIMES, hand_to_int as logic_hand_to_int # Импортируем PRIMES и хелпер
+    # --- ИСПРАВЛЕНО: Убран импорт hand_to_int ---
+    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, PRIMES
 except ImportError:
     pytest.skip("Skipping 5-card evaluator tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -23,8 +25,8 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> list:
     """Конвертирует список строк в список int карт."""
-    # Используем хелпер из ofc_logic, но проверяем результат
-    ints_optional = logic_hand_to_int(card_strs)
+    # --- ИСПРАВЛЕНО: Используем Card.hand_to_int ---
+    ints_optional = Card.hand_to_int(card_strs)
     ints = [c for c in ints_optional if c is not None]
     if len(ints) != 5: raise ValueError("Hand must contain 5 valid cards for this test")
     if len(ints) != len(set(ints)): raise ValueError("Duplicate cards not allowed")
@@ -33,7 +35,7 @@ def hand_to_int(card_strs: list) -> list:
 # --- Фикстура для эвалуатора ---
 @pytest.fixture(scope="module")
 def evaluator():
-    """Создает экземпляр эвалюатора один раз для всех тестов модуля."""
+    """Создает экземпляр эвалуатора один раз для всех тестов модуля."""
     try:
         return Evaluator5Card()
     except Exception as e:
