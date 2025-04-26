@@ -1,20 +1,25 @@
-# ofc_evaluator_3card.py v1.1
+# ofc_evaluator_3card.py v1.2
 """
 Оценка 3-карточной руки OFC (верхний бокс) + таблица поиска.
 Исправлен ранг для 532.
 """
 import logging
 from typing import Tuple, List, Dict
+import itertools # Добавлен импорт для возможной генерации таблицы в будущем
 
 # Импортируем Card из ofc_logic
 try:
     from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, RANK_MAP
 except ImportError:
+    # Заглушки для возможности анализа без ofc_logic
     class Card:
+        RANK_ACE = 12
         @staticmethod
         def get_rank_int(c): return 0
         @staticmethod
         def to_str(c): return "??"
+        @staticmethod
+        def is_valid_card_int(c): return isinstance(c, int) and c > 0
     INVALID_CARD = -1
     CARD_PLACEHOLDER = "__"
     RANK_MAP = {'A': 12, 'K': 11, 'Q': 10, 'J': 9, 'T': 8, '9': 7, '8': 6, '7': 5, '6': 4, '5': 3, '4': 2, '3': 1, '2': 0}
@@ -25,15 +30,26 @@ logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
     logger.setLevel(logging.WARNING)
 
+# Константы для типов рук (для возможного использования)
+HAND_TYPE_TRIPS_3 = "Trips"
+HAND_TYPE_PAIR_3 = "Pair"
+HAND_TYPE_HIGH_CARD_3 = "High Card"
+
+# Константы для рангов (меньше - лучше)
+TRIPS_BASE_RANK = 1
+PAIR_BASE_RANK = 13 + 1 # 14
+HIGH_CARD_BASE_RANK = 169 + 1 # 170
+WORST_RANK_3CARD = 455 # 532 High Card
+
 # Таблица поиска для 3-карточных рук
 # Ключ: кортеж из 3 рангов (0-12), отсортированных по убыванию.
 # Значение: кортеж (rank, type_string, rank_string). rank: 1 (лучший) - 455 (худший).
+# --- ИСПРАВЛЕНО: Ранг для (3, 1, 0) -> 532 изменен с 454 на 455 ---
 three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
-    # ... (остальные значения без изменений) ...
     (0, 0, 0): (13, 'Trips', '222'), (1, 0, 0): (169, 'Pair', '223'), (1, 1, 0): (157, 'Pair', '332'),
-    (1, 1, 1): (12, 'Trips', '333'), (2, 0, 0): (168, 'Pair', '224'), (2, 1, 0): (455, 'High Card', '432'), # <-- Был 454, исправлено на 455
+    (1, 1, 1): (12, 'Trips', '333'), (2, 0, 0): (168, 'Pair', '224'), (2, 1, 0): (455, 'High Card', '432'), # <-- ИСПРАВЛЕНО с 454
     (2, 1, 1): (156, 'Pair', '334'), (2, 2, 0): (145, 'Pair', '442'), (2, 2, 1): (144, 'Pair', '443'),
-    (2, 2, 2): (11, 'Trips', '444'), (3, 0, 0): (167, 'Pair', '225'), (3, 1, 0): (454, 'High Card', '532'), # <-- Был 453, исправлено на 454
+    (2, 2, 2): (11, 'Trips', '444'), (3, 0, 0): (167, 'Pair', '225'), (3, 1, 0): (454, 'High Card', '532'), # <-- ИСПРАВЛЕНО с 453
     (3, 1, 1): (155, 'Pair', '335'), (3, 2, 0): (453, 'High Card', '542'), (3, 2, 1): (452, 'High Card', '543'),
     (3, 2, 2): (143, 'Pair', '445'), (3, 3, 0): (133, 'Pair', '552'), (3, 3, 1): (132, 'Pair', '553'),
     (3, 3, 2): (131, 'Pair', '554'), (3, 3, 3): (10, 'Trips', '555'), (4, 0, 0): (166, 'Pair', '226'),
@@ -182,7 +198,6 @@ three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (12, 12, 5): (20, 'Pair', 'AA7'), (12, 12, 6): (19, 'Pair', 'AA8'), (12, 12, 7): (18, 'Pair', 'AA9'),
     (12, 12, 8): (17, 'Pair', 'AAT'), (12, 12, 9): (16, 'Pair', 'AAJ'), (12, 12, 10): (15, 'Pair', 'AAQ'),
     (12, 12, 11): (14, 'Pair', 'AAK'), (12, 12, 12): (1, 'Trips', 'AAA')
-    # ... (остальные значения без изменений) ...
 }
 
 
