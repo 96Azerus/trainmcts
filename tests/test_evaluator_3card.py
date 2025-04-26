@@ -1,19 +1,20 @@
-# tests/test_evaluator_3card.py v1.0
+# tests/test_evaluator_3card.py v1.1
 """
 Unit-тесты для модуля ofc_evaluator_3card.py.
 """
 
 import pytest
+import itertools # Добавлен импорт
 
 # Импорты из тестируемого модуля
 try:
-    from ofc_evaluator_3card import evaluate_3_card_ofc, three_card_lookup
+    from ofc_evaluator_3card import evaluate_3_card_ofc, three_card_lookup, WORST_RANK_3CARD
 except ImportError:
     pytest.skip("Skipping 3-card evaluator tests because module could not be imported", allow_module_level=True)
 
 # Импорты из ofc_logic для создания карт
 try:
-    from ofc_logic import Card, INVALID_CARD
+    from ofc_logic import Card, INVALID_CARD, hand_to_int as logic_hand_to_int # Импортируем хелпер из логики
 except ImportError:
     pytest.skip("Skipping 3-card evaluator tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -21,12 +22,11 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> tuple:
     """Конвертирует список строк в кортеж int карт."""
-    ints = []
-    for s in card_strs:
-        if s is None: raise ValueError("None not allowed in 3-card hand")
-        try: ints.append(Card.from_str(s))
-        except ValueError: raise ValueError(f"Invalid card string: {s}")
-    if len(ints) != 3: raise ValueError("Hand must contain 3 cards")
+    # Используем хелпер из ofc_logic, но проверяем результат
+    ints_optional = logic_hand_to_int(card_strs)
+    ints = [c for c in ints_optional if c is not None]
+    if len(ints) != 3: raise ValueError("Hand must contain 3 valid cards for this test")
+    if len(ints) != len(set(ints)): raise ValueError("Duplicate cards not allowed")
     return tuple(ints)
 
 # --- Тесты валидных рук ---
@@ -49,7 +49,8 @@ def hand_to_int(card_strs: list) -> tuple:
     (['Ah', 'Kh', '2d'], 180, 'High Card', 'AK2'),
     (['Kh', 'Qh', 'Jd'], 236, 'High Card', 'KQJ'),
     (['Kh', 'Qh', '2d'], 245, 'High Card', 'KQ2'),
-    (['5h', '3d', '2c'], 455, 'High Card', '532'), # Worst High Card
+    # Используем константу WORST_RANK_3CARD
+    (['5h', '3d', '2c'], WORST_RANK_3CARD, 'High Card', '532'), # Worst High Card
 ])
 def test_evaluate_3_card_valid(hand_str, expected_rank, expected_type, expected_rank_str):
     """Тестирует оценку различных валидных 3-карточных рук."""
@@ -75,7 +76,8 @@ def test_evaluate_3_card_invalid_input():
 
 def test_lookup_table_completeness():
     """Проверяет, что все 455 комбинаций рангов присутствуют в таблице."""
-    assert len(three_card_lookup) == 455, "Lookup table size mismatch"
+    assert len(three_card_lookup) == WORST_RANK_3CARD, "Lookup table size mismatch"
     # Проверяем наличие ключей для лучших и худших рук
     assert (12, 12, 12) in three_card_lookup # AAA
+    assert (3, 1, 0) in three_card_lookup # 532
     assert (2, 1, 0) in three_card_lookup # 432
