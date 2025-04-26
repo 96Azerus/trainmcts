@@ -1,7 +1,8 @@
-# tests/test_evaluators.py v1.2
+# tests/test_evaluators.py v1.3
 """
 Unit-тесты для модуля ofc_evaluators.py (интерфейс оценки).
 Исправлены ассерты для 3-карточных рук. Уточнен ассерт для 5-карт.
+Исправлен импорт hand_to_int.
 """
 
 import pytest
@@ -18,7 +19,8 @@ except ImportError:
 
 # Импорты из ofc_logic для создания карт
 try:
-    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, hand_to_int as logic_hand_to_int # Импортируем хелпер
+    # --- ИСПРАВЛЕНО: Убран импорт hand_to_int ---
+    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER
 except ImportError:
     pytest.skip("Skipping evaluator interface tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -26,8 +28,8 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> list:
     """Конвертирует список строк в список int карт, сохраняя None."""
-    # Используем хелпер из ofc_logic
-    return logic_hand_to_int(card_strs)
+    # --- ИСПРАВЛЕНО: Используем Card.hand_to_int ---
+    return Card.hand_to_int(card_strs)
 
 # --- Тесты get_hand_rank_safe ---
 
