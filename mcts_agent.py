@@ -1,4 +1,4 @@
-# mcts_agent.py v1.0
+# mcts_agent.py v1.1
 """
 Реализация MCTS-агента для задачи размещения карт OFC Pineapple.
 Цель - максимизация роялти.
@@ -11,12 +11,15 @@ import traceback
 import sys
 import logging
 from typing import Optional, Any, List, Tuple, Set, Dict
+from collections import Counter # <-- ДОБАВЛЕН ИМПОРТ
 
 # Импорты из локальных модулей
 try:
-    from ofc_logic import PlayerBoard, Card, Deck
+    from ofc_logic import PlayerBoard, Card, Deck, get_row_royalty # Добавлен get_row_royalty
     from mcts_node import MCTSNode, run_parallel_rollout
-    from ofc_evaluators import evaluate_3_card_ofc, HAND_TYPE_TRIPS_3
+    # Импортируем эвалюаторы напрямую, т.к. они нужны здесь
+    from ofc_evaluator_3card import evaluate_3_card_ofc, HAND_TYPE_TRIPS_3
+    from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
 except ImportError as e:
     logging.critical(f"Failed to import from ofc_logic/mcts_node/ofc_evaluators in mcts_agent.py: {e}")
     # Заглушки
@@ -27,6 +30,9 @@ except ImportError as e:
     def run_parallel_rollout(*args): return 0.0
     def evaluate_3_card_ofc(*args): return (999, "Error", "ERR")
     HAND_TYPE_TRIPS_3 = "Error"
+    class MockEvaluator5Card: evaluate = lambda s, c: 9999
+    evaluator_5card = MockEvaluator5Card()
+    def get_row_royalty(*args): return 0
     raise ImportError("Missing core logic/node/evaluator modules for MCTSAgent") from e
 
 # Получаем логгер
@@ -129,19 +135,21 @@ class MCTSAgent:
                     if expanded_node:
                          node_to_rollout_from = expanded_node
                          path.append(expanded_node)
+                    # Если expand вернул None (нет действий), node_to_rollout_from остается leaf_node
 
                 # 3. Симуляция (Rollout)
                 results: List[float] = []
                 if not node_to_rollout_from.is_terminal():
                     try:
                         # Подготовка данных для воркеров
+                        # Передаем копии данных, чтобы избежать проблем с состоянием
                         board_dict = {
                             'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
                             '_cards_placed': node_to_rollout_from.board.get_total_cards(),
                             'is_foul': node_to_rollout_from.board.is_foul
                         }
-                        cards_ints = node_to_rollout_from.cards_to_place
-                        deck_ints = list(node_to_rollout_from.remaining_deck)
+                        cards_ints = list(node_to_rollout_from.cards_to_place) # Копия
+                        deck_ints = list(node_to_rollout_from.remaining_deck) # Копия
 
                         rollout_tasks = [(board_dict, cards_ints, deck_ints)] * self.rollouts_per_leaf
 
@@ -171,6 +179,7 @@ class MCTSAgent:
                     try:
                         if node_to_rollout_from.board.is_foul: reward = 0.0
                         else:
+                             # Используем эвалюаторы, импортированные в этот модуль
                              reward = sum(get_row_royalty(node_to_rollout_from.board.get_row_cards(r), r, evaluate_3_card_ofc, evaluator_5card)
                                           for r in PlayerBoard.ROW_NAMES)
                         results.append(reward)
@@ -243,7 +252,7 @@ class MCTSAgent:
         trip_in_hand_rank = -1
         if is_first_street:
             ranks = [Card.get_rank_int(c) for c in initial_cards]
-            rank_counts = Counter(ranks)
+            rank_counts = Counter(ranks) # Теперь Counter импортирован
             for rank, count in rank_counts.items():
                 if count >= 3: trip_in_hand_rank = rank; break
 
@@ -274,7 +283,9 @@ class MCTSAgent:
 
         # Если все лучшие действия были запрещены (маловероятно), возвращаем None или первое доступное
         logger.warning("All best actions were disallowed by rules. Returning None.")
-        return None
+        # Возвращаем первое доступное действие, если оно есть, иначе None
+        available_actions = root_node._get_available_placements()
+        return available_actions[0] if available_actions else None
 
 
     def _format_action(self, action: Any) -> str:
