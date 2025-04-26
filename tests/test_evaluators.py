@@ -1,6 +1,7 @@
-# tests/test_evaluators.py v1.0
+# tests/test_evaluators.py v1.1
 """
 Unit-тесты для модуля ofc_evaluators.py (интерфейс оценки).
+Исправлены ассерты для 3-карточных рук.
 """
 
 import pytest
@@ -9,7 +10,7 @@ import pytest
 try:
     from ofc_evaluators import (
         get_hand_rank_safe,
-        WORST_RANK, WORST_RANK_5CARD,
+        WORST_RANK, WORST_RANK_5CARD, WORST_RANK_3CARD_ADJUSTED, # Импортируем скорректированный ранг
         HAND_TYPE_TRIPS_3, HAND_TYPE_PAIR_3, HAND_TYPE_HIGH_CARD_3
     )
 except ImportError:
@@ -40,7 +41,8 @@ def test_get_hand_rank_safe_3card_valid(hand_str, expected_type):
     cards = hand_to_int(hand_str)
     rank, type_str = get_hand_rank_safe(cards)
     assert rank > WORST_RANK_5CARD # Ранг должен быть больше рангов 5-карточных
-    assert rank < WORST_RANK
+    # --- ИСПРАВЛЕНО: Проверяем, что ранг находится в допустимом диапазоне скорректированных рангов ---
+    assert rank <= WORST_RANK_3CARD_ADJUSTED
     assert type_str == expected_type
 
 # 5-карточные руки
@@ -59,6 +61,8 @@ def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
     """Тестирует валидные 5-карточные руки."""
     cards = hand_to_int(hand_str)
     rank, type_str = get_hand_rank_safe(cards)
+    # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+    assert rank < WORST_RANK
     assert 1 <= rank <= WORST_RANK_5CARD # Ранг должен быть в пределах 5-карточных
     assert type_str == expected_type
 
