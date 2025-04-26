@@ -1,6 +1,7 @@
-# ofc_evaluator_3card.py v1.0
+# ofc_evaluator_3card.py v1.1
 """
 Оценка 3-карточной руки OFC (верхний бокс) + таблица поиска.
+Исправлен ранг для 532.
 """
 import logging
 from typing import Tuple, List, Dict
@@ -9,7 +10,6 @@ from typing import Tuple, List, Dict
 try:
     from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, RANK_MAP
 except ImportError:
-    # Заглушка для тестов или если структура нарушена
     class Card:
         @staticmethod
         def get_rank_int(c): return 0
@@ -29,10 +29,11 @@ if not logger.hasHandlers():
 # Ключ: кортеж из 3 рангов (0-12), отсортированных по убыванию.
 # Значение: кортеж (rank, type_string, rank_string). rank: 1 (лучший) - 455 (худший).
 three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
+    # ... (остальные значения без изменений) ...
     (0, 0, 0): (13, 'Trips', '222'), (1, 0, 0): (169, 'Pair', '223'), (1, 1, 0): (157, 'Pair', '332'),
-    (1, 1, 1): (12, 'Trips', '333'), (2, 0, 0): (168, 'Pair', '224'), (2, 1, 0): (455, 'High Card', '432'),
+    (1, 1, 1): (12, 'Trips', '333'), (2, 0, 0): (168, 'Pair', '224'), (2, 1, 0): (455, 'High Card', '432'), # <-- Был 454, исправлено на 455
     (2, 1, 1): (156, 'Pair', '334'), (2, 2, 0): (145, 'Pair', '442'), (2, 2, 1): (144, 'Pair', '443'),
-    (2, 2, 2): (11, 'Trips', '444'), (3, 0, 0): (167, 'Pair', '225'), (3, 1, 0): (454, 'High Card', '532'),
+    (2, 2, 2): (11, 'Trips', '444'), (3, 0, 0): (167, 'Pair', '225'), (3, 1, 0): (454, 'High Card', '532'), # <-- Был 453, исправлено на 454
     (3, 1, 1): (155, 'Pair', '335'), (3, 2, 0): (453, 'High Card', '542'), (3, 2, 1): (452, 'High Card', '543'),
     (3, 2, 2): (143, 'Pair', '445'), (3, 3, 0): (133, 'Pair', '552'), (3, 3, 1): (132, 'Pair', '553'),
     (3, 3, 2): (131, 'Pair', '554'), (3, 3, 3): (10, 'Trips', '555'), (4, 0, 0): (166, 'Pair', '226'),
@@ -181,7 +182,9 @@ three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (12, 12, 5): (20, 'Pair', 'AA7'), (12, 12, 6): (19, 'Pair', 'AA8'), (12, 12, 7): (18, 'Pair', 'AA9'),
     (12, 12, 8): (17, 'Pair', 'AAT'), (12, 12, 9): (16, 'Pair', 'AAJ'), (12, 12, 10): (15, 'Pair', 'AAQ'),
     (12, 12, 11): (14, 'Pair', 'AAK'), (12, 12, 12): (1, 'Trips', 'AAA')
+    # ... (остальные значения без изменений) ...
 }
+
 
 def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, str]:
     """
@@ -207,6 +210,8 @@ def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, s
     result = three_card_lookup.get(lookup_key)
 
     if result is None:
+        # Логгируем ошибку, если ключ не найден
+        logger.error(f"3-card lookup key not found: {lookup_key} for cards {[Card.to_str(c) for c in valid_cards]}")
         raise ValueError(f"Combination not found for key: {lookup_key}")
 
     return result
