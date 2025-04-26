@@ -1,4 +1,4 @@
-# ofc_evaluator_5card.py v1.1
+# ofc_evaluator_5card.py v1.2
 """
 Оценка 5-карточной руки OFC + генерация таблиц поиска.
 Исправлен метод evaluate для unsuited рук.
@@ -8,12 +8,13 @@ import traceback
 import sys
 import logging
 from typing import Dict, List, Generator, Optional
-from collections import Counter # Добавлен Counter
+# Убран неиспользуемый импорт Counter
 
 # Импортируем Card и PRIMES из ofc_logic
 try:
     from ofc_logic import Card, PRIMES, INT_RANKS, INVALID_CARD
 except ImportError:
+    # Заглушки для возможности анализа
     class Card:
         PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
         INT_RANKS = range(13)
@@ -215,16 +216,14 @@ class Evaluator5Card:
             if rank is None: logger.warning(f"Flush prime product {prime_product} not found."); return self.table.WORST_RANK_5CARD
             return rank
         else: # Не флеш
-            # --- ИСПРАВЛЕНО: Вычисляем prime_product на основе количества карт каждого ранга ---
+            # --- ИСПРАВЛЕНО: Вычисляем prime_product как произведение простых чисел всех 5 карт ---
             prime_product = 1
-            ranks = [Card.get_rank_int(c) for c in valid_cards]
-            rank_counts = Counter(ranks)
-            for rank_index, count in rank_counts.items():
-                try:
-                    prime_product *= PRIMES[rank_index] ** count
-                except IndexError:
-                    logger.error(f"Invalid rank index {rank_index} encountered during prime product calculation.")
-                    return self.table.WORST_RANK_5CARD
+            try:
+                for card_int in valid_cards:
+                    prime_product *= Card.get_prime(card_int)
+            except Exception as e:
+                logger.error(f"Error calculating prime product for unsuited hand: {e}")
+                return self.table.WORST_RANK_5CARD
 
             rank = self.table.unsuited_lookup.get(prime_product)
             if rank is None: logger.warning(f"Unsuited prime product {prime_product} not found."); return self.table.WORST_RANK_5CARD
