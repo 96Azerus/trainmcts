@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>OFC Training Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Стили v1.1 (адаптированные) */
+        :root {
+            --card-width: 40px; --card-height: 60px; --card-font-size: 12px;
+            --card-rank-font-size: 1.1em; --card-suit-font-size: 0.8em;
+            --row-gap: 5px; --row-min-height: 70px; --table-padding: 8px;
+            --hand-area-padding: 8px; --hand-gap: 5px;
+        }
+        html { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body { margin: 0; padding: 10px; font-family: Arial, sans-serif; background-color: #f0f0f0; overflow-x: hidden; min-height: 100vh; padding-bottom: 150px; display: flex; flex-direction: column; }
+        button { padding: 10px 15px; font-size: 14px; border: none; border-radius: 5px; cursor: pointer; background-color: #4CAF50; color: white; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); -webkit-tap-highlight-color: transparent; }
+        button:hover:not(:disabled) { background-color: #45a049; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        button:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.7; }
+        .controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; position: sticky; top: 0; z-index: 1001; background: #f0f0f0; padding: 10px; border-bottom: 1px solid #ccc; }
+        .menu-toggle { position: fixed; left: 5px; top: 10px; z-index: 1003; background: #4CAF50; border: none; border-radius: 0 5px 5px 0; padding: 10px 8px; cursor: pointer; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .menu-panel { position: fixed; left: -260px; top: 0; bottom: 0; width: 250px; background: white; z-index: 1002; transition: left 0.3s ease; padding: 15px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); overflow-y: auto; }
+        .menu-panel.open { left: 0; }
+        .menu-panel h3 { margin-top: 0; margin-left: 30px; font-size: 1.1em; }
+        .setting-group { margin-bottom: 15px; }
+        .setting-group label { display: block; margin-bottom: 5px; font-size: 0.9em; }
+        .setting-group input[type="range"] { width: 100%; }
+        .setting-group span { font-size: 0.9em; color: #555; }
+        .table { display: grid; grid-template-rows: auto auto auto; gap: var(--row-gap); margin: 10px auto; width: 98%; max-width: 600px; background-color: #1a472a; padding: var(--table-padding); border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .row { display: flex; justify-content: center; gap: 1.5%; min-height: var(--row-min-height); padding: 5px; border-radius: 5px; background-color: rgba(255,255,255,0.1); flex-wrap: nowrap; align-items: center; }
+        .card-slot { width: var(--card-width); height: var(--card-height); border: 1px dashed rgba(255,255,255,0.3); border-radius: 4px; flex-shrink: 0; display: flex; justify-content: center; align-items: center; position: relative; }
+        .card-slot.taken { border-style: solid; border-color: rgba(255,255,255,0.5); } /* Слот с картой */
+        .card {
+            width: var(--card-width); height: var(--card-height); border-radius: 4px; background-color: white;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: var(--card-font-size); font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            position: absolute; /* Карты позиционируются абсолютно внутри слота */
+            top: 0; left: 0;
+            cursor: pointer; user-select: none; -webkit-user-select: none;
+            border: 1px solid #bbb; padding: 1px; z-index: 2;
+        }
+        .card span:first-child { font-size: var(--card-rank-font-size); }
+        .card span:last-child { font-size: var(--card-suit-font-size); margin-top: 1px; }
+        .card[data-suit="♥"], .card[data-suit="♦"] { color: #e44145; }
+        .card[data-suit="♣"], .card[data-suit="♠"] { color: #2d2d2d; }
+        .card-controls { display: flex; flex-direction: column; gap: 10px; margin: 15px auto; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; width: 98%; }
+        .selector-row { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; align-items: center; }
+        .selector-item, .action-button { padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; user-select: none; -webkit-user-select: none; min-width: 30px; text-align: center; font-size: 13px; }
+        .selector-item:hover:not(.unavailable) { border-color: #4CAF50; background-color: #e8f5e9; }
+        .selector-item.selected { background-color: #4CAF50; color: white; border-color: #4CAF50; }
+        .selector-item.unavailable { opacity: 0.4; cursor: not-allowed; background-color: #eee; }
+        .action-button { background-color: #4CAF50; color: white; border: none; font-size: 14px; }
+        .combination-area { display: flex; justify-content: center; gap: 5px; margin: 15px auto; flex-wrap: wrap; max-width: 600px; width: 98%; min-height: 70px; background: #e0e0e0; padding: 10px; border-radius: 8px; }
+        .combination-slot { width: var(--card-width); height: var(--card-height); border: 1px dashed #aaa; border-radius: 4px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: border-color 0.3s ease; background-color: transparent; position: relative; }
+        .combination-slot:hover { border-color: #4CAF50; }
+        .combination-slot .card { cursor: pointer; } /* Карты в комбо-зоне можно кликать */
+        .royalty-display { text-align: center; margin-top: 10px; font-weight: bold; color: #b8860b; min-height: 20px; font-size: 14px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1005; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.5em; display: none; }
+        /* Адаптивность */
+        @media (max-width: 640px) {
+            body { padding-bottom: 160px; padding-left: 5px; padding-right: 5px; }
+            .controls button { padding: 8px 12px; font-size: 14px; }
+            .menu-panel { width: 220px; padding: 10px; }
+            .menu-panel h3 { margin-left: 25px; font-size: 1em; }
+            .setting-group label, .setting-group span { font-size: 0.85em; }
+            .card-controls { padding: 10px; }
+            .selector-item, .action-button { padding: 6px 8px; font-size: 12px; min-width: 25px; }
+            .combination-area { min-height: 65px; }
+        }
+         @media (max-width: 380px) {
+             :root { --card-width: 34px; --card-height: 52px; --card-font-size: 10px; --row-min-height: 62px; --hand-gap: 3px;}
+             .controls { gap: 5px; }
+             .controls button { padding: 6px 10px; font-size: 12px; }
+             .card-controls { gap: 5px; }
+             .selector-row { gap: 3px; }
+             .selector-item, .action-button { padding: 5px 6px; font-size: 11px; }
+             .combination-area { gap: 3px; }
+         }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()">
+        <span class="material-icons" style="color:white; font-size: 20px;">menu</span>
+    </button>
+
+    <div class="menu-panel" id="menu-panel">
+        <h3>Настройки MCTS</h3>
+        <div class="setting-group">
+            <label for="aiTime">Время на ход MCTS (сек): <span id="aiTimeValue">5</span></label>
+            <input type="range" id="aiTime" min="1" max="60" value="5">
+        </div>
+        <!-- Убраны настройки Fantasyland, MCCFR, AI Type -->
+        <div class="setting-group">
+            <button onclick="saveSettings()">Применить</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="resetTraining()">Сброс Доски</button>
+        <button id="ai-placement-button" onclick="getAIPlacement()">Get AI Placement</button>
+    </div>
+
+    <div class="royalty-display" id="royalty-display"></div>
+
+    <div class="table">
+        <div class="row top" id="top-row"></div>
+        <div class="row middle" id="middle-row"></div>
+        <div class="row bottom" id="bottom-row"></div>
+    </div>
+
+    <div class="card-controls">
+        <div class="selector-row">
+            <!-- Селекторы Рангов -->
+            <div class="selector-item" data-rank="A">A</div> <div class="selector-item" data-rank="K">K</div>
+            <div class="selector-item" data-rank="Q">Q</div> <div class="selector-item" data-rank="J">J</div>
+            <div class="selector-item" data-rank="T">T</div> <div class="selector-item" data-rank="9">9</div>
+            <div class="selector-item" data-rank="8">8</div> <div class="selector-item" data-rank="7">7</div>
+            <div class="selector-item" data-rank="6">6</div> <div class="selector-item" data-rank="5">5</div>
+            <div class="selector-item" data-rank="4">4</div> <div class="selector-item" data-rank="3">3</div>
+            <div class="selector-item" data-rank="2">2</div>
+        </div>
+        <div class="selector-row">
+            <!-- Селекторы Мастей -->
+            <div class="selector-item" data-suit="s">♠</div> <div class="selector-item" data-suit="h">♥</div>
+            <div class="selector-item" data-suit="d">♦</div> <div class="selector-item" data-suit="c">♣</div>
+            <!-- Кнопка Удаления -->
+            <button class="action-button" onclick="removeLastCombinationCard()">-</button>
+        </div>
+    </div>
+
+    <div class="combination-area" id="combination-area">
+        <!-- Слоты для ввода карт -->
+    </div>
+
+    <!-- Оверлей ожидания -->
+    <div class="overlay" id="waiting-overlay">Обработка AI...</div>
+
+<script>
+    let menuOpen = false;
+    let selectedRank = null;
+    let selectedSuit = null;
+    let boardState = { top: [], middle: [], bottom: [] }; // Храним состояние доски
+    const MAX_COMBO_CARDS = 5; // Максимум карт для ввода
+
+    // --- DOM Элементы ---
+    const royaltyDisplay = document.getElementById('royalty-display');
+    const combinationArea = document.getElementById('combination-area');
+    const waitingOverlay = document.getElementById('waiting-overlay');
+    const aiTimeSlider = document.getElementById('aiTime');
+    const aiTimeValue = document.getElementById('aiTimeValue');
+
+    // --- Вспомогательные функции ---
+    function getCardSuitSymbol(suitChar) { const map = {'c': '♣', 'd': '♦', 'h': '♥', 's': '♠'}; return map[suitChar?.toLowerCase()] || '?'; }
+    function getCardSuitChar(suitSymbol) { const map = {'♣': 'c', '♦': 'd', '♥': 'h', '♠': 's'}; return map[suitSymbol] || '?'; }
+
+    function createCardElement(cardStr, isClickable = false) {
+        if (!cardStr || cardStr === CARD_PLACEHOLDER) return null;
+        try {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            const rank = cardStr.length > 1 ? cardStr.substring(0, cardStr.length - 1) : '?';
+            const suitChar = cardStr.length > 0 ? cardStr.substring(cardStr.length - 1) : '?';
+            const suitSymbol = getCardSuitSymbol(suitChar);
+            if (rank === '?' || suitSymbol === '?') { console.error(`JS Error: Parse failed ${cardStr}`); return null; }
+
+            cardElement.dataset.card = cardStr;
+            cardElement.dataset.rank = rank;
+            cardElement.dataset.suit = suitSymbol; // Используем символ для data-атрибута
+            cardElement.innerHTML = `<span>${rank.toUpperCase()}</span><span>${suitSymbol}</span>`;
+            if (suitSymbol === '♥' || suitSymbol === '♦') cardElement.style.color = '#e44145';
+            else cardElement.style.color = '#2d2d2d';
+            if (isClickable) cardElement.onclick = () => handleCardClick(cardElement);
+            return cardElement;
+        } catch (error) { console.error(`JS Error in createCardElement for ${cardStr}:`, error); return null; }
+    }
+
+    function createCardSlotElement(row, index) {
+        const slot = document.createElement('div');
+        slot.className = 'card-slot';
+        slot.dataset.row = row;
+        slot.dataset.index = index;
+        slot.onclick = () => handleSlotClick(slot); // Клик по слоту для удаления карты
+        return slot;
+    }
+
+    // --- Инициализация UI ---
+    function setupTable() {
+        const rows = ['top', 'middle', 'bottom'];
+        const numCards = [3, 5, 5];
+        rows.forEach((row, index) => {
+            const rowElement = document.getElementById(`${row}-row`);
+            if (!rowElement) return;
+            rowElement.innerHTML = '';
+            for (let i = 0; i < numCards[index]; i++) {
+                rowElement.appendChild(createCardSlotElement(row, i));
+            }
+        });
+    }
+
+    function setupCombinationArea() {
+        if (!combinationArea) return;
+        combinationArea.innerHTML = '';
+        for (let i = 0; i < MAX_COMBO_CARDS; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'combination-slot';
+            slot.onclick = () => handleSlotClick(slot); // Клик по слоту для удаления карты
+            combinationArea.appendChild(slot);
+        }
+    }
+
+    // --- Обновление UI ---
+    function updateSelectorAvailability() {
+        const boardCards = new Set();
+        document.querySelectorAll('.table .card').forEach(card => boardCards.add(card.dataset.card));
+        const comboCards = new Set();
+        document.querySelectorAll('.combination-area .card').forEach(card => comboCards.add(card.dataset.card));
+        const unavailableCards = new Set([...boardCards, ...comboCards]);
+
+        // Обновляем селекторы рангов
+        document.querySelectorAll('.selector-item[data-rank]').forEach(item => {
+            const rank = item.dataset.rank;
+            const hasAvailableCard = ['s', 'h', 'd', 'c'].some(suit => !unavailableCards.has(rank + suit));
+            item.classList.toggle('unavailable', !hasAvailableCard);
+            if (!hasAvailableCard && selectedRank === rank) {
+                item.classList.remove('selected');
+                selectedRank = null;
+            }
+        });
+
+        // Обновляем селекторы мастей
+        document.querySelectorAll('.selector-item[data-suit]').forEach(item => {
+            const suitSymbol = item.dataset.suit;
+            const suitChar = getCardSuitChar(suitSymbol);
+            const hasAvailableCard = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'].some(rank => !unavailableCards.has(rank + suitChar));
+            item.classList.toggle('unavailable', !hasAvailableCard);
+            if (!hasAvailableCard && selectedSuit === suitSymbol) {
+                item.classList.remove('selected');
+                selectedSuit = null;
+            }
+        });
+    }
+
+    function updateBoardUI() {
+        // Обновляет только классы 'taken' на доске
+        Object.entries(boardState).forEach(([rowName, rowCards]) => {
+            const rowElement = document.getElementById(`${rowName}-row`);
+            if (!rowElement) return;
+            const slots = rowElement.querySelectorAll('.card-slot');
+            slots.forEach((slot, index) => {
+                const hasCard = slot.querySelector('.card') !== null;
+                slot.classList.toggle('taken', hasCard);
+            });
+        });
+        updateSelectorAvailability(); // Обновляем доступность селекторов
+    }
+
+    // --- Обработчики Действий ---
+    function toggleMenu() {
+        const menu = document.getElementById('menu-panel');
+        menuOpen = !menuOpen;
+        menu.classList.toggle('open', menuOpen);
+    }
+
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('menu-panel');
+        const menuToggle = document.querySelector('.menu-toggle');
+        if (menuOpen && menu && menuToggle && !menu.contains(e.target) && !menuToggle.contains(e.target)) {
+            toggleMenu();
+        }
+    });
+
+    function toggleFullScreen() { /* ... (без изменений) ... */ }
+
+    function handleCardSelection(element) {
+        if (element.classList.contains('unavailable')) return;
+
+        if (element.dataset.rank) {
+            if (selectedRank === element.dataset.rank) { selectedRank = null; element.classList.remove('selected'); }
+            else { document.querySelectorAll('[data-rank].selected').forEach(el => el.classList.remove('selected')); selectedRank = element.dataset.rank; element.classList.add('selected'); }
+        } else if (element.dataset.suit) {
+            const suitSymbol = element.dataset.suit;
+            if (selectedSuit === suitSymbol) { selectedSuit = null; element.classList.remove('selected'); }
+            else { document.querySelectorAll('[data-suit].selected').forEach(el => el.classList.remove('selected')); selectedSuit = suitSymbol; element.classList.add('selected'); }
+        }
+
+        // Если выбраны ранг и масть, добавляем карту в combination area
+        if (selectedRank && selectedSuit) {
+            const suitChar = getCardSuitChar(selectedSuit);
+            const cardStr = selectedRank + suitChar;
+            const emptySlot = Array.from(combinationArea.querySelectorAll('.combination-slot')).find(slot => !slot.querySelector('.card'));
+
+            if (emptySlot) {
+                const cardEl = createCardElement(cardStr, true); // Карты в комбо кликабельны
+                if (cardEl) {
+                    emptySlot.appendChild(cardEl);
+                    updateSelectorAvailability(); // Обновляем доступность
+                }
+            } else {
+                console.warn("Combination area is full.");
+            }
+            // Сбрасываем выбор
+            selectedRank = null; selectedSuit = null;
+            document.querySelectorAll('.selector-item.selected').forEach(el => el.classList.remove('selected'));
+        }
+    }
+
+    function handleCardClick(cardElement) {
+        // Клик по карте в combination area или на доске для удаления
+        const parentSlot = cardElement.parentElement;
+        if (!parentSlot) return;
+
+        if (parentSlot.classList.contains('combination-slot') || parentSlot.classList.contains('card-slot')) {
+            cardElement.remove();
+            updateBoardStateFromDOM(); // Обновляем boardState
+            updateSelectorAvailability();
+        }
+    }
+
+     function handleSlotClick(slotElement) {
+         // Клик по слоту (на доске или в комбо) для удаления карты из него
+         const cardElement = slotElement.querySelector('.card');
+         if (cardElement) {
+             handleCardClick(cardElement); // Вызываем ту же логику удаления
+         }
+     }
+
+    function removeLastCombinationCard() {
+        const slots = combinationArea.querySelectorAll('.combination-slot');
+        for (let i = slots.length - 1; i >= 0; i--) {
+            const card = slots[i].querySelector('.card');
+            if (card) {
+                card.remove();
+                updateSelectorAvailability();
+                break;
+            }
+        }
+    }
+
+    function getAiSettings() {
+        // Собираем настройки MCTS из UI
+        return {
+            aiTime: aiTimeSlider ? aiTimeSlider.value : 5, // Время в секундах
+            // Добавить другие настройки MCTS, если они появятся в UI
+            training_mode: true
+        };
+    }
+
+    function saveSettings() {
+        // Просто закрываем меню, т.к. настройки применяются при вызове AI
+        alert('Настройки будут применены при следующем запросе к AI.');
+        toggleMenu();
+    }
+
+    function getBoardStateFromDOM() {
+        const board = { top: [], middle: [], bottom: [] };
+        let cardCount = 0;
+        Object.keys(board).forEach(rowName => {
+            const rowElement = document.getElementById(`${rowName}-row`);
+            if (!rowElement) return;
+            const slots = rowElement.querySelectorAll('.card-slot');
+            const capacity = PlayerBoardHelper.getRowCapacity(rowName);
+            board[rowName] = Array(capacity).fill(null); // Инициализируем null
+            slots.forEach((slot, index) => {
+                const card = slot.querySelector('.card');
+                if (card && card.dataset.card) {
+                    board[rowName][index] = card.dataset.card;
+                    cardCount++;
+                }
+            });
+        });
+        // Обновляем глобальное состояние
+        boardState = board;
+        return { board, cardCount };
+    }
+
+    function updateBoardStateFromDOM() {
+        getBoardStateFromDOM(); // Обновляет глобальную переменную boardState
+    }
+
+    async function getAIPlacement() {
+        const { board, cardCount } = getBoardStateFromDOM();
+        const comboCardsElements = combinationArea.querySelectorAll('.card');
+        const comboCards = Array.from(comboCardsElements).map(el => el.dataset.card);
+
+        if (comboCards.length === 0) {
+            alert("Пожалуйста, добавьте карты в 'Combination Area'.");
+            return;
+        }
+        // Проверка: не больше 13 карт на доске + в руке
+        if (cardCount + comboCards.length > 13) {
+             alert(`Слишком много карт (${cardCount + comboCards.length}). Максимум 13 карт на доске и в руке.`);
+             return;
+        }
+
+        const aiSettings = getAiSettings();
+        const requestData = {
+            selected_cards: comboCards,
+            board: board,
+            ai_settings: aiSettings
+        };
+
+        app.logger.info("Requesting AI placement:", requestData);
+        if (waitingOverlay) waitingOverlay.style.display = 'flex';
+        const aiButton = document.getElementById('ai-placement-button');
+        if (aiButton) aiButton.disabled = true;
+
+        try {
+            const response = await fetch('/ai_move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+            const data = await response.json();
+            app.logger.info("Received AI placement:", data);
+
+            if (!response.ok) { throw new Error(data.error || `Server error: ${response.status}`); }
+            if (data.error) { throw new Error(data.error); }
+
+            // Очищаем combination area
+            combinationArea.querySelectorAll('.card').forEach(c => c.remove());
+
+            // Размещаем карты согласно ответу AI
+            if (data.placements && data.placements.length > 0) {
+                data.placements.forEach(p => {
+                    const { card, row, index } = p;
+                    const slot = document.querySelector(`#${row}-row .card-slot[data-index="${index}"]`);
+                    if (slot && !slot.querySelector('.card')) {
+                        const cardEl = createCardElement(card, true); // Карты на доске кликабельны для удаления
+                        if (cardEl) slot.appendChild(cardEl);
+                    } else {
+                        console.warn(`Could not place card ${card} at ${row}[${index}]. Slot occupied or not found.`);
+                    }
+                });
+            } else {
+                 console.warn("AI did not return any placements.");
+                 // Можно показать сообщение пользователю
+            }
+            updateBoardStateFromDOM(); // Обновляем состояние доски
+            updateSelectorAvailability(); // Обновляем селекторы
+
+        } catch (error) {
+            console.error('Error getting AI placement:', error);
+            alert(`Ошибка получения хода AI: ${error.message}`);
+        } finally {
+            if (waitingOverlay) waitingOverlay.style.display = 'none';
+            if (aiButton) aiButton.disabled = false;
+        }
+    }
+
+    function resetTraining() {
+        console.log("Resetting training board...");
+        setupTable(); // Пересоздаем слоты на доске
+        setupCombinationArea(); // Пересоздаем слоты в комбо-зоне
+        boardState = { top: [], middle: [], bottom: [] }; // Сбрасываем состояние
+        selectedRank = null;
+        selectedSuit = null;
+        document.querySelectorAll('.selector-item.selected').forEach(el => el.classList.remove('selected'));
+        if (royaltyDisplay) royaltyDisplay.textContent = '';
+        updateSelectorAvailability();
+        console.log("Training board reset.");
+    }
+
+    // --- Инициализация при загрузке ---
+    document.addEventListener('DOMContentLoaded', () => {
+        setupTable();
+        setupCombinationArea();
+        updateSelectorAvailability();
+        // Настройка слайдера времени
+        if (aiTimeSlider && aiTimeValue) {
+            aiTimeValue.textContent = aiTimeSlider.value;
+            aiTimeSlider.oninput = () => { aiTimeValue.textContent = aiTimeSlider.value; };
+        } else {
+             console.error("AI Time slider or value display not found.");
+        }
+        // Добавляем обработчики для селекторов
+        document.querySelectorAll('.selector-item').forEach(item => {
+            item.addEventListener('click', () => handleCardSelection(item));
+        });
+        // Закрытие меню по клику вне его
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('menu-panel');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (menuOpen && menu && menuToggle && !menu.contains(e.target) && !menuToggle.contains(e.target)) {
+                toggleMenu();
+            }
+        });
+    });
+
+    // Вспомогательный объект для доступа к константам из JS
+    const PlayerBoardHelper = {
+         rowCapacities: {'top': 3, 'middle': 5, 'bottom': 5},
+         getRowCapacity: function(rowName) { return this.rowCapacities[rowName] || 0; }
+    };
+
+</script>
+</body>
+</html>
