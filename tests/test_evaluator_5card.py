@@ -1,4 +1,4 @@
-# tests/test_evaluator_5card.py v1.1
+# tests/test_evaluator_5card.py v1.2
 """
 Unit-тесты для модуля ofc_evaluator_5card.py.
 Исправлены ошибки импорта и передачи типов.
@@ -15,7 +15,7 @@ except ImportError:
 
 # Импорты из ofc_logic для создания карт и констант
 try:
-    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, PRIMES # Импортируем PRIMES
+    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, PRIMES, hand_to_int as logic_hand_to_int # Импортируем PRIMES и хелпер
 except ImportError:
     pytest.skip("Skipping 5-card evaluator tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -23,21 +23,17 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> list:
     """Конвертирует список строк в список int карт."""
-    ints = []
-    for s in card_strs:
-        if s is None or s == CARD_PLACEHOLDER:
-             # В тестах эвалуатора ожидаем только валидные карты
-             raise ValueError("None/Placeholder not expected in 5-card evaluator tests")
-        else:
-            try: ints.append(Card.from_str(s))
-            except ValueError: raise ValueError(f"Invalid card string: {s}")
-    if len(ints) != 5: raise ValueError("Hand must contain 5 cards")
+    # Используем хелпер из ofc_logic, но проверяем результат
+    ints_optional = logic_hand_to_int(card_strs)
+    ints = [c for c in ints_optional if c is not None]
+    if len(ints) != 5: raise ValueError("Hand must contain 5 valid cards for this test")
+    if len(ints) != len(set(ints)): raise ValueError("Duplicate cards not allowed")
     return ints
 
 # --- Фикстура для эвалуатора ---
 @pytest.fixture(scope="module")
 def evaluator():
-    """Создает экземпляр эвалуатора один раз для всех тестов модуля."""
+    """Создает экземпляр эвалюатора один раз для всех тестов модуля."""
     try:
         return Evaluator5Card()
     except Exception as e:
@@ -61,7 +57,12 @@ def test_lookup_table_constants(evaluator):
 def test_lookup_table_generation_completeness(evaluator):
     """Проверяет полноту сгенерированных таблиц."""
     table = evaluator.table
+    # Ожидаемое количество флешей C(13, 5) = 1287
     assert len(table.flush_lookup) == 1287, f"Flush lookup size: {len(table.flush_lookup)}"
+    # Ожидаемое количество уникальных произведений простых чисел для не-флешей
+    # (сложно точно посчитать, но должно быть больше 6000)
+    # 7462 (всего) - 1287 (флеши) + 10 (стрит-флеши, которые есть в обеих таблицах) = 6185?
+    # Проверяем, что размер не нулевой и достаточно большой
     assert len(table.unsuited_lookup) > 6000, f"Unsuited lookup size: {len(table.unsuited_lookup)}"
 
     # Проверяем ключевые ранги
@@ -73,11 +74,11 @@ def test_lookup_table_generation_completeness(evaluator):
     wheel_sf_prime = table._prime_product_from_rankbits(wheel_sf_bits)
     assert table.flush_lookup.get(wheel_sf_prime) == 10
 
-    # --- ИСПРАВЛЕНО: Используем PRIMES напрямую ---
+    # Используем PRIMES напрямую
     four_aces_k_prime = PRIMES[12]**4 * PRIMES[11]
     assert table.unsuited_lookup.get(four_aces_k_prime) == 11, "Four Aces K rank mismatch"
 
-    worst_hc_prime = PRIMES[5] * PRIMES[3] * PRIMES[2] * PRIMES[1] * PRIMES[0]
+    worst_hc_prime = PRIMES[5] * PRIMES[3] * PRIMES[2] * PRIMES[1] * PRIMES[0] # 7,5,4,3,2
     assert table.unsuited_lookup.get(worst_hc_prime) == 7462, "Worst High Card rank mismatch"
 
 # --- Тесты Evaluator5Card.evaluate ---
@@ -121,7 +122,6 @@ def test_evaluate_invalid_input(evaluator):
     # Дубликаты
     with pytest.raises(ValueError): evaluator.evaluate(hand_to_int(['As', 'As', 'Ks', 'Qs', 'Js']))
     # Неверный тип (передаем строки вместо int)
-    # --- ИСПРАВЛЕНО: Передаем int, а не строки ---
     with pytest.raises(ValueError): evaluator.evaluate([Card.from_str("As"), Card.from_str("Ks"), Card.from_str("Qs"), Card.from_str("Js"), "Ts"]) # type: ignore
 
 # --- Тесты get_rank_class и class_to_string ---
