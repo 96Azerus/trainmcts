@@ -1,0 +1,2437 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-utils/venvs/pytest/bin/python
+cachedir: .pytest_cache
+rootdir: /workspaces/trainmcts
+plugins: anyio-4.9.0
+collecting ... collected 99 items
+
+tests/test_app.py::test_index_route PASSED                               [  1%]
+tests/test_app.py::test_ai_move_valid_request PASSED                     [  2%]
+tests/test_app.py::test_ai_move_no_cards_to_place PASSED                 [  3%]
+tests/test_app.py::test_ai_move_invalid_json PASSED                      [  4%]
+tests/test_app.py::test_ai_move_missing_data PASSED                      [  5%]
+tests/test_app.py::test_ai_move_duplicate_cards PASSED                   [  6%]
+tests/test_app.py::test_ai_move_agent_returns_none PASSED                [  7%]
+tests/test_app.py::test_ai_move_internal_error PASSED                    [  8%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str0-1-Trips-AAA] PASSED [  9%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str1-2-Trips-KKK] PASSED [ 10%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str2-13-Trips-222] PASSED [ 11%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str3-14-Pair-AAK] PASSED [ 12%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str4-25-Pair-AA2] PASSED [ 13%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str5-40-Pair-QQJ] PASSED [ 14%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str6-49-Pair-QQ2] PASSED [ 15%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str7-110-Pair-66A] PASSED [ 16%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str8-118-Pair-665] PASSED [ 17%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str9-158-Pair-22A] PASSED [ 18%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str10-169-Pair-223] PASSED [ 19%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str11-170-High Card-AKQ] PASSED [ 20%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str12-180-High Card-AK2] PASSED [ 21%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str13-236-High Card-KQJ] PASSED [ 22%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str14-245-High Card-KQ2] PASSED [ 23%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str15-455-High Card-532] FAILED [ 24%]
+tests/test_evaluator_3card.py::test_evaluate_3_card_invalid_input PASSED [ 25%]
+tests/test_evaluator_3card.py::test_lookup_table_completeness PASSED     [ 26%]
+tests/test_evaluator_5card.py::test_lookup_table_constants PASSED        [ 27%]
+tests/test_evaluator_5card.py::test_lookup_table_generation_completeness PASSED [ 28%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str0-1-Straight Flush] PASSED [ 29%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str1-6-Straight Flush] PASSED [ 30%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str2-11-Four of a Kind] FAILED [ 31%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str3-166-Four of a Kind] FAILED [ 32%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str4-167-Full House] FAILED [ 33%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str5-322-Full House] FAILED [ 34%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str6-323-Flush] FAILED [ 35%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str7-1599-Flush] PASSED [ 36%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str8-1600-Straight] PASSED [ 37%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str9-1609-Straight] PASSED [ 38%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str10-1610-Three of a Kind] PASSED [ 39%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str11-2467-Three of a Kind] PASSED [ 40%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str12-2468-Two Pair] PASSED [ 41%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str13-3325-Two Pair] PASSED [ 42%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str14-3326-Pair] PASSED [ 43%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str15-6185-Pair] PASSED [ 44%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str16-6186-High Card] PASSED [ 45%]
+tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str17-7462-High Card] PASSED [ 46%]
+tests/test_evaluator_5card.py::test_evaluate_invalid_input PASSED        [ 47%]
+tests/test_evaluator_5card.py::test_get_rank_class PASSED                [ 48%]
+tests/test_evaluator_5card.py::test_class_to_string PASSED               [ 49%]
+tests/test_evaluators.py::test_get_hand_rank_safe_3card_valid[hand_str0-Trips] FAILED [ 50%]
+tests/test_evaluators.py::test_get_hand_rank_safe_3card_valid[hand_str1-Pair] FAILED [ 51%]
+tests/test_evaluators.py::test_get_hand_rank_safe_3card_valid[hand_str2-High Card] FAILED [ 52%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str0-Straight Flush] FAILED [ 53%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str1-Four of a Kind] FAILED [ 54%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str2-Full House] FAILED [ 55%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str3-Flush] FAILED [ 56%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str4-Straight] FAILED [ 57%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str5-Three of a Kind] FAILED [ 58%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str6-Two Pair] FAILED [ 59%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str7-Pair] FAILED [ 60%]
+tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str8-High Card] FAILED [ 61%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[None] PASSED   [ 62%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[not a list] PASSED [ 63%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input2] PASSED [ 64%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input3] PASSED [ 65%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input4] PASSED [ 66%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input5] PASSED [ 67%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input6] PASSED [ 68%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input7] PASSED [ 69%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input8] PASSED [ 70%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input9] PASSED [ 71%]
+tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input10] PASSED [ 72%]
+tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED           [ 73%]
+tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED             [ 74%]
+tests/test_mcts_agent.py::test_choose_action_basic_run PASSED            [ 75%]
+tests/test_mcts_agent.py::test_choose_action_no_cards PASSED             [ 76%]
+tests/test_mcts_agent.py::test_choose_action_complete_board PASSED       [ 77%]
+tests/test_mcts_agent.py::test_choose_action_mcts_loop_simplified FAILED [ 78%]
+tests/test_mcts_agent.py::test_choose_action_no_trip_on_top_rule FAILED  [ 79%]
+tests/test_mcts_agent.py::test_format_action PASSED                      [ 80%]
+tests/test_ofc_logic.py::test_card_from_str_valid PASSED                 [ 81%]
+tests/test_ofc_logic.py::test_card_to_str_valid PASSED                   [ 82%]
+tests/test_ofc_logic.py::test_card_to_str_invalid PASSED                 [ 83%]
+tests/test_ofc_logic.py::test_card_getters PASSED                        [ 84%]
+tests/test_ofc_logic.py::test_card_hand_conversion PASSED                [ 85%]
+tests/test_ofc_logic.py::test_deck_init_full PASSED                      [ 86%]
+tests/test_ofc_logic.py::test_deck_init_with_cards PASSED                [ 87%]
+tests/test_ofc_logic.py::test_deck_deal PASSED                           [ 88%]
+tests/test_ofc_logic.py::test_deck_deal_more_than_available PASSED       [ 89%]
+tests/test_ofc_logic.py::test_deck_remove PASSED                         [ 90%]
+tests/test_ofc_logic.py::test_deck_copy PASSED                           [ 91%]
+tests/test_ofc_logic.py::test_playerboard_init PASSED                    [ 92%]
+tests/test_ofc_logic.py::test_playerboard_add_card PASSED                [ 93%]
+tests/test_ofc_logic.py::test_playerboard_set_full_board PASSED          [ 94%]
+tests/test_ofc_logic.py::test_playerboard_get_available_slots PASSED     [ 95%]
+tests/test_ofc_logic.py::test_playerboard_get_board_state_tuple PASSED   [ 96%]
+tests/test_ofc_logic.py::test_playerboard_copy PASSED                    [ 97%]
+tests/test_ofc_logic.py::test_check_board_foul_logic FAILED              [ 98%]
+tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED               [100%]
+
+=================================== FAILURES ===================================
+___________ test_evaluate_3_card_valid[hand_str15-455-High Card-532] ___________
+
+hand_str = ['5h', '3d', '2c'], expected_rank = 455, expected_type = 'High Card'
+expected_rank_str = '532'
+
+    @pytest.mark.parametrize("hand_str, expected_rank, expected_type, expected_rank_str", [
+        # Trips
+        (['Ah', 'Ad', 'As'], 1, 'Trips', 'AAA'),
+        (['Kh', 'Kd', 'Kc'], 2, 'Trips', 'KKK'),
+        (['2h', '2d', '2c'], 13, 'Trips', '222'),
+        # Pairs
+        (['Ah', 'Ad', 'Ks'], 14, 'Pair', 'AAK'),
+        (['Ah', 'Ad', '2s'], 25, 'Pair', 'AA2'),
+        (['Qh', 'Qs', 'Jd'], 40, 'Pair', 'QQJ'),
+        (['Qh', 'Qs', '2d'], 49, 'Pair', 'QQ2'),
+        (['6h', '6d', 'Ac'], 110, 'Pair', '66A'),
+        (['6h', '6d', '5c'], 118, 'Pair', '665'),
+        (['2h', '2d', 'Ac'], 158, 'Pair', '22A'),
+        (['2h', '2d', '3c'], 169, 'Pair', '223'),
+        # High Card
+        (['Ah', 'Kh', 'Qd'], 170, 'High Card', 'AKQ'),
+        (['Ah', 'Kh', '2d'], 180, 'High Card', 'AK2'),
+        (['Kh', 'Qh', 'Jd'], 236, 'High Card', 'KQJ'),
+        (['Kh', 'Qh', '2d'], 245, 'High Card', 'KQ2'),
+        (['5h', '3d', '2c'], 455, 'High Card', '532'), # Worst High Card
+    ])
+    def test_evaluate_3_card_valid(hand_str, expected_rank, expected_type, expected_rank_str):
+        """Тестирует оценку различных валидных 3-карточных рук."""
+        card_ints = hand_to_int(hand_str)
+        rank, type_str, rank_str_out = evaluate_3_card_ofc(card_ints[0], card_ints[1], card_ints[2])
+>       assert rank == expected_rank
+E       assert 454 == 455
+
+tests/test_evaluator_3card.py:58: AssertionError
+____________ test_evaluate_valid_hands[hand_str2-11-Four of a Kind] ____________
+
+evaluator = <ofc_evaluator_5card.Evaluator5Card object at 0x71af306ac9e0>
+hand_str = ['Ac', 'Ad', 'Ah', 'As', '2c'], expected_rank = 11
+expected_class_str = 'Four of a Kind'
+
+    @pytest.mark.parametrize("hand_str, expected_rank, expected_class_str", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], 1, "Straight Flush"), # Royal Flush
+        (['9d', '8d', '7d', '6d', '5d'], 6, "Straight Flush"), # SF 9-high
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], 11, "Four of a Kind"), # Quads A, Kicker 2
+        (['2c', '2d', '2h', '2s', 'Ac'], 166, "Four of a Kind"), # Quads 2, Kicker A (worst quads)
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], 167, "Full House"), # FH K over Q
+        (['2c', '2d', '2h', 'Ac', 'As'], 322, "Full House"), # FH 2 over A (worst FH)
+        (['As', 'Qs', '8s', '5s', '3s'], 323, "Flush"), # Flush A high
+        (['7d', '5d', '4d', '3d', '2d'], 1599, "Flush"), # Flush 7 high (worst flush)
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], 1600, "Straight"), # Straight AKQJT
+        (['5d', '4c', '3h', '2s', 'Ad'], 1609, "Straight"), # Straight A2345 (Wheel - worst straight)
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], 1610, "Three of a Kind"), # Trips A, KQ kicker
+        (['2c', '2d', '2h', '4s', '3d'], 2467, "Three of a Kind"), # Trips 2, 43 kicker (worst trips)
+        (['Ac', 'Ad', 'Kc', 'Kd', 'Qs'], 2468, "Two Pair"), # Two Pair AK, Q kicker
+        (['3c', '3d', '2c', '2d', '4s'], 3325, "Two Pair"), # Two Pair 32, 4 kicker (worst 2pair)
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Js'], 3326, "Pair"), # Pair A, KQJ kicker
+        (['2c', '2d', '5s', '4d', '3c'], 6185, "Pair"), # Pair 2, 543 kicker (worst pair)
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], 6186, "High Card"), # High Card AKQJ9
+        (['7d', '5c', '4h', '3s', '2d'], 7462, "High Card"), # High Card 75432 (worst hand)
+    ])
+    def test_evaluate_valid_hands(evaluator, hand_str, expected_rank, expected_class_str):
+        """Тестирует оценку различных валидных 5-карточных рук."""
+        hand_int = hand_to_int(hand_str)
+        rank = evaluator.evaluate(hand_int)
+        rank_class = evaluator.get_rank_class(rank)
+        class_str = evaluator.class_to_string(rank_class)
+>       assert rank == expected_rank
+E       assert 22 == 11
+
+tests/test_evaluator_5card.py:110: AssertionError
+___________ test_evaluate_valid_hands[hand_str3-166-Four of a Kind] ____________
+
+evaluator = <ofc_evaluator_5card.Evaluator5Card object at 0x71af306ac9e0>
+hand_str = ['2c', '2d', '2h', '2s', 'Ac'], expected_rank = 166
+expected_class_str = 'Four of a Kind'
+
+    @pytest.mark.parametrize("hand_str, expected_rank, expected_class_str", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], 1, "Straight Flush"), # Royal Flush
+        (['9d', '8d', '7d', '6d', '5d'], 6, "Straight Flush"), # SF 9-high
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], 11, "Four of a Kind"), # Quads A, Kicker 2
+        (['2c', '2d', '2h', '2s', 'Ac'], 166, "Four of a Kind"), # Quads 2, Kicker A (worst quads)
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], 167, "Full House"), # FH K over Q
+        (['2c', '2d', '2h', 'Ac', 'As'], 322, "Full House"), # FH 2 over A (worst FH)
+        (['As', 'Qs', '8s', '5s', '3s'], 323, "Flush"), # Flush A high
+        (['7d', '5d', '4d', '3d', '2d'], 1599, "Flush"), # Flush 7 high (worst flush)
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], 1600, "Straight"), # Straight AKQJT
+        (['5d', '4c', '3h', '2s', 'Ad'], 1609, "Straight"), # Straight A2345 (Wheel - worst straight)
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], 1610, "Three of a Kind"), # Trips A, KQ kicker
+        (['2c', '2d', '2h', '4s', '3d'], 2467, "Three of a Kind"), # Trips 2, 43 kicker (worst trips)
+        (['Ac', 'Ad', 'Kc', 'Kd', 'Qs'], 2468, "Two Pair"), # Two Pair AK, Q kicker
+        (['3c', '3d', '2c', '2d', '4s'], 3325, "Two Pair"), # Two Pair 32, 4 kicker (worst 2pair)
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Js'], 3326, "Pair"), # Pair A, KQJ kicker
+        (['2c', '2d', '5s', '4d', '3c'], 6185, "Pair"), # Pair 2, 543 kicker (worst pair)
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], 6186, "High Card"), # High Card AKQJ9
+        (['7d', '5c', '4h', '3s', '2d'], 7462, "High Card"), # High Card 75432 (worst hand)
+    ])
+    def test_evaluate_valid_hands(evaluator, hand_str, expected_rank, expected_class_str):
+        """Тестирует оценку различных валидных 5-карточных рук."""
+        hand_int = hand_to_int(hand_str)
+        rank = evaluator.evaluate(hand_int)
+        rank_class = evaluator.get_rank_class(rank)
+        class_str = evaluator.class_to_string(rank_class)
+>       assert rank == expected_rank
+E       assert 155 == 166
+
+tests/test_evaluator_5card.py:110: AssertionError
+_____________ test_evaluate_valid_hands[hand_str4-167-Full House] ______________
+
+evaluator = <ofc_evaluator_5card.Evaluator5Card object at 0x71af306ac9e0>
+hand_str = ['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], expected_rank = 167
+expected_class_str = 'Full House'
+
+    @pytest.mark.parametrize("hand_str, expected_rank, expected_class_str", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], 1, "Straight Flush"), # Royal Flush
+        (['9d', '8d', '7d', '6d', '5d'], 6, "Straight Flush"), # SF 9-high
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], 11, "Four of a Kind"), # Quads A, Kicker 2
+        (['2c', '2d', '2h', '2s', 'Ac'], 166, "Four of a Kind"), # Quads 2, Kicker A (worst quads)
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], 167, "Full House"), # FH K over Q
+        (['2c', '2d', '2h', 'Ac', 'As'], 322, "Full House"), # FH 2 over A (worst FH)
+        (['As', 'Qs', '8s', '5s', '3s'], 323, "Flush"), # Flush A high
+        (['7d', '5d', '4d', '3d', '2d'], 1599, "Flush"), # Flush 7 high (worst flush)
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], 1600, "Straight"), # Straight AKQJT
+        (['5d', '4c', '3h', '2s', 'Ad'], 1609, "Straight"), # Straight A2345 (Wheel - worst straight)
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], 1610, "Three of a Kind"), # Trips A, KQ kicker
+        (['2c', '2d', '2h', '4s', '3d'], 2467, "Three of a Kind"), # Trips 2, 43 kicker (worst trips)
+        (['Ac', 'Ad', 'Kc', 'Kd', 'Qs'], 2468, "Two Pair"), # Two Pair AK, Q kicker
+        (['3c', '3d', '2c', '2d', '4s'], 3325, "Two Pair"), # Two Pair 32, 4 kicker (worst 2pair)
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Js'], 3326, "Pair"), # Pair A, KQJ kicker
+        (['2c', '2d', '5s', '4d', '3c'], 6185, "Pair"), # Pair 2, 543 kicker (worst pair)
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], 6186, "High Card"), # High Card AKQJ9
+        (['7d', '5c', '4h', '3s', '2d'], 7462, "High Card"), # High Card 75432 (worst hand)
+    ])
+    def test_evaluate_valid_hands(evaluator, hand_str, expected_rank, expected_class_str):
+        """Тестирует оценку различных валидных 5-карточных рук."""
+        hand_int = hand_to_int(hand_str)
+        rank = evaluator.evaluate(hand_int)
+        rank_class = evaluator.get_rank_class(rank)
+        class_str = evaluator.class_to_string(rank_class)
+>       assert rank == expected_rank
+E       assert 180 == 167
+
+tests/test_evaluator_5card.py:110: AssertionError
+_____________ test_evaluate_valid_hands[hand_str5-322-Full House] ______________
+
+evaluator = <ofc_evaluator_5card.Evaluator5Card object at 0x71af306ac9e0>
+hand_str = ['2c', '2d', '2h', 'Ac', 'As'], expected_rank = 322
+expected_class_str = 'Full House'
+
+    @pytest.mark.parametrize("hand_str, expected_rank, expected_class_str", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], 1, "Straight Flush"), # Royal Flush
+        (['9d', '8d', '7d', '6d', '5d'], 6, "Straight Flush"), # SF 9-high
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], 11, "Four of a Kind"), # Quads A, Kicker 2
+        (['2c', '2d', '2h', '2s', 'Ac'], 166, "Four of a Kind"), # Quads 2, Kicker A (worst quads)
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], 167, "Full House"), # FH K over Q
+        (['2c', '2d', '2h', 'Ac', 'As'], 322, "Full House"), # FH 2 over A (worst FH)
+        (['As', 'Qs', '8s', '5s', '3s'], 323, "Flush"), # Flush A high
+        (['7d', '5d', '4d', '3d', '2d'], 1599, "Flush"), # Flush 7 high (worst flush)
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], 1600, "Straight"), # Straight AKQJT
+        (['5d', '4c', '3h', '2s', 'Ad'], 1609, "Straight"), # Straight A2345 (Wheel - worst straight)
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], 1610, "Three of a Kind"), # Trips A, KQ kicker
+        (['2c', '2d', '2h', '4s', '3d'], 2467, "Three of a Kind"), # Trips 2, 43 kicker (worst trips)
+        (['Ac', 'Ad', 'Kc', 'Kd', 'Qs'], 2468, "Two Pair"), # Two Pair AK, Q kicker
+        (['3c', '3d', '2c', '2d', '4s'], 3325, "Two Pair"), # Two Pair 32, 4 kicker (worst 2pair)
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Js'], 3326, "Pair"), # Pair A, KQJ kicker
+        (['2c', '2d', '5s', '4d', '3c'], 6185, "Pair"), # Pair 2, 543 kicker (worst pair)
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], 6186, "High Card"), # High Card AKQJ9
+        (['7d', '5c', '4h', '3s', '2d'], 7462, "High Card"), # High Card 75432 (worst hand)
+    ])
+    def test_evaluate_valid_hands(evaluator, hand_str, expected_rank, expected_class_str):
+        """Тестирует оценку различных валидных 5-карточных рук."""
+        hand_int = hand_to_int(hand_str)
+        rank = evaluator.evaluate(hand_int)
+        rank_class = evaluator.get_rank_class(rank)
+        class_str = evaluator.class_to_string(rank_class)
+>       assert rank == expected_rank
+E       assert 311 == 322
+
+tests/test_evaluator_5card.py:110: AssertionError
+________________ test_evaluate_valid_hands[hand_str6-323-Flush] ________________
+
+evaluator = <ofc_evaluator_5card.Evaluator5Card object at 0x71af306ac9e0>
+hand_str = ['As', 'Qs', '8s', '5s', '3s'], expected_rank = 323
+expected_class_str = 'Flush'
+
+    @pytest.mark.parametrize("hand_str, expected_rank, expected_class_str", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], 1, "Straight Flush"), # Royal Flush
+        (['9d', '8d', '7d', '6d', '5d'], 6, "Straight Flush"), # SF 9-high
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], 11, "Four of a Kind"), # Quads A, Kicker 2
+        (['2c', '2d', '2h', '2s', 'Ac'], 166, "Four of a Kind"), # Quads 2, Kicker A (worst quads)
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], 167, "Full House"), # FH K over Q
+        (['2c', '2d', '2h', 'Ac', 'As'], 322, "Full House"), # FH 2 over A (worst FH)
+        (['As', 'Qs', '8s', '5s', '3s'], 323, "Flush"), # Flush A high
+        (['7d', '5d', '4d', '3d', '2d'], 1599, "Flush"), # Flush 7 high (worst flush)
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], 1600, "Straight"), # Straight AKQJT
+        (['5d', '4c', '3h', '2s', 'Ad'], 1609, "Straight"), # Straight A2345 (Wheel - worst straight)
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], 1610, "Three of a Kind"), # Trips A, KQ kicker
+        (['2c', '2d', '2h', '4s', '3d'], 2467, "Three of a Kind"), # Trips 2, 43 kicker (worst trips)
+        (['Ac', 'Ad', 'Kc', 'Kd', 'Qs'], 2468, "Two Pair"), # Two Pair AK, Q kicker
+        (['3c', '3d', '2c', '2d', '4s'], 3325, "Two Pair"), # Two Pair 32, 4 kicker (worst 2pair)
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Js'], 3326, "Pair"), # Pair A, KQJ kicker
+        (['2c', '2d', '5s', '4d', '3c'], 6185, "Pair"), # Pair 2, 543 kicker (worst pair)
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], 6186, "High Card"), # High Card AKQJ9
+        (['7d', '5c', '4h', '3s', '2d'], 7462, "High Card"), # High Card 75432 (worst hand)
+    ])
+    def test_evaluate_valid_hands(evaluator, hand_str, expected_rank, expected_class_str):
+        """Тестирует оценку различных валидных 5-карточных рук."""
+        hand_int = hand_to_int(hand_str)
+        rank = evaluator.evaluate(hand_int)
+        rank_class = evaluator.get_rank_class(rank)
+        class_str = evaluator.class_to_string(rank_class)
+>       assert rank == expected_rank
+E       assert 582 == 323
+
+tests/test_evaluator_5card.py:110: AssertionError
+_____________ test_get_hand_rank_safe_3card_valid[hand_str0-Trips] _____________
+
+hand_str = ['Ah', 'Ad', 'As'], expected_type = 'Trips'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['Ah', 'Ad', 'As'], HAND_TYPE_TRIPS_3),
+        (['Qh', 'Qs', 'Jd'], HAND_TYPE_PAIR_3),
+        (['Ah', 'Kh', 'Qd'], HAND_TYPE_HIGH_CARD_3),
+    ])
+    def test_get_hand_rank_safe_3card_valid(hand_str, expected_type):
+        """Тестирует валидные 3-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        assert rank > WORST_RANK_5CARD # Ранг должен быть больше рангов 5-карточных
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг находится в допустимом диапазоне скорректированных рангов ---
+>       assert rank <= WORST_RANK_3CARD_ADJUSTED
+E       assert 7919 <= 7918
+
+tests/test_evaluators.py:45: AssertionError
+_____________ test_get_hand_rank_safe_3card_valid[hand_str1-Pair] ______________
+
+hand_str = ['Qh', 'Qs', 'Jd'], expected_type = 'Pair'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['Ah', 'Ad', 'As'], HAND_TYPE_TRIPS_3),
+        (['Qh', 'Qs', 'Jd'], HAND_TYPE_PAIR_3),
+        (['Ah', 'Kh', 'Qd'], HAND_TYPE_HIGH_CARD_3),
+    ])
+    def test_get_hand_rank_safe_3card_valid(hand_str, expected_type):
+        """Тестирует валидные 3-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        assert rank > WORST_RANK_5CARD # Ранг должен быть больше рангов 5-карточных
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг находится в допустимом диапазоне скорректированных рангов ---
+>       assert rank <= WORST_RANK_3CARD_ADJUSTED
+E       assert 7919 <= 7918
+
+tests/test_evaluators.py:45: AssertionError
+___________ test_get_hand_rank_safe_3card_valid[hand_str2-High Card] ___________
+
+hand_str = ['Ah', 'Kh', 'Qd'], expected_type = 'High Card'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['Ah', 'Ad', 'As'], HAND_TYPE_TRIPS_3),
+        (['Qh', 'Qs', 'Jd'], HAND_TYPE_PAIR_3),
+        (['Ah', 'Kh', 'Qd'], HAND_TYPE_HIGH_CARD_3),
+    ])
+    def test_get_hand_rank_safe_3card_valid(hand_str, expected_type):
+        """Тестирует валидные 3-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        assert rank > WORST_RANK_5CARD # Ранг должен быть больше рангов 5-карточных
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг находится в допустимом диапазоне скорректированных рангов ---
+>       assert rank <= WORST_RANK_3CARD_ADJUSTED
+E       assert 7919 <= 7918
+
+tests/test_evaluators.py:45: AssertionError
+________ test_get_hand_rank_safe_5card_valid[hand_str0-Straight Flush] _________
+
+hand_str = ['As', 'Ks', 'Qs', 'Js', 'Ts'], expected_type = 'Straight Flush'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+________ test_get_hand_rank_safe_5card_valid[hand_str1-Four of a Kind] _________
+
+hand_str = ['Ac', 'Ad', 'Ah', 'As', '2c'], expected_type = 'Four of a Kind'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+__________ test_get_hand_rank_safe_5card_valid[hand_str2-Full House] ___________
+
+hand_str = ['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], expected_type = 'Full House'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+_____________ test_get_hand_rank_safe_5card_valid[hand_str3-Flush] _____________
+
+hand_str = ['As', 'Qs', '8s', '5s', '3s'], expected_type = 'Flush'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+___________ test_get_hand_rank_safe_5card_valid[hand_str4-Straight] ____________
+
+hand_str = ['Ad', 'Kc', 'Qh', 'Js', 'Td'], expected_type = 'Straight'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+________ test_get_hand_rank_safe_5card_valid[hand_str5-Three of a Kind] ________
+
+hand_str = ['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], expected_type = 'Three of a Kind'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+___________ test_get_hand_rank_safe_5card_valid[hand_str6-Two Pair] ____________
+
+hand_str = ['Ac', 'Ad', 'Kc', 'Kd', '2s'], expected_type = 'Two Pair'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+_____________ test_get_hand_rank_safe_5card_valid[hand_str7-Pair] ______________
+
+hand_str = ['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], expected_type = 'Pair'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+___________ test_get_hand_rank_safe_5card_valid[hand_str8-High Card] ___________
+
+hand_str = ['Ac', 'Kc', 'Qs', 'Js', '9d'], expected_type = 'High Card'
+
+    @pytest.mark.parametrize("hand_str, expected_type", [
+        (['As', 'Ks', 'Qs', 'Js', 'Ts'], "Straight Flush"),
+        (['Ac', 'Ad', 'Ah', 'As', '2c'], "Four of a Kind"),
+        (['Kc', 'Kd', 'Kh', 'Qc', 'Qs'], "Full House"),
+        (['As', 'Qs', '8s', '5s', '3s'], "Flush"),
+        (['Ad', 'Kc', 'Qh', 'Js', 'Td'], "Straight"),
+        (['Ac', 'Ad', 'Ah', 'Ks', 'Qd'], "Three of a Kind"),
+        (['Ac', 'Ad', 'Kc', 'Kd', '2s'], "Two Pair"),
+        (['Ac', 'Ad', 'Ks', 'Qd', 'Jc'], "Pair"),
+        (['Ac', 'Kc', 'Qs', 'Js', '9d'], "High Card"),
+    ])
+    def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
+        """Тестирует валидные 5-карточные руки."""
+        cards = hand_to_int(hand_str)
+        rank, type_str = get_hand_rank_safe(cards)
+        # --- ИСПРАВЛЕНО: Проверяем, что ранг валиден (не WORST_RANK) ---
+>       assert rank < WORST_RANK
+E       assert 7919 < 7919
+
+tests/test_evaluators.py:65: AssertionError
+___________________ test_choose_action_mcts_loop_simplified ____________________
+
+mock_expand = <MagicMock name='expand' id='124997243807952'>
+mock_rollout = <MagicMock name='run_parallel_rollout' id='124997245536448'>
+
+    @patch('mcts_agent.run_parallel_rollout') # Мокаем воркер
+    @patch('mcts_agent.MCTSNode.expand') # Мокаем expand
+    def test_choose_action_mcts_loop_simplified(mock_expand, mock_rollout):
+        """Тестирует, что цикл MCTS запускается и вызывает основные фазы."""
+        # Настройка
+        agent = MCTSAgent(time_limit_ms=50, num_workers=1, rollouts_per_leaf=1) # Короткий лимит
+        board = PlayerBoard()
+        cards = hand_to_int(['Ac', 'Kc', 'Qc'])
+        deck = Deck.FULL_DECK_CARDS - set(cards)
+    
+        # Мокируем результаты, чтобы цикл прошел несколько итераций
+        mock_rollout.return_value = 5.0 # Возвращаем какое-то роялти
+        # Моделируем, что expand возвращает новый узел (мок)
+        mock_expanded_node = MagicMock(spec=MCTSNode)
+        mock_expanded_node.is_terminal.return_value = False # Новый узел не терминальный
+        mock_expand.return_value = mock_expanded_node
+    
+        # Запускаем MCTS
+        chosen_action = agent.choose_action(board, cards, deck)
+    
+        # Проверки (очень базовые, т.к. цикл сложен для полного мока)
+        assert mock_expand.call_count > 0 # Должны были попытаться расширить
+>       assert mock_rollout.call_count > 0 # Должны были сделать роллаут
+E       AssertionError: assert 0 > 0
+E        +  where 0 = <MagicMock name='run_parallel_rollout' id='124997245536448'>.call_count
+
+tests/test_mcts_agent.py:105: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+ERROR    mcts_agent:mcts_agent.py:167 Error preparing/running rollout phase: Mock object has no attribute 'board'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 139, in choose_action
+    'rows': {r: Card.hand_to_str(cards) for r, cards in node_to_rollout_from.board.rows.items()},
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 658, in __getattr__
+    raise AttributeError("Mock object has no attribute %r" % name)
+AttributeError: Mock object has no attribute 'board'
+WARNING  mcts_agent:mcts_agent.py:236 No children found at root node. Cannot select best action.
+____________________ test_choose_action_no_trip_on_top_rule ____________________
+
+mock_rollout = <MagicMock name='run_parallel_rollout' id='124997242608512'>
+
+    @patch('mcts_agent.run_parallel_rollout') # Мокаем воркер
+    def test_choose_action_no_trip_on_top_rule(mock_rollout):
+        """Тестирует правило 'Без трипса на топе на улице 1'."""
+        agent = MCTSAgent(time_limit_ms=200, num_workers=1, rollouts_per_leaf=2) # Даем чуть больше времени
+    
+        # Ситуация: Улица 1 (пустая доска), 5 карт в руке, включая трипс двоек
+        board = PlayerBoard()
+        cards_to_place = hand_to_int(['2s', '2d', '2h', 'Ac', 'Kc'])
+        remaining_deck = Deck.FULL_DECK_CARDS - set(cards_to_place)
+    
+        # Действие, которое нарушает правило
+        bad_action = (Card.from_str('2s'), 'top', 0)
+        # Действия, которые не нарушают правило
+        good_action_mid = (Card.from_str('2s'), 'middle', 0)
+        good_action_bot = (Card.from_str('2s'), 'bottom', 0)
+        good_action_ace = (Card.from_str('Ac'), 'top', 1) # Туз на топ - ок
+    
+        # Моделируем результаты роллаутов: "хорошие" действия дают больше роялти
+        def mock_rollout_logic(board_dict, cards_ints, deck_ints):
+            # Находим действие, которое привело к этому состоянию (по последней добавленной карте)
+            last_card_int = -1
+            last_row = None
+            placed_count = board_dict.get('_cards_placed', 0)
+            if placed_count == 1:
+                 for r, cards_str in board_dict.get('rows', {}).items():
+                     for idx, c_str in enumerate(cards_str):
+                         if c_str and c_str != CARD_PLACEHOLDER:
+                             last_card_int = Card.from_str(c_str)
+                             last_row = r
+                             break
+                     if last_card_int != -1: break
+    
+            # Возвращаем высокое роялти для "хороших" первых ходов, низкое для "плохого"
+            if last_card_int == Card.from_str('2s') and last_row == 'top':
+                return 1.0 # Низкое роялти для трипса на топе
+            else:
+                return 10.0 # Высокое роялти для других ходов
+        mock_rollout.side_effect = mock_rollout_logic
+    
+        # Запускаем MCTS
+>       chosen_action = agent.choose_action(board, cards_to_place, remaining_deck)
+
+tests/test_mcts_agent.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+mcts_agent.py:199: in choose_action
+    best_action = self._select_best_action(root_node, board, cards_to_place)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <mcts_agent.MCTSAgent object at 0x71af303e5ac0>
+root_node = [Act:Root V=3064 R=10.00 NChild=13 UAct=0]
+initial_board = PlayerBoard(Cards=0, Foul=False)
+initial_cards = [69634, 81922, 73730, 268471337, 134253349]
+
+    def _select_best_action(self,
+                            root_node: MCTSNode,
+                            initial_board: PlayerBoard,
+                            initial_cards: List[int]) -> Optional[Tuple[int, str, int]]:
+        """Выбирает лучшее действие из корневого узла (максимум посещений)."""
+        if not root_node.children:
+            logger.warning("No children found at root node. Cannot select best action.")
+            # Пытаемся вернуть случайное из доступных, если есть
+            available_actions = root_node._get_available_placements()
+            return random.choice(available_actions) if available_actions else None
+    
+        # --- Применяем правило "Без трипса на топе" ---
+        is_first_street = (initial_board.get_total_cards() == 0 and len(initial_cards) == 5)
+        trip_in_hand_rank = -1
+        if is_first_street:
+            ranks = [Card.get_rank_int(c) for c in initial_cards]
+>           rank_counts = Counter(ranks)
+E           NameError: name 'Counter' is not defined
+
+mcts_agent.py:246: NameError
+------------------------------ Captured log call -------------------------------
+WARNING  mcts_agent:mcts_agent.py:58 num_workers=1, reducing rollouts_per_leaf from 2 to 1.
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+WARNING  mcts_agent:mcts_agent.py:164 Error during sequential rollout: name 'CARD_PLACEHOLDER' is not defined
+_________________________ test_check_board_foul_logic __________________________
+
+    @pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
+                        reason="Evaluators not imported, skipping scoring tests")
+    def test_check_board_foul_logic():
+        # Валидная доска
+        board_ok = PlayerBoard()
+        # --- ИСПРАВЛЕНО: Убраны дубликаты ---
+>       board_ok.set_full_board(hand_to_int(['Qh', 'Qd', '2c']), # Pair Q
+                                hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', '9h']), # Flush K
+                                hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])) # FH A over K
+
+tests/test_ofc_logic.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PlayerBoard(Cards=0, Foul=False), top = [67119647, 67127839, 98306]
+middle = [268446761, 134228773, 67119647, 33564957, 8398611]
+bottom = [268442665, 268454953, 268471337, 134224677, 134236965]
+
+    def set_full_board(self, top: List[int], middle: List[int], bottom: List[int]):
+        """Устанавливает всю доску (для ФЛ или тестов)."""
+        if not isinstance(top, list) or not isinstance(middle, list) or not isinstance(bottom, list):
+             raise TypeError("Input rows must be lists.")
+        if len(top) != 3 or len(middle) != 5 or len(bottom) != 5:
+            raise ValueError("Incorrect number of cards provided.")
+    
+        all_cards: List[int] = []
+        card_lists = {'top': top, 'middle': middle, 'bottom': bottom}
+        for row_name, card_list in card_lists.items():
+             for i, card_int in enumerate(card_list):
+                  if not isinstance(card_int, int) or card_int == INVALID_CARD or card_int <= 0:
+                       raise ValueError(f"Invalid card '{card_int}' in row '{row_name}'.")
+                  all_cards.append(card_int)
+>       if len(all_cards) != len(set(all_cards)): raise ValueError("Duplicate cards provided.")
+E       ValueError: Duplicate cards provided.
+
+ofc_logic.py:218: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str15-455-High Card-532]
+FAILED tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str2-11-Four of a Kind]
+FAILED tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str3-166-Four of a Kind]
+FAILED tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str4-167-Full House]
+FAILED tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str5-322-Full House]
+FAILED tests/test_evaluator_5card.py::test_evaluate_valid_hands[hand_str6-323-Flush]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_3card_valid[hand_str0-Trips]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_3card_valid[hand_str1-Pair]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_3card_valid[hand_str2-High Card]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str0-Straight Flush]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str1-Four of a Kind]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str2-Full House]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str3-Flush]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str4-Straight]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str5-Three of a Kind]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str6-Two Pair]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str7-Pair]
+FAILED tests/test_evaluators.py::test_get_hand_rank_safe_5card_valid[hand_str8-High Card]
+FAILED tests/test_mcts_agent.py::test_choose_action_mcts_loop_simplified - As...
+FAILED tests/test_mcts_agent.py::test_choose_action_no_trip_on_top_rule - Nam...
+FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - ValueError: Dup...
+======================== 21 failed, 78 passed in 0.87s =========================
