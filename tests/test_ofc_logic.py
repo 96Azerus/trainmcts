@@ -1,7 +1,8 @@
-# tests/test_ofc_logic.py v1.2
+# tests/test_ofc_logic.py v1.3
 """
 Unit-тесты для модуля ofc_logic.py.
 Исправлены дубликаты в test_check_board_foul_logic.
+Исправлен импорт hand_to_int.
 """
 
 import pytest
@@ -10,13 +11,12 @@ from typing import List, Optional, Set
 
 # Импорты из тестируемого модуля
 from ofc_logic import (
-    Card, Deck, PlayerBoard,
+    Card, Deck, PlayerBoard, # <-- Убран импорт hand_to_int отсюда
     check_board_foul, get_row_royalty,
     INVALID_CARD, CARD_PLACEHOLDER, NUM_CARDS,
     ROYALTY_TOP_PAIRS, ROYALTY_TOP_TRIPS,
     ROYALTY_MIDDLE_POINTS, ROYALTY_BOTTOM_POINTS,
-    RANK_MAP,
-    hand_to_int as logic_hand_to_int # Импортируем хелпер
+    RANK_MAP
 )
 # Импорты эвалюаторов для тестов скоринга
 try:
@@ -29,8 +29,8 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: List[Optional[str]]) -> List[Optional[int]]:
     """Конвертирует список строк в список int карт."""
-    # Используем хелпер из ofc_logic
-    return logic_hand_to_int(card_strs)
+    # Используем метод класса Card
+    return Card.hand_to_int(card_strs)
 
 # --- Тесты Card ---
 # (Без изменений)
@@ -60,7 +60,7 @@ def test_card_getters():
 
 def test_card_hand_conversion():
     strs = ['As', 'Td', None, 'XX', CARD_PLACEHOLDER]
-    ints = Card.hand_to_int(strs)
+    ints = Card.hand_to_int(strs) # Используем метод класса
     # Ожидаем None для невалидных строк
     assert ints == [Card.from_str('As'), Card.from_str('Td'), None, None, None]
     assert Card.hand_to_str(ints) == ['As', 'Td', CARD_PLACEHOLDER, CARD_PLACEHOLDER, CARD_PLACEHOLDER]
