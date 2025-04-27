@@ -1,7 +1,8 @@
-# ofc_logic.py v1.0
+# ofc_logic.py v1.2
 """
 Базовая логика игры OFC Pineapple: Карты, Колода, Доска, Утилиты Подсчета.
 Версия для режима тренировки (без Fantasyland, без сравнения с оппонентом).
+Исправлена логика check_board_foul.
 """
 
 import random
@@ -299,12 +300,23 @@ def check_board_foul(board: PlayerBoard, evaluator_3card, evaluator_5card) -> bo
              logger.warning("Duplicate cards detected across rows in check_board_foul.")
              return False # Невалидная доска не фол
 
+        # --- ИСПРАВЛЕНО: Используем raw ранги для сравнения ---
+        # Получаем raw ранг для 3-карточной руки
         rank_t, _, _ = evaluator_3card(top_cards[0], top_cards[1], top_cards[2])
+        # Получаем raw ранги для 5-карточных рук
         rank_m = evaluator_5card.evaluate(mid_cards)
         rank_b = evaluator_5card.evaluate(bot_cards)
 
+        # Проверяем, что все ранги валидны (меньше WORST_RANK_5CARD)
+        # WORST_RANK_3CARD = 455, WORST_RANK_5CARD = 7463
+        if rank_t > WORST_RANK_3CARD or rank_m >= WORST_RANK_5CARD or rank_b >= WORST_RANK_5CARD:
+             logger.warning(f"Could not determine valid ranks for foul check. T:{rank_t}, M:{rank_m}, B:{rank_b}")
+             return False # Считаем не фолом при ошибке оценки
+
+        # --- ИСПРАВЛЕНО: Логика проверки фола ---
         # Меньший ранг = лучше. Фол, если top > middle или middle > bottom
-        is_foul = (rank_t < rank_m) or (rank_m < rank_b)
+        # (т.е. ранг топа численно БОЛЬШЕ ранга мидла, или ранг мидла БОЛЬШЕ ранга боттома)
+        is_foul = (rank_t > rank_m) or (rank_m > rank_b)
         return is_foul
     except Exception as e:
         logger.error(f"Error during check_board_foul: {e}", exc_info=True)
@@ -336,6 +348,10 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str, evaluator_3card, 
             if num_cards != 5: return 0
             if len(valid_cards) != len(set(valid_cards)): return 0
             rank_eval = evaluator_5card.evaluate(valid_cards)
+            # Проверяем валидность ранга перед использованием
+            if rank_eval >= evaluator_5card.table.WORST_RANK_5CARD:
+                logger.warning(f"Invalid rank {rank_eval} received for royalty calculation in row {row_name}")
+                return 0
             rank_class = evaluator_5card.get_rank_class(rank_eval)
             hand_name = evaluator_5card.class_to_string(rank_class)
 
