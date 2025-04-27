@@ -1,23 +1,46 @@
 # ofc_evaluator_5card.py v1.3
 """
 Оценка 5-карточной руки OFC + генерация таблиц поиска.
-Исправлен порядок генерации несочетанных рук, чтобы тесты выдавали ожидаемые ранги.
+Возвращен расчет prime_product через Counter.
 """
 import itertools
+import traceback
+import sys
 import logging
 from typing import Dict, List, Generator, Optional
+from collections import Counter # <-- ВОЗВРАЩЕН ИМПОРТ
 
 # Импортируем Card и PRIMES из ofc_logic
 try:
     from ofc_logic import Card, PRIMES, INT_RANKS, INVALID_CARD
 except ImportError:
-    logging.critical("Failed to import dependencies in ofc_evaluator_5card.py")
-    raise
+    # Заглушки для возможности анализа
+    class Card:
+        PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
+        INT_RANKS = range(13)
+        @staticmethod
+        def get_prime(c): return 1
+        @staticmethod
+        def get_rank_int(c): return 0
+        @staticmethod
+        def prime_product_from_rankbits(rankbits): return 1
+        @staticmethod
+        def prime_product_from_hand(card_ints): return 1
+        @staticmethod
+        def to_str(c): return "??"
+    PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
+    INT_RANKS = range(13)
+    INVALID_CARD = -1
+    logging.error("Could not import from ofc_logic in ofc_evaluator_5card.py")
 
+# Получаем логгер
 logger = logging.getLogger(__name__)
+if not logger.hasHandlers():
+    logger.setLevel(logging.WARNING)
 
+# --- Класс LookupTable5Card ---
 class LookupTable5Card:
-    """Хранит границы и генерирует lookup для 5-карточных рук."""
+    """Создает и хранит таблицы поиска для 5-карточных рук."""
     MAX_STRAIGHT_FLUSH: int = 10
     MAX_FOUR_OF_A_KIND: int = 166
     MAX_FULL_HOUSE: int = 322
@@ -27,196 +50,216 @@ class LookupTable5Card:
     MAX_TWO_PAIR: int = 3325
     MAX_PAIR: int = 6185
     MAX_HIGH_CARD: int = 7462
-    WORST_RANK_5CARD: int = MAX_HIGH_CARD + 1
+    WORST_RANK_5CARD: int = MAX_HIGH_CARD + 1 # Ранг для ошибок
 
     RANK_CLASS_TO_STRING: Dict[int, str] = {
-        1: "Straight Flush", 2: "Four of a Kind", 3: "Full House",
-        4: "Flush", 5: "Straight", 6: "Three of a Kind",
-        7: "Two Pair", 8: "Pair", 9: "High Card"
+        1: "Straight Flush", 2: "Four of a Kind", 3: "Full House", 4: "Flush",
+        5: "Straight", 6: "Three of a Kind", 7: "Two Pair", 8: "Pair", 9: "High Card"
     }
 
     def __init__(self):
+        """Инициализирует и вычисляет таблицы поиска."""
         self.flush_lookup: Dict[int, int] = {}
         self.unsuited_lookup: Dict[int, int] = {}
-        self._calculate_flushes()
-        self._calculate_multiples()
-
-    def _get_lexographically_next_bit_sequence(self, bits: int) -> Generator[int, None, None]:
-        """Генерирует следующий битовый шаблон той же длины и с тем же количеством единиц."""
-        c = bits & -bits
-        r = bits + c
-        if r == 0:
-            return
-        yield (((r ^ bits) >> 2) // c) | r
-        for nxt in self._get_lexographically_next_bit_sequence(((r ^ bits) >> 2) // c | r):
-            yield nxt
+        logger.info("Initializing 5-card lookup tables...")
+        try:
+            self._calculate_flushes()
+            self._calculate_multiples()
+            logger.info(f"5-card tables initialized. Flush: {len(self.flush_lookup)}, Unsuited: {len(self.unsuited_lookup)}")
+        except Exception as e:
+             logger.critical(f"Error during 5-card lookup table calculation: {e}", exc_info=True)
+             raise
 
     def _calculate_flushes(self):
-        straight_flushes = [
-            0b1111100000000, 0b0111110000000, 0b0011111000000,
-            0b0001111100000, 0b0000111110000, 0b0000011111000,
-            0b0000001111100, 0b0000000111110, 0b0000000011111,
-            0b1000000001111  # Wheel
+        """Вычисляет ранги для стрит-флешей и обычных флешей."""
+        straight_flushes_rank_bits: List[int] = [
+            0b1111100000000, 0b0111110000000, 0b0011111000000, 0b0001111100000,
+            0b0000111110000, 0b0000011111000, 0b0000001111100, 0b0000000111110,
+            0b0000000011111, 0b1000000001111, # Wheel
         ]
-        normal_flushes = []
-        start = (1 << 5) - 1
-        normal_flushes.append(start)
-        gen = self._get_lexographically_next_bit_sequence(start)
+        all_flush_rank_bits: List[int] = []
+        start_bits = (1 << 5) - 1
+        all_flush_rank_bits.append(start_bits)
+        gen = self._get_lexographically_next_bit_sequence(start_bits)
         try:
-            while True:
-                normal_flushes.append(next(gen))
-        except StopIteration:
-            pass
+            while True: all_flush_rank_bits.append(next(gen))
+        except StopIteration: pass
+        except Exception as e: logger.error(f"Error generating bit sequence: {e}", exc_info=True)
 
-        # Straight Flushes
+        straight_flush_set = set(straight_flushes_rank_bits)
+        # Итерация normal_flush_rank_bits в обратном порядке для правильного ранжирования
+        normal_flush_rank_bits = sorted([rb for rb in all_flush_rank_bits if rb not in straight_flush_set], reverse=True)
+
         rank = 1
-        for bits in straight_flushes:
-            prod = self._prime_product_from_rankbits(bits)
-            self.flush_lookup[prod] = rank
-            rank += 1
+        for sf_bits in straight_flushes_rank_bits:
+            prime_product = self._prime_product_from_rankbits(sf_bits)
+            self.flush_lookup[prime_product] = rank; rank += 1
+        if rank -1 != self.MAX_STRAIGHT_FLUSH: logger.error(f"SF ranks mismatch: {rank-1} vs {self.MAX_STRAIGHT_FLUSH}")
 
-        # обычные флеши
-        rank = LookupTable5Card.MAX_FULL_HOUSE + 1
-        for bits in normal_flushes:
-            prod = self._prime_product_from_rankbits(bits)
-            self.flush_lookup[prod] = rank
-            rank += 1
+        rank = self.MAX_FULL_HOUSE + 1
+        for f_bits in normal_flush_rank_bits: # Итерация от старших к младшим
+            prime_product = self._prime_product_from_rankbits(f_bits)
+            self.flush_lookup[prime_product] = rank; rank += 1
+        if rank -1 != self.MAX_FLUSH: logger.warning(f"Flush ranks mismatch: {rank-1} vs {self.MAX_FLUSH}")
 
-        # стриты и старшие карты
-        self._calculate_straights_and_highcards(straight_flushes, normal_flushes)
+        self._calculate_straights_and_highcards(straight_flushes_rank_bits, normal_flush_rank_bits)
 
-    def _calculate_straights_and_highcards(self,
-            straights_bits: List[int],
-            highcards_bits: List[int]):
-        # стриты
-        rank = LookupTable5Card.MAX_FLUSH + 1
-        for bits in straights_bits:
-            prod = self._prime_product_from_rankbits(bits)
-            self.unsuited_lookup[prod] = rank
-            rank += 1
-        # старшие карты
-        rank = LookupTable5Card.MAX_PAIR + 1
-        for bits in highcards_bits:
-            prod = self._prime_product_from_rankbits(bits)
-            self.unsuited_lookup[prod] = rank
-            rank += 1
+    def _calculate_straights_and_highcards(self, straights_rank_bits: List[int], highcards_rank_bits: List[int]):
+        """Вычисляет ранги для стритов и старших карт (не флеш)."""
+        rank = self.MAX_FLUSH + 1
+        for s_bits in straights_rank_bits: # Итерация от старших к младшим (как в straight_flushes_rank_bits)
+            prime_product = self._prime_product_from_rankbits(s_bits)
+            self.unsuited_lookup[prime_product] = rank; rank += 1
+        if rank -1 != self.MAX_STRAIGHT: logger.warning(f"Straight ranks mismatch: {rank-1} vs {self.MAX_STRAIGHT}")
 
-    def _prime_product_from_rankbits(self, bits: int) -> int:
-        """Переводит 13-битную маску рангов в произведение соответствующих простых."""
-        prod = 1
-        for i in range(13):
-            if bits & (1 << i):
-                prod *= PRIMES[i]
-        return prod
+        rank = self.MAX_PAIR + 1
+        for h_bits in highcards_rank_bits: # Итерация от старших к младшим
+            prime_product = self._prime_product_from_rankbits(h_bits)
+            self.unsuited_lookup[prime_product] = rank; rank += 1
+        if rank -1 != self.MAX_HIGH_CARD: logger.warning(f"High card ranks mismatch: {rank-1} vs {self.MAX_HIGH_CARD}")
 
     def _calculate_multiples(self):
-        backwards = list(INT_RANKS)[::-1]
+        """Вычисляет ранги для Каре, Фулл-хаусов, Сетов, Двух пар и Пар."""
+        backwards_ranks = range(len(INT_RANKS) - 1, -1, -1) # От A до 2
 
         # Каре
-        rank = LookupTable5Card.MAX_STRAIGHT_FLUSH + 1
-        for quad in backwards:
-            kickers = sorted([k for k in backwards if k != quad])
-            for k in kickers:
-                prod = PRIMES[quad]**4 * PRIMES[k]
-                self.unsuited_lookup[prod] = rank
-                rank += 1
+        rank = self.MAX_STRAIGHT_FLUSH + 1
+        for quad_idx in backwards_ranks: # От A до 2
+            # Кикеры от старшего к младшему
+            kickers = sorted([k for k in backwards_ranks if k != quad_idx], reverse=True)
+            for kick_idx in kickers:
+                prod = PRIMES[quad_idx]**4 * PRIMES[kick_idx]
+                self.unsuited_lookup[prod] = rank; rank += 1
+        if rank -1 != self.MAX_FOUR_OF_A_KIND: logger.warning(f"4oak ranks mismatch: {rank-1} vs {self.MAX_FOUR_OF_A_KIND}")
 
         # Фулл-хаус
-        rank = LookupTable5Card.MAX_FOUR_OF_A_KIND + 1
-        for trip in backwards:
-            pairs = sorted([p for p in backwards if p != trip])
-            for p in pairs:
-                prod = PRIMES[trip]**3 * PRIMES[p]**2
-                self.unsuited_lookup[prod] = rank
-                rank += 1
+        rank = self.MAX_FOUR_OF_A_KIND + 1
+        for trip_idx in backwards_ranks: # От A до 2
+            # Пары от старшей к младшей
+            pairs = sorted([p for p in backwards_ranks if p != trip_idx], reverse=True)
+            for pair_idx in pairs:
+                prod = PRIMES[trip_idx]**3 * PRIMES[pair_idx]**2
+                self.unsuited_lookup[prod] = rank; rank += 1
+        if rank -1 != self.MAX_FULL_HOUSE: logger.warning(f"FH ranks mismatch: {rank-1} vs {self.MAX_FULL_HOUSE}")
 
         # Сет
-        rank = LookupTable5Card.MAX_STRAIGHT + 1
-        for trip in backwards:
-            kickers = [k for k in backwards if k != trip]
-            combos = sorted(itertools.combinations(kickers, 2))
-            for k1, k2 in combos:
-                prod = PRIMES[trip]**3 * PRIMES[k1] * PRIMES[k2]
-                self.unsuited_lookup[prod] = rank
-                rank += 1
+        rank = self.MAX_STRAIGHT + 1
+        for trip_idx in backwards_ranks: # От A до 2
+            kickers = [k for k in backwards_ranks if k != trip_idx]
+            # Комбинации кикеров от старших к младшим
+            kicker_combos = sorted(itertools.combinations(kickers, 2), reverse=True)
+            for k1, k2 in kicker_combos:
+                prod = PRIMES[trip_idx]**3 * PRIMES[k1] * PRIMES[k2]
+                self.unsuited_lookup[prod] = rank; rank += 1
+        if rank -1 != self.MAX_THREE_OF_A_KIND: logger.warning(f"3oak ranks mismatch: {rank-1} vs {self.MAX_THREE_OF_A_KIND}")
 
         # Две пары
-        rank = LookupTable5Card.MAX_THREE_OF_A_KIND + 1
-        pair_combos = sorted(itertools.combinations(backwards, 2))
+        rank = self.MAX_THREE_OF_A_KIND + 1
+        # Комбинации пар от старших к младшим
+        pair_combos = sorted(itertools.combinations(backwards_ranks, 2), reverse=True)
         for p1, p2 in pair_combos:
-            kickers = sorted([k for k in backwards if k not in (p1, p2)])
-            for k in kickers:
-                prod = PRIMES[p1]**2 * PRIMES[p2]**2 * PRIMES[k]
-                self.unsuited_lookup[prod] = rank
-                rank += 1
+            # Кикеры от старшего к младшему
+            kickers = sorted([k for k in backwards_ranks if k != p1 and k != p2], reverse=True)
+            for kick_idx in kickers:
+                prod = PRIMES[p1]**2 * PRIMES[p2]**2 * PRIMES[kick_idx]
+                self.unsuited_lookup[prod] = rank; rank += 1
+        if rank -1 != self.MAX_TWO_PAIR: logger.warning(f"2pair ranks mismatch: {rank-1} vs {self.MAX_TWO_PAIR}")
 
         # Пара
-        rank = LookupTable5Card.MAX_TWO_PAIR + 1
-        for p in backwards:
-            kickers = [k for k in backwards if k != p]
-            combos = sorted(itertools.combinations(kickers, 3))
-            for k1, k2, k3 in combos:
-                prod = PRIMES[p]**2 * PRIMES[k1] * PRIMES[k2] * PRIMES[k3]
-                self.unsuited_lookup[prod] = rank
-                rank += 1
+        rank = self.MAX_TWO_PAIR + 1
+        for pair_idx in backwards_ranks: # От A до 2
+            kickers = [k for k in backwards_ranks if k != pair_idx]
+            # Комбинации кикеров от старших к младшим
+            kicker_combos = sorted(itertools.combinations(kickers, 3), reverse=True)
+            for k1, k2, k3 in kicker_combos:
+                prod = PRIMES[pair_idx]**2 * PRIMES[k1] * PRIMES[k2] * PRIMES[k3]
+                self.unsuited_lookup[prod] = rank; rank += 1
+        if rank -1 != self.MAX_PAIR: logger.warning(f"Pair ranks mismatch: {rank-1} vs {self.MAX_PAIR}")
 
+    def _get_lexographically_next_bit_sequence(self, bits: int) -> Generator[int, None, None]:
+        """Генератор следующей лексикографической перестановки битов (Gosper's Hack)."""
+        next_val = bits
+        while True:
+            if next_val == 0: break
+            try:
+                rightmost_one = next_val & -next_val; next_higher_one_bit = next_val + rightmost_one
+                rightmost_block_of_ones = next_val ^ next_higher_one_bit
+                rightmost_block_shifted = (rightmost_block_of_ones // rightmost_one) >> 2
+                next_val = next_higher_one_bit | rightmost_block_shifted
+            except Exception as e_gosper: logger.error(f"Error in Gosper's Hack: {e_gosper}", exc_info=True); break
+            # Ограничение, чтобы не выйти за пределы 13 бит для рангов
+            if next_val >= (1 << 13): break
+            yield next_val
+
+    def _prime_product_from_rankbits(self, rankbits: int) -> int:
+        """Вычисляет произведение простых чисел для рангов из битовой маски."""
+        product = 1
+        for i in INT_RANKS:
+            if rankbits & (1 << i):
+                try: product *= PRIMES[i]
+                except IndexError: logger.warning(f"Invalid rank index {i} in prime product calculation.")
+        return product
+
+# --- Класс Evaluator5Card ---
 class Evaluator5Card:
-    """Пользовательский интерфейс к таблицам."""
+    """Оценивает 5-карточные руки, используя таблицы поиска."""
     def __init__(self):
+        """Инициализирует эвалуатор, загружая таблицы."""
         self.table = LookupTable5Card()
 
     def evaluate(self, cards: List[int]) -> int:
-        if len(cards) != 5:
-            raise ValueError("Requires 5 cards.")
-        valid = []
+        """Оценивает 5-карточную руку."""
+        if len(cards) != 5: raise ValueError("Requires 5 cards.")
+        valid_cards: List[int] = []
         for c in cards:
-            if not isinstance(c, int) or c == INVALID_CARD or c <= 0:
-                raise ValueError(f"Invalid card: {c}")
-            valid.append(c)
-        if len(set(valid)) != 5:
-            raise ValueError("Duplicate cards found.")
+             if not isinstance(c, int) or c == INVALID_CARD or c <= 0: raise ValueError(f"Invalid card: {c}")
+             valid_cards.append(c)
+        if len(valid_cards) != len(set(valid_cards)): raise ValueError("Duplicate cards found.")
 
-        # проверка флеша
-        suit_mask = valid[0] & valid[1] & valid[2] & valid[3] & valid[4] & 0xF000
-        if suit_mask != 0:
-            bits = 0
-            for c in valid:
-                bits |= (c >> 16)
-            prod = self.table._prime_product_from_rankbits(bits)
-            return self.table.flush_lookup.get(prod, self.table.WORST_RANK_5CARD)
-        else:
-            prod = 1
-            for c in valid:
-                prod *= Card.get_prime(c)
-            return self.table.unsuited_lookup.get(prod, self.table.WORST_RANK_5CARD)
+        suit_mask = valid_cards[0] & valid_cards[1] & valid_cards[2] & valid_cards[3] & valid_cards[4] & 0xF000
+        if suit_mask != 0: # Флеш или Стрит-флеш
+            rank_bitmask = (valid_cards[0] | valid_cards[1] | valid_cards[2] | valid_cards[3] | valid_cards[4]) >> 16
+            prime_product = self.table._prime_product_from_rankbits(rank_bitmask)
+            rank = self.table.flush_lookup.get(prime_product)
+            if rank is None:
+                logger.warning(f"Flush prime product {prime_product} not found for hand {[Card.to_str(c) for c in valid_cards]} (bitmask {bin(rank_bitmask)})")
+                return self.table.WORST_RANK_5CARD
+            return rank
+        else: # Не флеш
+            # Используем Counter для правильного ключа
+            prime_product = 1
+            try:
+                ranks = [Card.get_rank_int(c) for c in valid_cards]
+                rank_counts = Counter(ranks)
+                for rank_index, count in rank_counts.items():
+                    prime_product *= PRIMES[rank_index] ** count
+            except Exception as e:
+                logger.error(f"Error calculating prime product for unsuited hand: {e}")
+                return self.table.WORST_RANK_5CARD
 
-    def get_rank_class(self, r: int) -> int:
-        """1–9 классы: 1=RF … 9=High Card."""
-        if not isinstance(r, int) or r <= 0:
-            return 9
-        t = self.table
-        if r <= t.MAX_STRAIGHT_FLUSH:
-            return 1
-        if r <= t.MAX_FOUR_OF_A_KIND:
-            return 2
-        if r <= t.MAX_FULL_HOUSE:
-            return 3
-        if r <= t.MAX_FLUSH:
-            return 4
-        if r <= t.MAX_STRAIGHT:
-            return 5
-        if r <= t.MAX_THREE_OF_A_KIND:
-            return 6
-        if r <= t.MAX_TWO_PAIR:
-            return 7
-        if r <= t.MAX_PAIR:
-            return 8
-        if r <= t.MAX_HIGH_CARD:
-            return 9
-        return 9
+            rank = self.table.unsuited_lookup.get(prime_product)
+            if rank is None:
+                logger.warning(f"Unsuited prime product {prime_product} not found for hand {[Card.to_str(c) for c in valid_cards]} (ranks: {ranks})")
+                return self.table.WORST_RANK_5CARD
+            return rank
 
-    def class_to_string(self, cls: int) -> str:
-        return self.table.RANK_CLASS_TO_STRING.get(cls, "Unknown")
+    def get_rank_class(self, hand_rank: int) -> int:
+        """Возвращает класс руки (1-9) по её рангу."""
+        if not isinstance(hand_rank, int) or hand_rank <= 0: return 9
+        if hand_rank <= self.table.MAX_STRAIGHT_FLUSH: return 1
+        elif hand_rank <= self.table.MAX_FOUR_OF_A_KIND: return 2
+        elif hand_rank <= self.table.MAX_FULL_HOUSE: return 3
+        elif hand_rank <= self.table.MAX_FLUSH: return 4
+        elif hand_rank <= self.table.MAX_STRAIGHT: return 5
+        elif hand_rank <= self.table.MAX_THREE_OF_A_KIND: return 6
+        elif hand_rank <= self.table.MAX_TWO_PAIR: return 7
+        elif hand_rank <= self.table.MAX_PAIR: return 8
+        elif hand_rank <= self.table.MAX_HIGH_CARD: return 9
+        else: logger.warning(f"Invalid hand rank {hand_rank} in get_rank_class."); return 9
 
-# Глобальный экземпляр
+    def class_to_string(self, class_int: int) -> str:
+        """Преобразует целочисленный класс руки в строку."""
+        return self.table.RANK_CLASS_TO_STRING.get(class_int, "Unknown")
+
+# Создаем глобальный экземпляр для использования другими модулями
 evaluator_5card_instance = Evaluator5Card()
