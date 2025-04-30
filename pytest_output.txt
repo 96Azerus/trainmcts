@@ -592,24 +592,60 @@ _________________________ test_check_board_foul_logic __________________________
     def test_check_board_foul_logic():
         # Валидная доска
         board_ok = PlayerBoard()
-        # --- ИСПРАВЛЕНО: Убраны дубликаты (Qh заменена на Th в middle) ---
-        board_ok.set_full_board(hand_to_int(['Qh', 'Qd', '2c']), # Pair Q
-                                hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A (была K, но Th < Qh)
-                                hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])) # FH A over K
->       board_ok.is_foul = check_board_foul(board_ok, evaluate_3_card_ofc, evaluator_5card)
-E       TypeError: check_board_foul() takes 1 positional argument but 3 were given
+        board_ok.set_full_board(
+            hand_to_int(['Qh', 'Qd', '2c']), # Pair Q (AdjRank ~7464+40=7504)
+            hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A high (Rank ~500-1000)
+            hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])  # FH A over K (Rank 167)
+        )
+        # FIX 5: Убран вызов check_board_foul с эвалюаторами
+        board_ok.is_foul = check_board_foul(board_ok)
+        assert not board_ok.is_foul, f"Board should be valid: {board_ok}"
+    
+        # Фол: Middle > Top (Flush A > Pair Q)
+        board_foul_mt = PlayerBoard()
+        board_foul_mt.set_full_board(
+            hand_to_int(['2h', '3d', '4c']), # High Card 4 (AdjRank ~7464+454=7918)
+            hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK (Rank 2468)
+            hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A (Rank 1)
+        )
+        # FIX 5: Убран вызов check_board_foul с эвалюаторами
+        board_foul_mt.is_foul = check_board_foul(board_foul_mt)
+>       assert board_foul_mt.is_foul, f"Board should be foul (Middle < Top): {board_foul_mt}" # Middle < Top -> Foul
+E       AssertionError: Board should be foul (Middle < Top): TOP   : 2h 3d 4c __ __
+E         MIDDLE: As Ad Kc Kd Qc
+E         BOTTOM: Ah Kh Qh Jh Th
+E         Cards: 13/13, Foul: False
+E       assert False
+E        +  where False = PlayerBoard(Cards=13, Foul=False).is_foul
 
-tests/test_ofc_logic.py:205: TypeError
+tests/test_ofc_logic.py:231: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:242 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluators:ofc_evaluators.py:154 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
+WARNING  ofc_logic:ofc_logic.py:414 Could not determine valid ranks for foul check. T:7476(Trips), M:367(Flush), B:7919(Invalid)
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:242 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluators:ofc_evaluators.py:154 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
+WARNING  ofc_logic:ofc_logic.py:414 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:1(Straight Flush)
 __________________________ test_get_row_royalty_logic __________________________
 
     @pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
                         reason="Evaluators not imported, skipping scoring tests")
     def test_get_row_royalty_logic():
+        # FIX 6: Убраны эвалюаторы из вызовов get_row_royalty
         # Top
->       assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top', evaluate_3_card_ofc, evaluator_5card) == 22
-E       TypeError: get_row_royalty() takes 2 positional arguments but 4 were given
+>       assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top') == 22
+E       AssertionError: assert 0 == 22
+E        +  where 0 = get_row_royalty([268446761, 268454953, 268471337], 'top')
+E        +    where [268446761, 268454953, 268471337] = hand_to_int(['Ah', 'Ad', 'Ac'])
 
-tests/test_ofc_logic.py:234: TypeError
+tests/test_ofc_logic.py:256: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    ofc_logic:ofc_logic.py:492 Error calculating royalty for top (Type: Trips): name 'HAND_TYPE_TRIPS_3' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/ofc_logic.py", line 448, in get_row_royalty
+    if type_str == HAND_TYPE_TRIPS_3:
+                   ^^^^^^^^^^^^^^^^^
+NameError: name 'HAND_TYPE_TRIPS_3' is not defined
 =========================== short test summary info ============================
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str0-1-Trips-AAA]
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str1-2-Trips-KKK]
@@ -626,6 +662,6 @@ FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str12-180-
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str13-236-High Card-KQJ]
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str14-245-High Card-KQ2]
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str15-455-High Card-532]
-FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - TypeError: chec...
-FAILED tests/test_ofc_logic.py::test_get_row_royalty_logic - TypeError: get_r...
-=================== 17 failed, 36 passed, 2 skipped in 0.75s ===================
+FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - AssertionError:...
+FAILED tests/test_ofc_logic.py::test_get_row_royalty_logic - AssertionError: ...
+=================== 17 failed, 36 passed, 2 skipped in 0.65s ===================
