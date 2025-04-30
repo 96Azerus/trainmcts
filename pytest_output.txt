@@ -31,8 +31,8 @@ tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str14-245-High Ca
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str15-455-High Card-532] FAILED [ 45%]
 tests/test_evaluator_3card.py::test_evaluate_3_card_invalid_input PASSED [ 47%]
 tests/test_evaluator_3card.py::test_lookup_table_completeness PASSED     [ 49%]
-tests/test_mcts_agent.py::test_mcts_agent_init_defaults FAILED           [ 50%]
-tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED             [ 52%]
+tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED           [ 50%]
+tests/test_mcts_agent.py::test_mcts_agent_init_custom FAILED             [ 52%]
 tests/test_mcts_agent.py::test_choose_action_basic_run PASSED            [ 54%]
 tests/test_mcts_agent.py::test_choose_action_no_cards PASSED             [ 56%]
 tests/test_mcts_agent.py::test_choose_action_complete_board PASSED       [ 58%]
@@ -585,21 +585,18 @@ expected_rank_str = '532'
 E       assert 13 == 455
 
 tests/test_evaluator_3card.py:61: AssertionError
-________________________ test_mcts_agent_init_defaults _________________________
+_________________________ test_mcts_agent_init_custom __________________________
 
-    def test_mcts_agent_init_defaults():
-        agent = MCTSAgent()
-        assert agent.exploration == MCTSAgent.DEFAULT_EXPLORATION
-        assert agent.time_limit == MCTSAgent.DEFAULT_TIME_LIMIT_MS / 1000.0
-        assert agent.num_workers == MCTSAgent.DEFAULT_NUM_WORKERS
->       assert agent.rollouts_per_leaf == MCTSAgent.DEFAULT_ROLLOUTS_PER_LEAF
-E       assert 1 == 4
-E        +  where 1 = <mcts_agent.MCTSAgent object at 0x79c333a9dc40>.rollouts_per_leaf
-E        +  and   4 = MCTSAgent.DEFAULT_ROLLOUTS_PER_LEAF
+    def test_mcts_agent_init_custom():
+        agent = MCTSAgent(exploration=2.0, time_limit_ms=1000, num_workers=1, rollouts_per_leaf=10)
+        assert agent.exploration == 2.0
+        assert agent.time_limit == 1.0
+        assert agent.num_workers == 1
+>       assert agent.rollouts_per_leaf == 1 # Скорректировано до 1
+E       assert 10 == 1
+E        +  where 10 = <mcts_agent.MCTSAgent object at 0x6fffc5d97140>.rollouts_per_leaf
 
-tests/test_mcts_agent.py:33: AssertionError
------------------------------- Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:64 num_workers=1, reducing rollouts_per_leaf from 4 to 1.
+tests/test_mcts_agent.py:40: AssertionError
 _________________________ test_check_board_foul_logic __________________________
 
     @pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
@@ -635,16 +632,20 @@ E        +  where False = PlayerBoard(Cards=13, Foul=False).is_foul
 
 tests/test_ofc_logic.py:231: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:242 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
-WARNING  ofc_evaluators:ofc_evaluators.py:154 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_logic:ofc_logic.py:420 Could not determine valid ranks for foul check. T:7476(Trips), M:367(Flush), B:7919(Invalid) for board:
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:321 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
+WARNING  ofc_evaluators:ofc_evaluators.py:149 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:339 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluators:ofc_evaluators.py:149 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
+WARNING  ofc_logic:ofc_logic.py:420 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
 TOP   : Qh Qd 2c
 MIDDLE: Ah Kh Th Jh 9h
 BOTTOM: As Ad Ac Ks Kd
 Cards: 13/13, Foul: False
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:242 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
-WARNING  ofc_evaluators:ofc_evaluators.py:154 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_logic:ofc_logic.py:420 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:1(Straight Flush) for board:
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:339 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluators:ofc_evaluators.py:149 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:321 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
+WARNING  ofc_evaluators:ofc_evaluators.py:149 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
+WARNING  ofc_logic:ofc_logic.py:420 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
 TOP   : 2h 3d 4c
 MIDDLE: As Ad Kc Kd Qc
 BOTTOM: Ah Kh Qh Jh Th
@@ -679,7 +680,7 @@ FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str12-180-
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str13-236-High Card-KQJ]
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str14-245-High Card-KQ2]
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str15-455-High Card-532]
-FAILED tests/test_mcts_agent.py::test_mcts_agent_init_defaults - assert 1 == 4
+FAILED tests/test_mcts_agent.py::test_mcts_agent_init_custom - assert 10 == 1
 FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - AssertionError:...
 FAILED tests/test_ofc_logic.py::test_get_row_royalty_logic - AssertionError: ...
-=================== 18 failed, 35 passed, 2 skipped in 0.73s ===================
+=================== 18 failed, 35 passed, 2 skipped in 0.60s ===================
