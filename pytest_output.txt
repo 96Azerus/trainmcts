@@ -1,0 +1,144 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-utils/venvs/pytest/bin/python
+cachedir: .pytest_cache
+rootdir: /workspaces/trainmcts
+plugins: anyio-4.9.0
+collecting ... 2025-04-30 22:31:20,389 - app - INFO - [app:51] - --- Flask App Initialization ---
+2025-04-30 22:31:20,389 - app - INFO - [app:56] - Production mode: False
+2025-04-30 22:31:20,390 - app - INFO - [app:105] - Defining Flask routes...
+collected 35 items / 3 skipped
+
+tests/test_app.py::test_index_route 2025-04-30 22:31:20,416 - app - INFO - [app:110] - Route / called (GET)
+PASSED
+tests/test_app.py::test_ai_move_valid_request 2025-04-30 22:31:20,423 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 22:31:20,423 - app - INFO - [app:188] - Starting iterative MCTS for 2 cards...
+2025-04-30 22:31:20,424 - app - INFO - [app:204] - MCTS recommended action: As to top[0]
+2025-04-30 22:31:20,424 - app - INFO - [app:204] - MCTS recommended action: Ks to top[1]
+2025-04-30 22:31:20,424 - app - INFO - [app:230] - AI move request processed in 0.001s. Placements found: 2
+PASSED
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-04-30 22:31:20,425 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 22:31:20,425 - app - WARNING - [app:149] - No valid cards to place provided.
+PASSED
+tests/test_app.py::test_ai_move_invalid_json 2025-04-30 22:31:20,427 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 22:31:20,427 - app - WARNING - [app:126] - Request is not JSON
+PASSED
+tests/test_app.py::test_ai_move_missing_data 2025-04-30 22:31:20,428 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 22:31:20,428 - app - WARNING - [app:138] - Missing or invalid 'selected_cards' or 'board' data
+PASSED
+tests/test_app.py::test_ai_move_duplicate_cards 2025-04-30 22:31:20,430 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 22:31:20,430 - app - WARNING - [app:156] - Duplicate cards found between hand and board: ['As']
+PASSED
+tests/test_app.py::test_ai_move_agent_returns_none 2025-04-30 22:31:20,432 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 22:31:20,432 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
+2025-04-30 22:31:20,432 - app - WARNING - [app:225] - MCTS agent returned None action. Stopping iterative placement.
+2025-04-30 22:31:20,432 - app - INFO - [app:230] - AI move request processed in 0.000s. Placements found: 0
+PASSED
+tests/test_app.py::test_ai_move_internal_error 2025-04-30 22:31:20,434 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 22:31:20,434 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
+2025-04-30 22:31:20,434 - app - ERROR - [app:238] - Unexpected Error during /ai_move: Unexpected MCTS crash
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/app.py", line 196, in get_ai_move
+    best_action = agent.choose_action(
+                  ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+Exception: Unexpected MCTS crash
+PASSED
+tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED
+tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED
+tests/test_mcts_agent.py::test_choose_action_basic_run PASSED
+tests/test_mcts_agent.py::test_choose_action_no_cards PASSED
+tests/test_mcts_agent.py::test_choose_action_complete_board PASSED
+tests/test_mcts_agent.py::test_choose_action_mcts_loop_simplified PASSED
+tests/test_mcts_agent.py::test_choose_action_no_trip_on_top_rule PASSED
+tests/test_mcts_agent.py::test_format_action PASSED
+tests/test_ofc_logic.py::test_card_from_str_valid PASSED
+tests/test_ofc_logic.py::test_card_to_str_valid PASSED
+tests/test_ofc_logic.py::test_card_to_str_invalid PASSED
+tests/test_ofc_logic.py::test_card_getters PASSED
+tests/test_ofc_logic.py::test_card_hand_conversion PASSED
+tests/test_ofc_logic.py::test_deck_init_full PASSED
+tests/test_ofc_logic.py::test_deck_init_with_cards PASSED
+tests/test_ofc_logic.py::test_deck_deal PASSED
+tests/test_ofc_logic.py::test_deck_deal_more_than_available PASSED
+tests/test_ofc_logic.py::test_deck_remove PASSED
+tests/test_ofc_logic.py::test_deck_copy PASSED
+tests/test_ofc_logic.py::test_playerboard_init PASSED
+tests/test_ofc_logic.py::test_playerboard_add_card PASSED
+tests/test_ofc_logic.py::test_playerboard_set_full_board PASSED
+tests/test_ofc_logic.py::test_playerboard_get_available_slots PASSED
+tests/test_ofc_logic.py::test_playerboard_get_board_state_tuple PASSED
+tests/test_ofc_logic.py::test_playerboard_copy PASSED
+tests/test_ofc_logic.py::test_check_board_foul_logic FAILED
+tests/test_ofc_logic.py::test_get_row_royalty_logic FAILED
+
+=================================== FAILURES ===================================
+_________________________ test_check_board_foul_logic __________________________
+
+    @pytest.mark.skipif('check_board_foul' not in globals() or 'get_row_royalty' not in globals(),
+                        reason="Scoring functions not imported from ofc_evaluators, skipping scoring tests")
+    def test_check_board_foul_logic():
+        # Валидная доска
+        board_ok = PlayerBoard()
+        board_ok.set_full_board(
+            hand_to_int(['Qh', 'Qd', '2c']), # Pair Q
+            hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A high
+            hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])  # FH A over K
+        )
+        board_ok.is_foul = check_board_foul(board_ok)
+        assert not board_ok.is_foul, f"Board should be valid: {board_ok}"
+    
+        # Валидная доска (ранее считалась фолом)
+        board_foul_mt = PlayerBoard()
+        board_foul_mt.set_full_board(
+            hand_to_int(['2h', '3d', '4c']), # High Card 4
+            hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK
+            hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A
+        )
+        board_foul_mt.is_foul = check_board_foul(board_foul_mt)
+        assert not board_foul_mt.is_foul, f"Board should be valid (Top > Middle > Bottom): {board_foul_mt}"
+    
+        # Фол: Bottom < Middle (Flush K < Two Pair KQ)
+        board_foul_bm = PlayerBoard()
+        board_foul_bm.set_full_board(
+            hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A
+            hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ
+            hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K
+        )
+        board_foul_bm.is_foul = check_board_foul(board_foul_bm)
+>       assert board_foul_bm.is_foul, f"Board should be foul (Bottom < Middle): {board_foul_bm}" # Bottom < Middle -> Foul
+E       AssertionError: Board should be foul (Bottom < Middle): TOP   : Ah Ad Ac
+E         MIDDLE: Ks Kd Qc Qd 2s
+E         BOTTOM: Th Jh Qh Kh 9h
+E         Cards: 13/13, Foul: False
+E       assert False
+E        +  where False = PlayerBoard(Cards=13, Foul=False).is_foul
+
+tests/test_ofc_logic.py:240: AssertionError
+__________________________ test_get_row_royalty_logic __________________________
+
+    @pytest.mark.skipif('check_board_foul' not in globals() or 'get_row_royalty' not in globals(),
+                        reason="Scoring functions not imported from ofc_evaluators, skipping scoring tests")
+    def test_get_row_royalty_logic():
+        # Top
+        assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top') == 22
+        assert get_row_royalty(hand_to_int(['Qh', 'Qd', '2c']), 'top') == 7
+>       assert get_row_royalty(hand_to_int(['6h', '6d', 'Ac']), 'top') == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = get_row_royalty([1057803, 1065995, 268471337], 'top')
+E        +    where [1057803, 1065995, 268471337] = hand_to_int(['6h', '6d', 'Ac'])
+
+tests/test_ofc_logic.py:254: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    ofc_evaluator_3card:ofc_evaluator_3card.py:329 3-card lookup key not found: (12, 4, 4) for cards ['6h', '6d', 'Ac']
+WARNING  ofc_evaluators:ofc_evaluators.py:180 ValueError evaluating 3-card hand ['6h', '6d', 'Ac']: Combination not found in lookup table for key: (12, 4, 4)
+=========================== short test summary info ============================
+FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - AssertionError:...
+FAILED tests/test_ofc_logic.py::test_get_row_royalty_logic - AssertionError: ...
+=================== 2 failed, 33 passed, 3 skipped in 0.52s ====================
