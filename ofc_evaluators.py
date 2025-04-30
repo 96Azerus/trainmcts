@@ -1,9 +1,10 @@
-# ofc_evaluators.py v1.6
+# ofc_evaluators.py v1.7
 """
 Интерфейс для оценки покерных комбинаций OFC (3 и 5 карт).
 Использует специализированные модули для 3- и 5-карточных рук.
 Исправлена проверка 5-карт в get_hand_rank_safe.
 Добавлено детальное логгирование.
+Добавлены логи перед вызовом оценщиков.
 """
 
 import logging
@@ -118,6 +119,8 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
                 logger.debug(f"Invalid 3-card hand (expected 3, got {num_valid}): {hand_str_log}")
                 return WORST_RANK, "Invalid"
 
+            # --- ДОБАВЛЕНО ЛОГГИРОВАНИЕ ---
+            logger.debug(f"Calling evaluate_3_card_ofc with ints: {valid_cards}")
             # Получаем "сырой" ранг (1-455)
             rank, type_str, rank_str = evaluate_3_card_ofc(valid_cards[0], valid_cards[1], valid_cards[2])
             logger.debug(f"evaluate_3_card_ofc returned: rank={rank}, type={type_str}, rank_str={rank_str} for {hand_str_log}")
@@ -143,6 +146,8 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
                 logger.debug(f"Invalid 5-card hand (expected 5, got {num_valid}): {hand_str_log}")
                 return WORST_RANK, "Invalid"
 
+            # --- ДОБАВЛЕНО ЛОГГИРОВАНИЕ ---
+            logger.debug(f"Calling evaluator_5card.evaluate with ints: {valid_cards}")
             # Получаем ранг (1-7462 или 7463 при ошибке)
             rank = evaluator_5card.evaluate(valid_cards)
             logger.debug(f"evaluator_5card.evaluate returned: {rank} for {hand_str_log}")
