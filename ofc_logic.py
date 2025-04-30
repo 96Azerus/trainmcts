@@ -1,9 +1,9 @@
-# ofc_logic.py v1.5
+# ofc_logic.py v1.6
 """
 Базовая логика игры OFC Pineapple: Карты, Колода, Доска, Утилиты Подсчета.
 Версия для режима тренировки (без Fantasyland, без сравнения с оппонентом).
 Исправлена логика check_board_foul для корректного сравнения силы рядов.
-Добавлены импорты констант типов рук для get_row_royalty.
+Гарантированно добавлены импорты констант типов рук для get_row_royalty.
 """
 
 import random
@@ -19,7 +19,7 @@ try:
         get_hand_rank_safe, WORST_RANK,
         evaluate_3_card_ofc, evaluator_5card
     )
-    # FIX 8: Добавляем импорт констант типов 3-карточных рук
+    # FIX 10: Гарантированно добавляем импорт констант типов 3-карточных рук
     from ofc_evaluator_3card import HAND_TYPE_TRIPS_3, HAND_TYPE_PAIR_3
 except ImportError:
     logging.critical("Failed to import evaluators or constants in ofc_logic.py. Scoring functions will fail.")
@@ -310,7 +310,8 @@ class PlayerBoard:
                        raise ValueError(f"Invalid card integer '{card_int}' in row '{row_name}' at index {i}.")
                   validated_row.append(card_int)
                   all_cards.append(card_int)
-             new_rows[row_name] = validated_row # Сохраняем валидированный ряд
+             # Сохраняем как List[Optional[int]] для консистентности типа self.rows
+             new_rows[row_name] = validated_row
 
         if len(all_cards) != len(set(all_cards)):
             counts = Counter(all_cards)
@@ -454,11 +455,11 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
 
         if row_name == "top":
             # Типы для 3-карт: Trips, Pair, High Card
-            if type_str == HAND_TYPE_TRIPS_3:
+            if type_str == HAND_TYPE_TRIPS_3: # Теперь эта константа импортирована
                 # Извлекаем ранг трипса из первой карты (они все одного ранга)
                 rank_index = Card.get_rank_int(valid_cards[0])
                 royalty = ROYALTY_TOP_TRIPS.get(rank_index, 0)
-            elif type_str == HAND_TYPE_PAIR_3:
+            elif type_str == HAND_TYPE_PAIR_3: # Теперь эта константа импортирована
                  # Находим ранг пары
                  ranks = [Card.get_rank_int(c) for c in valid_cards]
                  rank_counts = Counter(ranks)
