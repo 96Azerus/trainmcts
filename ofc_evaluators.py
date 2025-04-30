@@ -1,9 +1,9 @@
-# ofc_evaluators.py v1.5
+# ofc_evaluators.py v1.6
 """
 Интерфейс для оценки покерных комбинаций OFC (3 и 5 карт).
 Использует специализированные модули для 3- и 5-карточных рук.
-Синхронизированы константы рангов и исправлена проверка 5-карт.
-Добавлено логгирование.
+Исправлена проверка 5-карт в get_hand_rank_safe.
+Добавлено детальное логгирование.
 """
 
 import logging
@@ -51,7 +51,12 @@ except ImportError:
 # Получаем логгер
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logger.setLevel(logging.WARNING)
+    logger.setLevel(logging.DEBUG) # Устанавливаем DEBUG для отладки
+    handler = logging.StreamHandler() # Вывод в консоль
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
 
 # --- Константы Рангов (для удобства доступа) ---
 # Используем значения из LookupTable5Card для консистентности
@@ -61,17 +66,13 @@ WORST_RANK_5CARD_INVALID: int = LookupTable5Card.WORST_RANK_5CARD # 7463 - *не
 # Ранги 3-карточных рук: 1 (лучший) - 455 (худший)
 # WORST_RANK_3CARD_RAW уже импортирован (455)
 
-# FIX 14: Корректируем константы для 3-карт на основе WORST_RANK_5CARD_INVALID
+# Скорректированный диапазон для 3-карт
 ADJUSTMENT_3CARD: int = WORST_RANK_5CARD_INVALID # Смещение = 7463
-# Скорректированный ранг = raw_rank_3card + ADJUSTMENT_3CARD
-# Лучший скорректированный = 1 + 7463 = 7464
-# Худший скорректированный = 455 + 7463 = 7918
-BEST_ADJUSTED_RANK_3CARD: int = 1 + ADJUSTMENT_3CARD
-WORST_ADJUSTED_RANK_3CARD: int = WORST_RANK_3CARD_RAW + ADJUSTMENT_3CARD
+BEST_ADJUSTED_RANK_3CARD: int = 1 + ADJUSTMENT_3CARD # 7464
+WORST_ADJUSTED_RANK_3CARD: int = WORST_RANK_3CARD_RAW + ADJUSTMENT_3CARD # 7918
 
-# Общий худший ранг (гарантированно больше любого возможного *валидного* скорректированного ранга)
-# Используется для обозначения ошибок/невалидных рук
-WORST_RANK: int = WORST_ADJUSTED_RANK_3CARD + 1 # 7918 + 1 = 7919
+# Общий худший ранг (для ошибок)
+WORST_RANK: int = WORST_ADJUSTED_RANK_3CARD + 1 # 7919
 
 # --- Основная функция оценки ---
 
@@ -88,12 +89,15 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
                          или WORST_RANK (7919) при ошибке, и строка типа руки ("Invalid" при ошибке).
     """
     hand_str_log = "N/A" # Для логгирования в случае ошибки до обработки карт
+    expected_len = 0
     try:
         if not isinstance(cards, list):
             logger.warning(f"get_hand_rank_safe received non-list input: {type(cards)}")
             return WORST_RANK, "Invalid"
 
+        expected_len = len(cards) # Ожидаемая длина исходного списка
         hand_str_log = [card_to_str(c) for c in cards] # Логируем исходный вид руки
+        logger.debug(f"get_hand_rank_safe called for: {hand_str_log} (expected_len={expected_len})")
 
         valid_cards: List[int] = []
         try:
@@ -103,7 +107,6 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
             return WORST_RANK, "Invalid"
 
         num_valid = len(valid_cards)
-        expected_len = len(cards) # Ожидаемая длина исходного списка
 
         # Проверяем дубликаты только если есть что проверять
         if num_valid > 1 and num_valid != len(set(valid_cards)):
@@ -116,7 +119,8 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
                 return WORST_RANK, "Invalid"
 
             # Получаем "сырой" ранг (1-455)
-            rank, type_str, _ = evaluate_3_card_ofc(valid_cards[0], valid_cards[1], valid_cards[2])
+            rank, type_str, rank_str = evaluate_3_card_ofc(valid_cards[0], valid_cards[1], valid_cards[2])
+            logger.debug(f"evaluate_3_card_ofc returned: rank={rank}, type={type_str}, rank_str={rank_str} for {hand_str_log}")
 
             # Проверяем валидность "сырого" ранга перед корректировкой
             if not (1 <= rank <= WORST_RANK_3CARD_RAW):
@@ -141,17 +145,17 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
 
             # Получаем ранг (1-7462 или 7463 при ошибке)
             rank = evaluator_5card.evaluate(valid_cards)
-            logger.debug(f"Evaluated 5-card: {hand_str_log} -> Rank: {rank}")
+            logger.debug(f"evaluator_5card.evaluate returned: {rank} for {hand_str_log}")
 
-            # FIX 15: Проверяем, что ранг находится в валидном диапазоне 5-карточных рук (1 - MAX_HIGH_CARD_5)
+            # FIX 18: Проверяем, что ранг находится в валидном диапазоне 5-карточных рук (1 - MAX_HIGH_CARD_5)
             if not (1 <= rank <= MAX_HIGH_CARD_5): # Проверяем диапазон 1-7462
-                 # Логируем, даже если ранг равен WORST_RANK_5CARD_INVALID (7463), т.к. это тоже ошибка оценки
                  logger.warning(f"5-card evaluation returned invalid rank: {rank} (expected 1-{MAX_HIGH_CARD_5}) for hand {hand_str_log}")
                  return WORST_RANK, "Invalid" # Возвращаем общий WORST_RANK (7919)
 
             # Если ранг валиден (1-7462), получаем класс и строку
             rank_class = evaluator_5card.get_rank_class(rank)
             type_str = evaluator_5card.class_to_string(rank_class)
+            logger.debug(f"Evaluated 5-card: {hand_str_log} -> Rank: {rank}, Type: {type_str}")
             return rank, type_str
 
         else:
