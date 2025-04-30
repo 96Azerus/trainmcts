@@ -1,8 +1,9 @@
-# tests/test_ofc_logic.py v1.5
+# tests/test_ofc_logic.py v1.6
 """
 Unit-тесты для модуля ofc_logic.py.
 Исправлены вызовы check_board_foul и get_row_royalty в тестах.
 Исправлен ассерт в test_check_board_foul_logic для board_foul_mt.
+Импорты check_board_foul и get_row_royalty изменены на ofc_evaluators.
 """
 
 import pytest
@@ -10,21 +11,20 @@ import random
 from typing import List, Optional, Set
 from collections import Counter # Добавлен импорт Counter
 
-# Импорты из тестируемого модуля
+# Импорты из тестируемого модуля (только ofc_logic)
 from ofc_logic import (
     Card, Deck, PlayerBoard,
-    check_board_foul, get_row_royalty,
     INVALID_CARD, CARD_PLACEHOLDER, NUM_CARDS,
-    ROYALTY_TOP_PAIRS, ROYALTY_TOP_TRIPS,
-    ROYALTY_MIDDLE_POINTS, ROYALTY_BOTTOM_POINTS,
-    RANK_MAP
+    RANK_MAP # Оставляем RANK_MAP, если он нужен для тестов
 )
-# Импорты эвалюаторов для тестов скоринга (нужны для hand_to_int и создания карт)
+# Импорты функций скоринга из ofc_evaluators
 try:
+    from ofc_evaluators import check_board_foul, get_row_royalty
+    # Импорты эвалюаторов для создания карт в тестах
     from ofc_evaluator_3card import evaluate_3_card_ofc
     from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
 except ImportError:
-    pytest.skip("Skipping scoring tests because evaluators could not be imported", allow_module_level=True)
+    pytest.skip("Skipping scoring tests because evaluators or scoring functions could not be imported", allow_module_level=True)
 
 
 # --- Хелперы ---
@@ -205,56 +205,49 @@ def test_playerboard_copy():
     assert board2.get_total_cards() == 2
 
 
-# --- Тесты Scoring ---
-@pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
-                    reason="Evaluators not imported, skipping scoring tests")
+# --- Тесты Scoring (Используют функции из ofc_evaluators) ---
+@pytest.mark.skipif('check_board_foul' not in globals() or 'get_row_royalty' not in globals(),
+                    reason="Scoring functions not imported from ofc_evaluators, skipping scoring tests")
 def test_check_board_foul_logic():
     # Валидная доска
     board_ok = PlayerBoard()
     board_ok.set_full_board(
-        hand_to_int(['Qh', 'Qd', '2c']), # Pair Q (AdjRank ~7464+40=7504)
-        hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A high (Rank ~500-1000)
-        hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])  # FH A over K (Rank 167)
+        hand_to_int(['Qh', 'Qd', '2c']), # Pair Q
+        hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A high
+        hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])  # FH A over K
     )
-    # FIX 5: Убран вызов check_board_foul с эвалюаторами
     board_ok.is_foul = check_board_foul(board_ok)
     assert not board_ok.is_foul, f"Board should be valid: {board_ok}"
 
-    # Фол: Middle > Top (Flush A > Pair Q) - ЭТО НЕ ФОЛ!
+    # Валидная доска (ранее считалась фолом)
     board_foul_mt = PlayerBoard()
     board_foul_mt.set_full_board(
-        hand_to_int(['2h', '3d', '4c']), # High Card 4 (AdjRank ~7464+454=7918) - Слабая
-        hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK (Rank 2468) - Средняя
-        hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A (Rank 1) - Сильная
+        hand_to_int(['2h', '3d', '4c']), # High Card 4
+        hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK
+        hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A
     )
-    # FIX 5: Убран вызов check_board_foul с эвалюаторами
     board_foul_mt.is_foul = check_board_foul(board_foul_mt)
-    # --- ИСПРАВЛЕНО: Ассерт и сообщение ---
     assert not board_foul_mt.is_foul, f"Board should be valid (Top > Middle > Bottom): {board_foul_mt}"
 
-    # Фол: Bottom > Middle (Flush K < Two Pair KQ)
+    # Фол: Bottom < Middle (Flush K < Two Pair KQ)
     board_foul_bm = PlayerBoard()
     board_foul_bm.set_full_board(
-        hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A (AdjRank ~7464+1=7465) - Слабая
-        hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ (Rank ~2500) - Средняя
-        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K (Rank ~1000-1500) - Сильная
+        hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A
+        hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ
+        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K
     )
-    # FIX 5: Убран вызов check_board_foul с эвалюаторами
     board_foul_bm.is_foul = check_board_foul(board_foul_bm)
-    # --- ИСПРАВЛЕНО: Проверяем, что это фол ---
     assert board_foul_bm.is_foul, f"Board should be foul (Bottom < Middle): {board_foul_bm}" # Bottom < Middle -> Foul
 
     # Неполная доска - не фол
     board_incomplete = PlayerBoard()
     board_incomplete.add_card(Card.from_str('As'), 'top', 0)
-    # FIX 5: Убран вызов check_board_foul с эвалюаторами
     board_incomplete.is_foul = check_board_foul(board_incomplete)
     assert not board_incomplete.is_foul
 
-@pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
-                    reason="Evaluators not imported, skipping scoring tests")
+@pytest.mark.skipif('check_board_foul' not in globals() or 'get_row_royalty' not in globals(),
+                    reason="Scoring functions not imported from ofc_evaluators, skipping scoring tests")
 def test_get_row_royalty_logic():
-    # FIX 6: Убраны эвалюаторы из вызовов get_row_royalty
     # Top
     assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top') == 22
     assert get_row_royalty(hand_to_int(['Qh', 'Qd', '2c']), 'top') == 7
