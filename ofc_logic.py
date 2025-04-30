@@ -1,9 +1,10 @@
-# ofc_logic.py v1.6
+# ofc_logic.py v1.7
 """
 Базовая логика игры OFC Pineapple: Карты, Колода, Доска, Утилиты Подсчета.
 Версия для режима тренировки (без Fantasyland, без сравнения с оппонентом).
 Исправлена логика check_board_foul для корректного сравнения силы рядов.
 Гарантированно добавлены импорты констант типов рук для get_row_royalty.
+Добавлено логгирование в get_row_royalty.
 """
 
 import random
@@ -19,7 +20,7 @@ try:
         get_hand_rank_safe, WORST_RANK,
         evaluate_3_card_ofc, evaluator_5card
     )
-    # FIX 10: Гарантированно добавляем импорт констант типов 3-карточных рук
+    # Импорт констант типов 3-карточных рук
     from ofc_evaluator_3card import HAND_TYPE_TRIPS_3, HAND_TYPE_PAIR_3
 except ImportError:
     logging.critical("Failed to import evaluators or constants in ofc_logic.py. Scoring functions will fail.")
@@ -41,7 +42,12 @@ except ImportError:
 # Получаем логгер
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logger.setLevel(logging.WARNING) # Устанавливаем уровень по умолчанию
+    logger.setLevel(logging.DEBUG) # Устанавливаем DEBUG для отладки
+    handler = logging.StreamHandler() # Вывод в консоль
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
 
 # --- Константы Карт ---
 STR_RANKS: str = '23456789TJQKA'
@@ -440,12 +446,16 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
     """
     Вычисляет роялти для ряда. Использует глобальные эвалюаторы.
     """
+    cards_str = Card.hand_to_str(cards) # Для логгирования
+    logger.debug(f"Calculating royalty for row '{row_name}', cards: {cards_str}")
     if not isinstance(cards, list): return 0
+
     # Используем get_hand_rank_safe для получения типа руки и проверки валидности
-    # Нам не нужен ранг здесь, только тип и проверка валидности
     rank, type_str = get_hand_rank_safe(cards)
+    logger.debug(f"get_hand_rank_safe returned rank={rank}, type='{type_str}' for row '{row_name}'")
 
     if rank == WORST_RANK: # Если рука невалидна или неполна
+        logger.debug(f"Hand is invalid or incomplete, returning 0 royalty.")
         return 0
 
     royalty = 0
@@ -454,50 +464,51 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
         if not valid_cards: return 0 # На случай, если cards был [None, None, ...]
 
         if row_name == "top":
+            logger.debug(f"Processing top row royalty. Type: '{type_str}'")
             # Типы для 3-карт: Trips, Pair, High Card
-            if type_str == HAND_TYPE_TRIPS_3: # Теперь эта константа импортирована
-                # Извлекаем ранг трипса из первой карты (они все одного ранга)
+            if type_str == HAND_TYPE_TRIPS_3: # Константа импортирована
                 rank_index = Card.get_rank_int(valid_cards[0])
                 royalty = ROYALTY_TOP_TRIPS.get(rank_index, 0)
-            elif type_str == HAND_TYPE_PAIR_3: # Теперь эта константа импортирована
-                 # Находим ранг пары
+                logger.debug(f"Trips detected. Rank index: {rank_index}, Royalty: {royalty}")
+            elif type_str == HAND_TYPE_PAIR_3: # Константа импортирована
                  ranks = [Card.get_rank_int(c) for c in valid_cards]
                  rank_counts = Counter(ranks)
                  pair_rank = -1
                  for r, count in rank_counts.items():
                      if count == 2: pair_rank = r; break
                  royalty = ROYALTY_TOP_PAIRS.get(pair_rank, 0)
-            # High Card не дает роялти на топе
+                 logger.debug(f"Pair detected. Pair rank index: {pair_rank}, Royalty: {royalty}")
+            else: # High Card
+                 logger.debug("High card detected. Royalty: 0")
             return royalty
 
         elif row_name in ["middle", "bottom"]:
-            # Типы для 5-карт берутся из class_to_string эвалюатора
+            logger.debug(f"Processing {row_name} row royalty. Type: '{type_str}'")
             table = ROYALTY_MIDDLE_POINTS if row_name == "middle" else ROYALTY_BOTTOM_POINTS
             hand_name = type_str # get_hand_rank_safe возвращает строку типа
 
-            # Проверка на Royal Flush (самый высокий стрит-флеш)
+            # Проверка на Royal Flush
             is_royal = False
             if hand_name == "Straight Flush":
                  ranks_int = {Card.get_rank_int(c) for c in valid_cards}
-                 # Роял Флеш: A, K, Q, J, T
                  if ranks_int == {RANK_MAP['A'], RANK_MAP['K'], RANK_MAP['Q'], RANK_MAP['J'], RANK_MAP['T']}:
                      is_royal = True
+                     logger.debug("Royal Flush detected.")
 
             if is_royal:
-                # Используем ключ "Royal Flush" для поиска в таблице роялти
                 royalty = table.get("Royal Flush", 0)
             else:
                 royalty = table.get(hand_name, 0)
+            logger.debug(f"Lookup in royalty table for '{'Royal Flush' if is_royal else hand_name}': {royalty}")
 
             # Трипс не дает роялти на боттоме
             if row_name == "bottom" and hand_name == "Three of a Kind":
+                 logger.debug("Trips on bottom, setting royalty to 0.")
                  royalty = 0
             return royalty
         else:
             logger.warning(f"Unknown row name '{row_name}' in get_row_royalty.")
             return 0
     except Exception as e:
-        # Добавляем больше контекста в лог ошибки
-        cards_str = Card.hand_to_str(cards)
         logger.error(f"Error calculating royalty for {row_name} (Cards: {cards_str}, Type: {type_str}): {e}", exc_info=True)
         return 0
