@@ -77,20 +77,20 @@ E        +  where False = PlayerBoard(Cards=13, Foul=False).is_foul
 
 tests/test_ofc_logic.py:231: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:321 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:333 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
 WARNING  ofc_evaluators:ofc_evaluators.py:152 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:339 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:356 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
 WARNING  ofc_evaluators:ofc_evaluators.py:152 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_logic:ofc_logic.py:420 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
+WARNING  ofc_logic:ofc_logic.py:426 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
 TOP   : Qh Qd 2c
 MIDDLE: Ah Kh Th Jh 9h
 BOTTOM: As Ad Ac Ks Kd
 Cards: 13/13, Foul: False
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:339 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:356 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
 WARNING  ofc_evaluators:ofc_evaluators.py:152 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:321 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:333 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
 WARNING  ofc_evaluators:ofc_evaluators.py:152 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_logic:ofc_logic.py:420 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
+WARNING  ofc_logic:ofc_logic.py:426 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
 TOP   : 2h 3d 4c
 MIDDLE: As Ad Kc Kd Qc
 BOTTOM: Ah Kh Qh Jh Th
@@ -112,4 +112,4 @@ tests/test_ofc_logic.py:257: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - AssertionError:...
 FAILED tests/test_ofc_logic.py::test_get_row_royalty_logic - AssertionError: ...
-=================== 2 failed, 33 passed, 3 skipped in 0.54s ====================
+=================== 2 failed, 33 passed, 3 skipped in 0.53s ====================
