@@ -1,8 +1,8 @@
-# ofc_logic.py v1.2
+# ofc_logic.py v1.3
 """
 Базовая логика игры OFC Pineapple: Карты, Колода, Доска, Утилиты Подсчета.
 Версия для режима тренировки (без Fantasyland, без сравнения с оппонентом).
-Исправлена логика check_board_foul.
+Исправлена логика check_board_foul для корректного сравнения силы рядов.
 """
 
 import random
@@ -10,6 +10,27 @@ import copy
 import logging
 from typing import List, Tuple, Dict, Optional, Set, Any
 from collections import Counter
+
+# Импортируем эвалюаторы и константы рангов для check_board_foul и get_row_royalty
+# Оборачиваем в try-except на случай, если этот модуль используется отдельно
+try:
+    from ofc_evaluators import (
+        get_hand_rank_safe, WORST_RANK,
+        evaluate_3_card_ofc, evaluator_5card
+    )
+except ImportError:
+    logging.critical("Failed to import evaluators in ofc_logic.py. Scoring functions will fail.")
+    # Заглушки, чтобы модуль мог быть загружен
+    def get_hand_rank_safe(cards): return (9999, "Invalid")
+    def evaluate_3_card_ofc(c1, c2, c3): return (999, "Error", "ERR")
+    class MockEvaluator5Card:
+        MAX_HIGH_CARD = 7462
+        WORST_RANK_5CARD = MAX_HIGH_CARD + 1
+        def evaluate(self, cards): return self.WORST_RANK_5CARD
+        def get_rank_class(self, rank): return 9
+        def class_to_string(self, r_class): return "Error"
+    evaluator_5card = MockEvaluator5Card()
+    WORST_RANK = 9999 + 455 + 1 # Приблизительная заглушка
 
 # Получаем логгер
 logger = logging.getLogger(__name__)
@@ -70,14 +91,21 @@ class Card:
         if card_int is None or card_int == INVALID_CARD or not isinstance(card_int, int) or card_int <= 0:
             return CARD_PLACEHOLDER
 
-        rank_int = Card.get_rank_int(card_int)
-        suit_int = Card.get_suit_int(card_int)
+        try:
+            rank_int = Card.get_rank_int(card_int)
+            suit_int = Card.get_suit_int(card_int)
 
-        rank_char = INT_RANK_TO_CHAR.get(rank_int)
-        suit_char = INT_SUIT_TO_CHAR.get(suit_int)
+            rank_char = INT_RANK_TO_CHAR.get(rank_int)
+            suit_char = INT_SUIT_TO_CHAR.get(suit_int)
 
-        if rank_char and suit_char: return rank_char + suit_char
-        else: return CARD_PLACEHOLDER
+            if rank_char and suit_char: return rank_char + suit_char
+            else:
+                logger.warning(f"Could not convert card int {card_int} to string (rank={rank_int}, suit={suit_int})")
+                return CARD_PLACEHOLDER
+        except Exception as e:
+            logger.error(f"Error converting card int {card_int} to string: {e}")
+            return CARD_PLACEHOLDER
+
 
     @staticmethod
     def get_rank_int(card_int: int) -> int:
@@ -97,19 +125,33 @@ class Card:
     @staticmethod
     def hand_to_int(card_strs: List[Optional[str]]) -> List[Optional[int]]:
         """Конвертирует список строк карт в список int."""
-        hand_ints = []
+        hand_ints: List[Optional[int]] = []
+        if not isinstance(card_strs, list):
+            logger.warning(f"hand_to_int expected list, got {type(card_strs)}")
+            return [None] * len(card_strs or []) # Возвращаем список None той же длины
+
         for s in card_strs:
             if s is None or s == CARD_PLACEHOLDER or not isinstance(s, str) or len(s) != 2:
                 hand_ints.append(None)
             else:
                 try: hand_ints.append(Card.from_str(s))
-                except ValueError: hand_ints.append(None)
+                except (ValueError, TypeError) as e:
+                    logger.debug(f"Invalid card string '{s}' in hand_to_int: {e}")
+                    hand_ints.append(None)
         return hand_ints
 
     @staticmethod
     def hand_to_str(card_ints: List[Optional[int]]) -> List[str]:
         """Конвертирует список int карт в список строк."""
+        if not isinstance(card_ints, list):
+            logger.warning(f"hand_to_str expected list, got {type(card_ints)}")
+            return [CARD_PLACEHOLDER] * len(card_ints or [])
         return [Card.to_str(c) for c in card_ints]
+
+# --- Глобальная функция card_to_str для обратной совместимости ---
+def card_to_str(card_int: Optional[int]) -> str:
+    """Глобальная функция-обертка для Card.to_str."""
+    return Card.to_str(card_int)
 
 # --- Класс Deck ---
 class Deck:
@@ -125,37 +167,54 @@ class Deck:
         for card_s in _FULL_DECK_STRS:
             try:
                 card_int = Card.from_str(card_s)
+                # Добавим проверку типа на всякий случай
                 if not isinstance(card_int, int) or card_int == INVALID_CARD or card_int <= 0:
+                    logger.error(f"Invalid card integer generated for '{card_s}': {card_int}")
                     _initialization_error = True
                 else: FULL_DECK_CARDS.add(card_int)
-            except Exception: _initialization_error = True
+            except (ValueError, TypeError) as e_card:
+                 logger.error(f"Error converting card string '{card_s}' during deck init: {e_card}")
+                 _initialization_error = True
         if len(FULL_DECK_CARDS) != 52 or _initialization_error:
+            logger.critical(f"Deck initialization failed! Expected 52 unique cards, got {len(FULL_DECK_CARDS)}. Error flag: {_initialization_error}")
             raise RuntimeError("Failed to initialize the standard 52-card deck.")
     except Exception as e_init:
         logger.critical(f"CRITICAL ERROR during Deck class initialization: {e_init}", exc_info=True)
-        raise
+        # Перевыбрасываем исключение, чтобы предотвратить запуск с неполной колодой
+        raise RuntimeError("Failed to initialize the standard 52-card deck.") from e_init
 
     def __init__(self, cards: Optional[Set[int]] = None):
         """Инициализирует колоду (полную или из набора)."""
-        if cards is None: self.cards: Set[int] = self.FULL_DECK_CARDS.copy()
-        else: self.cards: Set[int] = {c for c in cards if isinstance(c, int) and c != INVALID_CARD and c > 0}
+        if cards is None:
+            self.cards: Set[int] = self.FULL_DECK_CARDS.copy()
+        else:
+            # Фильтруем невалидные карты при инициализации из набора
+            self.cards: Set[int] = {c for c in cards if isinstance(c, int) and c != INVALID_CARD and c > 0}
+            if len(self.cards) != len(cards):
+                logger.warning(f"Initialized deck with {len(self.cards)} cards, filtered from {len(cards)} provided.")
 
     def deal(self, n: int) -> List[int]:
         """Раздает n случайных карт."""
-        if n <= 0: return []
+        if not isinstance(n, int) or n <= 0: return []
         current_len = len(self.cards)
         num_to_deal = min(n, current_len)
-        if n > current_len: logger.warning(f"Deck.deal: Trying {n}, only {current_len} left.")
+        if n > current_len: logger.warning(f"Deck.deal: Trying to deal {n}, but only {current_len} cards left.")
         if num_to_deal == 0: return []
         try:
-            card_list = list(self.cards)
-            dealt_cards = random.sample(card_list, num_to_deal)
-            self.cards.difference_update(dealt_cards)
+            # random.sample работает со множествами напрямую
+            dealt_cards = random.sample(list(self.cards), num_to_deal) # Преобразуем в список для sample
+            self.cards.difference_update(dealt_cards) # Удаляем из множества
             return dealt_cards
-        except Exception as e: logger.error(f"ERROR in Deck.deal({n}): {e}", exc_info=True); return []
+        except Exception as e:
+            logger.error(f"ERROR in Deck.deal({n}): {e}", exc_info=True)
+            return [] # Возвращаем пустой список при ошибке
 
     def remove(self, cards_to_remove: List[int]):
         """Удаляет конкретные карты."""
+        if not isinstance(cards_to_remove, list):
+            logger.warning(f"Deck.remove expected list, got {type(cards_to_remove)}")
+            return
+        # Фильтруем невалидные карты перед удалением
         valid_cards_to_remove = {c for c in cards_to_remove if isinstance(c, int) and c != INVALID_CARD and c > 0}
         self.cards.difference_update(valid_cards_to_remove)
 
@@ -187,45 +246,83 @@ class PlayerBoard:
             name: [None] * capacity for name, capacity in self.ROW_CAPACITY.items()
         }
         self._cards_placed: int = 0
-        self.is_foul: bool = False # Флаг фола (устанавливается извне)
+        self.is_foul: bool = False # Флаг фола (устанавливается извне или check_board_foul)
 
     def add_card(self, card_int: int, row_name: str, index: int) -> bool:
         """Добавляет карту в слот. Возвращает True при успехе."""
-        if row_name not in self.ROW_NAMES: return False
-        if not isinstance(card_int, int) or card_int == INVALID_CARD or card_int <= 0: return False
+        if row_name not in self.ROW_NAMES:
+            logger.warning(f"Invalid row name '{row_name}' in add_card.")
+            return False
+        if not isinstance(card_int, int) or card_int == INVALID_CARD or card_int <= 0:
+            logger.warning(f"Invalid card integer '{card_int}' in add_card.")
+            return False
         capacity = self.ROW_CAPACITY[row_name]
-        if not (0 <= index < capacity): return False
-        if self.rows[row_name][index] is not None: return False # Слот занят
+        if not (0 <= index < capacity):
+            logger.warning(f"Invalid index {index} for row '{row_name}' (capacity {capacity}) in add_card.")
+            return False
+        if self.rows[row_name][index] is not None:
+            logger.debug(f"Slot {row_name}[{index}] already occupied by {Card.to_str(self.rows[row_name][index])}.")
+            return False # Слот занят
+
+        # Проверка на дубликат на всей доске перед добавлением
+        current_cards = self.get_all_cards()
+        if card_int in current_cards:
+            logger.warning(f"Attempted to add duplicate card {Card.to_str(card_int)} to board.")
+            return False
 
         self.rows[row_name][index] = card_int
         self._cards_placed += 1
-        self.is_foul = False # Сбрасываем фол при изменении
+        self.is_foul = False # Сбрасываем флаг фола при любом успешном добавлении карты
         return True
 
     def set_full_board(self, top: List[int], middle: List[int], bottom: List[int]):
-        """Устанавливает всю доску (для ФЛ или тестов)."""
+        """
+        Устанавливает всю доску (для ФЛ или тестов).
+        Проверяет корректность и уникальность карт.
+        """
         if not isinstance(top, list) or not isinstance(middle, list) or not isinstance(bottom, list):
              raise TypeError("Input rows must be lists.")
-        if len(top) != 3 or len(middle) != 5 or len(bottom) != 5:
-            raise ValueError("Incorrect number of cards provided.")
+        if len(top) != self.ROW_CAPACITY['top'] or \
+           len(middle) != self.ROW_CAPACITY['middle'] or \
+           len(bottom) != self.ROW_CAPACITY['bottom']:
+            raise ValueError(f"Incorrect number of cards provided. Expected "
+                             f"{self.ROW_CAPACITY['top']},{self.ROW_CAPACITY['middle']},{self.ROW_CAPACITY['bottom']}.")
 
         all_cards: List[int] = []
         card_lists = {'top': top, 'middle': middle, 'bottom': bottom}
+        new_rows: Dict[str, List[Optional[int]]] = {}
+
         for row_name, card_list in card_lists.items():
+             validated_row: List[Optional[int]] = []
              for i, card_int in enumerate(card_list):
                   if not isinstance(card_int, int) or card_int == INVALID_CARD or card_int <= 0:
-                       raise ValueError(f"Invalid card '{card_int}' in row '{row_name}'.")
+                       raise ValueError(f"Invalid card integer '{card_int}' in row '{row_name}' at index {i}.")
+                  validated_row.append(card_int)
                   all_cards.append(card_int)
-        if len(all_cards) != len(set(all_cards)): raise ValueError("Duplicate cards provided.")
+             new_rows[row_name] = validated_row # Сохраняем валидированный ряд
 
-        self.rows['top'] = list(top); self.rows['middle'] = list(middle); self.rows['bottom'] = list(bottom)
+        if len(all_cards) != len(set(all_cards)):
+            counts = Counter(all_cards)
+            duplicates = [Card.to_str(c) for c, count in counts.items() if count > 1]
+            raise ValueError(f"Duplicate cards provided to set_full_board: {duplicates}")
+
+        # Если все проверки пройдены, обновляем состояние доски
+        self.rows = new_rows
         self._cards_placed = self.TOTAL_CAPACITY
-        self.is_foul = False # Сбрасываем фол при установке
+        self.is_foul = False # Сбрасываем фол при установке новой полной доски
 
     def get_row_cards(self, row_name: str) -> List[int]:
         """Возвращает список валидных карт (int) в ряду."""
         if row_name not in self.rows: return []
+        # Фильтруем None и невалидные значения на всякий случай
         return [c for c in self.rows[row_name] if isinstance(c, int) and c is not None and c != INVALID_CARD and c > 0]
+
+    def get_all_cards(self) -> Set[int]:
+        """Возвращает множество всех валидных карт на доске."""
+        all_c: Set[int] = set()
+        for row_name in self.ROW_NAMES:
+            all_c.update(self.get_row_cards(row_name))
+        return all_c
 
     def get_available_slots(self) -> List[Tuple[str, int]]:
         """Возвращает список доступных слотов ('row_name', index)."""
@@ -235,15 +332,17 @@ class PlayerBoard:
     def is_complete(self) -> bool: return self._cards_placed == self.TOTAL_CAPACITY
 
     def get_board_state_tuple(self) -> Tuple[Tuple[Optional[int], ...], ...]:
-        """Возвращает неизменяемое представление доски (кортеж кортежей int)."""
-        # Сортируем карты внутри каждого ряда для каноничности (None идут в конец)
-        def sort_key(card_int): return (card_int is None, -Card.get_rank_int(card_int) if card_int is not None else 99)
-        return tuple(tuple(sorted(self.rows[r], key=sort_key)) for r in self.ROW_NAMES)
+        """
+        Возвращает неизменяемое представление доски (кортеж кортежей int).
+        Карты внутри рядов НЕ сортируются, чтобы сохранить порядок размещения.
+        """
+        return tuple(tuple(self.rows[r]) for r in self.ROW_NAMES)
 
     def copy(self) -> 'PlayerBoard':
         """Создает глубокую копию доски."""
         new_board = PlayerBoard()
-        new_board.rows = {r: list(cards) for r, cards in self.rows.items()}
+        # Используем copy.deepcopy для полной изоляции списков
+        new_board.rows = copy.deepcopy(self.rows)
         new_board._cards_placed = self._cards_placed
         new_board.is_foul = self.is_foul
         return new_board
@@ -253,7 +352,8 @@ class PlayerBoard:
         s = ""
         max_len = max(len(self.rows[r_name]) for r_name in self.ROW_NAMES)
         for r_name in self.ROW_NAMES:
-            row_str = [Card.to_str(c) for c in self.rows[r_name]]
+            row_str = Card.hand_to_str(self.rows[r_name]) # Используем Card.hand_to_str
+            # Дополняем плейсхолдерами, если ряд короче максимального (не должно быть при стандартной доске)
             row_str += [CARD_PLACEHOLDER] * (max_len - len(row_str))
             s += f"{r_name.upper():<6}: " + " ".join(f"{c:^2}" for c in row_str) + "\n"
         s += f"Cards: {self._cards_placed}/{self.TOTAL_CAPACITY}, Foul: {self.is_foul}"
@@ -283,87 +383,101 @@ ROYALTY_TOP_TRIPS: Dict[int, int] = {
     RANK_MAP['A']: 22
 }
 
-def check_board_foul(board: PlayerBoard, evaluator_3card, evaluator_5card) -> bool:
+def check_board_foul(board: PlayerBoard) -> bool:
     """
-    Проверяет доску на фол (нарушение порядка линий).
-    Требует передачи эвалюаторов.
+    Проверяет доску на фол (нарушение порядка силы линий).
+    Использует get_hand_rank_safe для получения скорректированных рангов.
+    Правило: Сила Top <= Сила Middle <= Сила Bottom.
+    Сильнее = Меньший ранг.
+    Фол, если rank(Top) < rank(Middle) ИЛИ rank(Middle) < rank(Bottom).
     """
-    if not board.is_complete(): return False
+    if not board.is_complete():
+        return False # Неполная доска не может быть фолом
+
     try:
         top_cards = board.get_row_cards('top')
         mid_cards = board.get_row_cards('middle')
         bot_cards = board.get_row_cards('bottom')
 
-        # Проверка на дубликаты между рядами (хотя set_full_board уже проверяет)
-        all_cards = top_cards + mid_cards + bot_cards
-        if len(all_cards) != len(set(all_cards)):
-             logger.warning("Duplicate cards detected across rows in check_board_foul.")
-             return False # Невалидная доска не фол
+        # Проверка на корректное количество карт (хотя is_complete уже проверяет)
+        if len(top_cards) != 3 or len(mid_cards) != 5 or len(bot_cards) != 5:
+            logger.warning("check_board_foul called on board with incorrect card counts despite being 'complete'.")
+            return False # Считаем не фолом при некорректном состоянии
 
-        # --- ИСПРАВЛЕНО: Используем raw ранги для сравнения ---
-        # Получаем raw ранг для 3-карточной руки
-        rank_t, _, _ = evaluator_3card(top_cards[0], top_cards[1], top_cards[2])
-        # Получаем raw ранги для 5-карточных рук
-        rank_m = evaluator_5card.evaluate(mid_cards)
-        rank_b = evaluator_5card.evaluate(bot_cards)
+        # FIX 3: Используем get_hand_rank_safe для получения скорректированных рангов
+        adj_rank_t, type_t = get_hand_rank_safe(top_cards)
+        adj_rank_m, type_m = get_hand_rank_safe(mid_cards)
+        adj_rank_b, type_b = get_hand_rank_safe(bot_cards)
 
-        # Проверяем, что все ранги валидны (меньше WORST_RANK_5CARD)
-        # WORST_RANK_3CARD = 455, WORST_RANK_5CARD = 7463
-        if rank_t > WORST_RANK_3CARD or rank_m >= WORST_RANK_5CARD or rank_b >= WORST_RANK_5CARD:
-             logger.warning(f"Could not determine valid ranks for foul check. T:{rank_t}, M:{rank_m}, B:{rank_b}")
-             return False # Считаем не фолом при ошибке оценки
+        # Проверяем, что все ранги были успешно вычислены
+        if adj_rank_t == WORST_RANK or adj_rank_m == WORST_RANK or adj_rank_b == WORST_RANK:
+            logger.warning(f"Could not determine valid ranks for foul check. T:{adj_rank_t}({type_t}), M:{adj_rank_m}({type_m}), B:{adj_rank_b}({type_b})")
+            # Если не можем определить ранги, считаем не фолом, чтобы избежать ложных срабатываний
+            return False
 
-        # --- ИСПРАВЛЕНО: Логика проверки фола ---
-        # Меньший ранг = лучше. Фол, если top > middle или middle > bottom
-        # (т.е. ранг топа численно БОЛЬШЕ ранга мидла, или ранг мидла БОЛЬШЕ ранга боттома)
-        is_foul = (rank_t > rank_m) or (rank_m > rank_b)
+        # Логика фола: Top сильнее Middle ИЛИ Middle сильнее Bottom
+        # Сильнее = Меньший скорректированный ранг
+        is_foul = (adj_rank_t < adj_rank_m) or (adj_rank_m < adj_rank_b)
+
+        # Обновляем флаг is_foul на самой доске
+        board.is_foul = is_foul
         return is_foul
+
     except Exception as e:
         logger.error(f"Error during check_board_foul: {e}", exc_info=True)
-        return False # Считаем не фолом при ошибке
+        # При любой другой ошибке считаем не фолом
+        board.is_foul = False
+        return False
 
-def get_row_royalty(cards: List[Optional[int]], row_name: str, evaluator_3card, evaluator_5card) -> int:
+def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
     """
-    Вычисляет роялти для ряда, используя переданные эвалюаторы.
+    Вычисляет роялти для ряда. Использует глобальные эвалюаторы.
     """
     if not isinstance(cards, list): return 0
-    valid_cards = [c for c in cards if isinstance(c, int) and c is not None and c != INVALID_CARD and c > 0]
-    num_cards = len(valid_cards)
-    royalty = 0
+    # Используем get_hand_rank_safe для получения типа руки и проверки валидности
+    # Нам не нужен ранг здесь, только тип и проверка валидности
+    rank, type_str = get_hand_rank_safe(cards)
 
+    if rank == WORST_RANK: # Если рука невалидна или неполна
+        return 0
+
+    royalty = 0
     try:
         if row_name == "top":
-            if num_cards != 3: return 0
-            if len(valid_cards) != len(set(valid_cards)): return 0
-            _, type_str, rank_str = evaluator_3card(valid_cards[0], valid_cards[1], valid_cards[2])
-            if type_str == 'Trips':
-                rank_index = RANK_MAP.get(rank_str[0])
+            # Типы для 3-карт: Trips, Pair, High Card
+            if type_str == HAND_TYPE_TRIPS_3:
+                # Извлекаем ранг трипса из первой карты (они все одного ранга)
+                rank_index = Card.get_rank_int(cards[0]) if cards and cards[0] else -1
                 royalty = ROYALTY_TOP_TRIPS.get(rank_index, 0)
-            elif type_str == 'Pair':
-                rank_index = RANK_MAP.get(rank_str[0])
-                royalty = ROYALTY_TOP_PAIRS.get(rank_index, 0)
+            elif type_str == HAND_TYPE_PAIR_3:
+                 # Находим ранг пары
+                 ranks = [Card.get_rank_int(c) for c in cards if c]
+                 rank_counts = Counter(ranks)
+                 pair_rank = -1
+                 for r, count in rank_counts.items():
+                     if count == 2: pair_rank = r; break
+                 royalty = ROYALTY_TOP_PAIRS.get(pair_rank, 0)
+            # High Card не дает роялти на топе
             return royalty
 
         elif row_name in ["middle", "bottom"]:
-            if num_cards != 5: return 0
-            if len(valid_cards) != len(set(valid_cards)): return 0
-            rank_eval = evaluator_5card.evaluate(valid_cards)
-            # Проверяем валидность ранга перед использованием
-            if rank_eval >= evaluator_5card.table.WORST_RANK_5CARD:
-                logger.warning(f"Invalid rank {rank_eval} received for royalty calculation in row {row_name}")
-                return 0
-            rank_class = evaluator_5card.get_rank_class(rank_eval)
-            hand_name = evaluator_5card.class_to_string(rank_class)
+            # Типы для 5-карт берутся из class_to_string эвалюатора
+            table = ROYALTY_MIDDLE_POINTS if row_name == "middle" else ROYALTY_BOTTOM_POINTS
+            hand_name = type_str # get_hand_rank_safe возвращает строку типа
 
             # Проверка на Royal Flush (самый высокий стрит-флеш)
-            is_royal = (hand_name == "Straight Flush" and
-                        Card.get_rank_int(max(valid_cards, key=Card.get_rank_int)) == RANK_MAP['A'])
-
-            table = ROYALTY_MIDDLE_POINTS if row_name == "middle" else ROYALTY_BOTTOM_POINTS
+            # get_hand_rank_safe вернет "Straight Flush", нужно проверить ранг
+            is_royal = False
+            if hand_name == "Straight Flush":
+                 valid_cards = [c for c in cards if c] # Убираем None
+                 if valid_cards:
+                     ranks_int = {Card.get_rank_int(c) for c in valid_cards}
+                     # Роял Флеш: A, K, Q, J, T
+                     if ranks_int == {RANK_MAP['A'], RANK_MAP['K'], RANK_MAP['Q'], RANK_MAP['J'], RANK_MAP['T']}:
+                         is_royal = True
 
             if is_royal:
-                royalty = ROYALTY_MIDDLE_POINTS.get("Royal Flush", 50) if row_name == "middle" \
-                     else ROYALTY_BOTTOM_POINTS.get("Royal Flush", 25)
+                royalty = table.get("Royal Flush", 0) # Используем ключ "Royal Flush"
             else:
                 royalty = table.get(hand_name, 0)
 
@@ -375,5 +489,5 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str, evaluator_3card, 
             logger.warning(f"Unknown row name '{row_name}' in get_row_royalty.")
             return 0
     except Exception as e:
-        logger.error(f"Error calculating royalty for {row_name}: {e}", exc_info=True)
+        logger.error(f"Error calculating royalty for {row_name} (Type: {type_str}): {e}", exc_info=True)
         return 0
