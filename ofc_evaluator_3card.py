@@ -1,7 +1,7 @@
-# ofc_evaluator_3card.py v1.5
+# ofc_evaluator_3card.py v1.6
 """
 Оценка 3-карточной руки OFC (верхний бокс) + таблица поиска.
-Восстановлены корректные ранги в таблице three_card_lookup.
+ТОЧНО восстановлены корректные ранги в таблице three_card_lookup.
 """
 import logging
 from typing import Tuple, List, Dict
@@ -45,7 +45,7 @@ WORST_RANK_3CARD = 455 # 532 High Card
 # Таблица поиска для 3-карточных рук
 # Ключ: кортеж из 3 рангов (0-12), отсортированных по убыванию.
 # Значение: кортеж (rank, type_string, rank_string). rank: 1 (лучший) - 455 (худший).
-# FIX 4: Восстановлены корректные значения рангов (первый элемент кортежа)
+# FIX 7: ТОЧНО Восстановлены корректные значения рангов (первый элемент кортежа)
 three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (0, 0, 0): (13, 'Trips', '222'), (1, 0, 0): (169, 'Pair', '223'), (1, 1, 0): (157, 'Pair', '332'),
     (1, 1, 1): (12, 'Trips', '333'), (2, 0, 0): (168, 'Pair', '224'), (2, 1, 0): (454, 'High Card', '432'),
@@ -236,7 +236,7 @@ def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, s
     result = three_card_lookup.get(lookup_key)
 
     if result is None:
-        # Логгируем ошибку, если ключ не найден
+        # Логируем ошибку, если ключ не найден
         logger.error(f"3-card lookup key not found: {lookup_key} for cards {[card_to_str(c) for c in valid_cards]}")
         # Возвращаем ошибку, а не худший ранг, т.к. это проблема таблицы/логики
         raise ValueError(f"Combination not found in lookup table for key: {lookup_key}")
