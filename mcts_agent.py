@@ -1,8 +1,9 @@
-# mcts_agent.py v1.5
+# mcts_agent.py v1.6
 """
 Реализация MCTS-агента для задачи размещения карт OFC Pineapple.
 Цель - максимизация роялти.
 Возвращена логика снижения rollouts_per_leaf при num_workers=1 (как в v1.3).
+Импорт get_row_royalty изменен на ofc_evaluators.
 """
 
 import time
@@ -16,11 +17,14 @@ from collections import Counter
 
 # Импорты из локальных модулей
 try:
-    from ofc_logic import PlayerBoard, Card, Deck, get_row_royalty
+    from ofc_logic import PlayerBoard, Card, Deck # Убран get_row_royalty
     from mcts_node import MCTSNode, run_parallel_rollout
-    # Импортируем эвалюаторы напрямую, т.к. они нужны здесь
-    from ofc_evaluator_3card import evaluate_3_card_ofc, HAND_TYPE_TRIPS_3
-    from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
+    # Импортируем эвалюаторы и функции скоринга напрямую
+    from ofc_evaluators import (
+        evaluate_3_card_ofc, HAND_TYPE_TRIPS_3,
+        evaluator_5card_instance as evaluator_5card,
+        get_row_royalty # Добавлен импорт get_row_royalty
+    )
 except ImportError as e:
     logging.critical(f"Failed to import from ofc_logic/mcts_node/ofc_evaluators in mcts_agent.py: {e}")
     # Заглушки
@@ -223,8 +227,8 @@ class MCTSAgent:
                         if getattr(node_to_rollout_from.board, 'is_foul', True): # Считаем фолом по умолчанию при ошибке
                             reward = 0.0
                         else:
-                             # Используем эвалюаторы, импортированные в этот модуль
-                             reward = sum(get_row_royalty(node_to_rollout_from.board.get_row_cards(r), r) # Убрали передачу эвалюаторов
+                             # Используем импортированную функцию get_row_royalty
+                             reward = sum(get_row_royalty(node_to_rollout_from.board.get_row_cards(r), r)
                                           for r in PlayerBoard.ROW_NAMES)
                         results.append(reward)
                         num_simulations += 1
