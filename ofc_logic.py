@@ -1,10 +1,11 @@
-# ofc_logic.py v1.7
+# ofc_logic.py v1.8
 """
 Базовая логика игры OFC Pineapple: Карты, Колода, Доска, Утилиты Подсчета.
 Версия для режима тренировки (без Fantasyland, без сравнения с оппонентом).
 Исправлена логика check_board_foul для корректного сравнения силы рядов.
 Гарантированно добавлены импорты констант типов рук для get_row_royalty.
 Добавлено логгирование в get_row_royalty.
+Исправлена ошибка в Card.from_str (неправильный сдвиг bitrank).
 """
 
 import random
@@ -92,9 +93,11 @@ class Card:
         try: rank_prime = PRIMES[rank_int]
         except IndexError: raise ValueError(f"Internal error: Prime not found for rank {rank_int}")
 
-        bitrank = 1 << rank_int << 16
-        suit = suit_int << 12
-        rank = rank_int << 8
+        # --- ИСПРАВЛЕНО: Правильный сдвиг для bitrank ---
+        bitrank = 1 << (rank_int + 16) # Сдвигаем 1 на (rank + 16) позиций
+
+        suit = suit_int << 12         # Shift suit int left by 12
+        rank = rank_int << 8          # Shift rank int left by 8
         return bitrank | suit | rank | rank_prime
 
     @staticmethod
@@ -467,9 +470,14 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
             logger.debug(f"Processing top row royalty. Type: '{type_str}'")
             # Типы для 3-карт: Trips, Pair, High Card
             if type_str == HAND_TYPE_TRIPS_3: # Константа импортирована
-                rank_index = Card.get_rank_int(valid_cards[0])
-                royalty = ROYALTY_TOP_TRIPS.get(rank_index, 0)
-                logger.debug(f"Trips detected. Rank index: {rank_index}, Royalty: {royalty}")
+                # --- ИСПРАВЛЕНО: Ищем ранг трипса, а не первой карты ---
+                ranks = [Card.get_rank_int(c) for c in valid_cards]
+                rank_counts = Counter(ranks)
+                trip_rank = -1
+                for r, count in rank_counts.items():
+                    if count == 3: trip_rank = r; break
+                royalty = ROYALTY_TOP_TRIPS.get(trip_rank, 0)
+                logger.debug(f"Trips detected. Trip rank index: {trip_rank}, Royalty: {royalty}")
             elif type_str == HAND_TYPE_PAIR_3: # Константа импортирована
                  ranks = [Card.get_rank_int(c) for c in valid_cards]
                  rank_counts = Counter(ranks)
