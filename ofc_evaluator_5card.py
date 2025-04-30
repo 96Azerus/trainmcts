@@ -1,8 +1,9 @@
-# ofc_evaluator_5card.py v1.7
+# ofc_evaluator_5card.py v1.8
 """
 Оценка 5-карточной руки OFC + генерация таблиц поиска.
 Исправлено определение WORST_RANK_5CARD.
 Добавлено детальное логгирование в evaluate для отладки RF и других рук.
+Убедились в наличии логов для prime_product и rank_bitmask.
 """
 import itertools
 import traceback
@@ -312,9 +313,11 @@ class Evaluator5Card:
             rank_bitmask = 0
             for card_int in valid_cards:
                 rank_bitmask |= (1 << Card.get_rank_int(card_int))
+            # --- Убедились, что лог rank_bitmask есть ---
             logger.debug(f"Rank bitmask: {bin(rank_bitmask)}")
 
             prime_product = self.table._prime_product_from_rankbits(rank_bitmask)
+            # --- Убедились, что лог prime_product (flush) есть ---
             logger.debug(f"Calculated prime product (flush): {prime_product}")
             if prime_product == 0: # Ошибка при вычислении произведения
                  logger.error(f"Zero prime product for flush hand: {hand_str_log}")
@@ -343,6 +346,7 @@ class Evaluator5Card:
                 logger.debug(f"Rank counts: {rank_counts}")
                 for rank_index, count in rank_counts.items():
                     prime_product *= PRIMES[rank_index] ** count
+                # --- Убедились, что лог prime_product (unsuited) есть ---
                 logger.debug(f"Calculated prime product (unsuited): {prime_product}")
             except Exception as e:
                 logger.error(f"Error calculating prime product for unsuited hand {hand_str_log}: {e}")
