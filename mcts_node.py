@@ -1,9 +1,10 @@
-# mcts_node.py v1.1
+# mcts_node.py v1.2
 """
 Представление узла дерева MCTS для задачи размещения карт OFC Pineapple.
 Работает с состоянием доски и картами для размещения.
 Цель - максимизация роялти.
 Импорты check_board_foul и get_row_royalty изменены на ofc_evaluators.
+Импорт evaluator_5card изменен на ofc_evaluator_5card.
 """
 
 import math
@@ -17,15 +18,17 @@ from typing import Optional, Any, List, Tuple, Set, Dict
 
 # Импорты из локальных модулей
 try:
-    from ofc_logic import PlayerBoard, Card, Deck # Убраны get_row_royalty, check_board_foul
-    # Импортируем функции скоринга и эвалюаторы из ofc_evaluators
+    from ofc_logic import PlayerBoard, Card, Deck
+    # Импортируем функции скоринга и 3-card эвалюатор из ofc_evaluators
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK,
-        evaluate_3_card_ofc, evaluator_5card,
-        check_board_foul, get_row_royalty # Добавлены check_board_foul, get_row_royalty
+        evaluate_3_card_ofc,
+        check_board_foul, get_row_royalty
     )
+    # --- ИСПРАВЛЕНО: Импортируем 5-card эвалюатор напрямую ---
+    from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
 except ImportError as e:
-    logging.critical(f"Failed to import from ofc_logic/ofc_evaluators in mcts_node.py: {e}")
+    logging.critical(f"Failed to import from ofc_logic/ofc_evaluators/ofc_evaluator_5card in mcts_node.py: {e}")
     # Заглушки, чтобы код мог быть проанализирован
     class PlayerBoard: pass
     class Card: pass
