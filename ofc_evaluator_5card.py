@@ -1,8 +1,8 @@
-# ofc_evaluator_5card.py v1.5
+# ofc_evaluator_5card.py v1.7
 """
 Оценка 5-карточной руки OFC + генерация таблиц поиска.
 Исправлено определение WORST_RANK_5CARD.
-Добавлено логгирование для отладки RF.
+Добавлено детальное логгирование в evaluate для отладки RF и других рук.
 """
 import itertools
 import traceback
@@ -38,7 +38,13 @@ except ImportError:
 # Получаем логгер
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logger.setLevel(logging.WARNING)
+    # Настраиваем логгер, если он еще не настроен
+    logger.setLevel(logging.DEBUG) # Устанавливаем DEBUG для отладки
+    handler = logging.StreamHandler() # Вывод в консоль
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
 
 # --- Класс LookupTable5Card ---
 class LookupTable5Card:
@@ -53,7 +59,7 @@ class LookupTable5Card:
     MAX_PAIR: int = 6185
     MAX_HIGH_CARD: int = 7462 # Худший *валидный* ранг
 
-    # FIX 13: WORST_RANK_5CARD - это ранг для ошибок, он должен быть хуже MAX_HIGH_CARD
+    # WORST_RANK_5CARD - это ранг для ошибок, он должен быть хуже MAX_HIGH_CARD
     WORST_RANK_5CARD: int = MAX_HIGH_CARD + 1 # 7463
 
     RANK_CLASS_TO_STRING: Dict[int, str] = {
@@ -279,6 +285,9 @@ class Evaluator5Card:
         Оценивает 5-карточную руку.
         Возвращает ранг (1-7462) или WORST_RANK_5CARD (7463) при ошибке.
         """
+        hand_str_log = [card_to_str(c) for c in cards] # Для логгирования
+        logger.debug(f"Evaluating 5-card hand: {hand_str_log}")
+
         if len(cards) != 5:
             logger.warning(f"Evaluator5Card.evaluate requires 5 cards, got {len(cards)}")
             return self.table.WORST_RANK_5CARD # Возвращаем невалидный ранг
@@ -290,7 +299,7 @@ class Evaluator5Card:
                      raise ValueError(f"Invalid card integer: {c}")
                  valid_cards.append(c)
             if len(valid_cards) != len(set(valid_cards)):
-                raise ValueError(f"Duplicate cards found: {[card_to_str(c) for c in valid_cards]}")
+                raise ValueError(f"Duplicate cards found: {hand_str_log}")
         except ValueError as e:
             logger.warning(f"Invalid input for 5-card evaluation: {e}")
             return self.table.WORST_RANK_5CARD
@@ -298,45 +307,53 @@ class Evaluator5Card:
         # Проверка на флеш
         suit_mask = valid_cards[0] & valid_cards[1] & valid_cards[2] & valid_cards[3] & valid_cards[4] & 0xF000
         if suit_mask != 0: # Флеш или Стрит-флеш
+            logger.debug(f"Hand {hand_str_log} detected as Flush/SF (suit_mask={suit_mask})")
             # Вычисляем битовую маску рангов
             rank_bitmask = 0
             for card_int in valid_cards:
                 rank_bitmask |= (1 << Card.get_rank_int(card_int))
+            logger.debug(f"Rank bitmask: {bin(rank_bitmask)}")
 
             prime_product = self.table._prime_product_from_rankbits(rank_bitmask)
+            logger.debug(f"Calculated prime product (flush): {prime_product}")
             if prime_product == 0: # Ошибка при вычислении произведения
-                 logger.error(f"Zero prime product for flush hand: {[card_to_str(c) for c in valid_cards]}")
+                 logger.error(f"Zero prime product for flush hand: {hand_str_log}")
                  return self.table.WORST_RANK_5CARD
 
             # Ищем в таблице флешей
             rank = self.table.flush_lookup.get(prime_product)
+            logger.debug(f"Lookup result in flush_lookup for {prime_product}: {rank}")
+
             if rank is None:
                 # Логгируем ошибку, если не нашли
-                # Это может произойти, если _prime_product_from_rankbits вернул неверное значение
-                # или если таблица сгенерирована неверно
                 rf_bits = 0b1111100000000
                 if rank_bitmask == rf_bits:
-                    logger.error(f"FATAL: Royal Flush prime product {prime_product} (bits {bin(rank_bitmask)}) not found in lookup for hand {[card_to_str(c) for c in valid_cards]}!")
+                    logger.error(f"FATAL: Royal Flush prime product {prime_product} (bits {bin(rank_bitmask)}) not found in lookup for hand {hand_str_log}!")
                 else:
-                    logger.warning(f"Flush prime product {prime_product} not found for hand {[card_to_str(c) for c in valid_cards]} (bitmask {bin(rank_bitmask)})")
+                    logger.warning(f"Flush prime product {prime_product} not found for hand {hand_str_log} (bitmask {bin(rank_bitmask)})")
                 return self.table.WORST_RANK_5CARD # Возвращаем невалидный ранг
             return rank
         else: # Не флеш
+            logger.debug(f"Hand {hand_str_log} detected as Unsuited")
             # Используем Counter для правильного ключа
             prime_product = 1
             try:
                 ranks = [Card.get_rank_int(c) for c in valid_cards]
                 rank_counts = Counter(ranks)
+                logger.debug(f"Rank counts: {rank_counts}")
                 for rank_index, count in rank_counts.items():
                     prime_product *= PRIMES[rank_index] ** count
+                logger.debug(f"Calculated prime product (unsuited): {prime_product}")
             except Exception as e:
-                logger.error(f"Error calculating prime product for unsuited hand {[card_to_str(c) for c in valid_cards]}: {e}")
+                logger.error(f"Error calculating prime product for unsuited hand {hand_str_log}: {e}")
                 return self.table.WORST_RANK_5CARD
 
             # Ищем в таблице не-флешей
             rank = self.table.unsuited_lookup.get(prime_product)
+            logger.debug(f"Lookup result in unsuited_lookup for {prime_product}: {rank}")
+
             if rank is None:
-                logger.warning(f"Unsuited prime product {prime_product} not found for hand {[card_to_str(c) for c in valid_cards]} (ranks: {ranks})")
+                logger.warning(f"Unsuited prime product {prime_product} not found for hand {hand_str_log} (ranks: {ranks})")
                 return self.table.WORST_RANK_5CARD # Возвращаем невалидный ранг
             return rank
 
@@ -344,6 +361,7 @@ class Evaluator5Card:
         """Возвращает класс руки (1-9) по её рангу."""
         # Проверяем на невалидный ранг
         if not isinstance(hand_rank, int) or hand_rank <= 0 or hand_rank >= self.table.WORST_RANK_5CARD:
+            logger.debug(f"get_rank_class received invalid rank: {hand_rank}, returning 9")
             return 9 # Возвращаем High Card (худший класс) для невалидных рангов
 
         # Определяем класс по диапазонам
