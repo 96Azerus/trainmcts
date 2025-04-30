@@ -1,8 +1,9 @@
-# mcts_node.py v1.0
+# mcts_node.py v1.1
 """
 Представление узла дерева MCTS для задачи размещения карт OFC Pineapple.
 Работает с состоянием доски и картами для размещения.
 Цель - максимизация роялти.
+Импорты check_board_foul и get_row_royalty изменены на ofc_evaluators.
 """
 
 import math
@@ -16,8 +17,13 @@ from typing import Optional, Any, List, Tuple, Set, Dict
 
 # Импорты из локальных модулей
 try:
-    from ofc_logic import PlayerBoard, Card, Deck, get_row_royalty, check_board_foul
-    from ofc_evaluators import get_hand_rank_safe, WORST_RANK, evaluate_3_card_ofc, evaluator_5card
+    from ofc_logic import PlayerBoard, Card, Deck # Убраны get_row_royalty, check_board_foul
+    # Импортируем функции скоринга и эвалюаторы из ofc_evaluators
+    from ofc_evaluators import (
+        get_hand_rank_safe, WORST_RANK,
+        evaluate_3_card_ofc, evaluator_5card,
+        check_board_foul, get_row_royalty # Добавлены check_board_foul, get_row_royalty
+    )
 except ImportError as e:
     logging.critical(f"Failed to import from ofc_logic/ofc_evaluators in mcts_node.py: {e}")
     # Заглушки, чтобы код мог быть проанализирован
@@ -227,16 +233,17 @@ class MCTSNode:
                 logger.warning(f"Rollout finished with incomplete board ({current_board.get_total_cards()}/13).")
                 return 0.0
 
-            # Проверяем фол
-            is_foul = check_board_foul(current_board, evaluate_3_card_ofc, evaluator_5card)
+            # Проверяем фол (используем импортированную функцию)
+            is_foul = check_board_foul(current_board) # Убраны эвалюаторы
             if is_foul:
                 return 0.0 # Роялти за фол = 0
 
-            # Считаем роялти
+            # Считаем роялти (используем импортированную функцию)
             total_royalty = 0
             for row_name in PlayerBoard.ROW_NAMES:
                 row_cards = current_board.get_row_cards(row_name)
-                total_royalty += get_row_royalty(row_cards, row_name, evaluate_3_card_ofc, evaluator_5card)
+                # Убраны эвалюаторы из вызова
+                total_royalty += get_row_royalty(row_cards, row_name)
 
             return float(total_royalty)
 
