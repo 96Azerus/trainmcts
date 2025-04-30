@@ -611,7 +611,7 @@ _________________________ test_check_board_foul_logic __________________________
         # FIX 5: Убран вызов check_board_foul с эвалюаторами
         board_foul_mt.is_foul = check_board_foul(board_foul_mt)
 >       assert board_foul_mt.is_foul, f"Board should be foul (Middle < Top): {board_foul_mt}" # Middle < Top -> Foul
-E       AssertionError: Board should be foul (Middle < Top): TOP   : 2h 3d 4c __ __
+E       AssertionError: Board should be foul (Middle < Top): TOP   : 2h 3d 4c
 E         MIDDLE: As Ad Kc Kd Qc
 E         BOTTOM: Ah Kh Qh Jh Th
 E         Cards: 13/13, Foul: False
@@ -622,10 +622,18 @@ tests/test_ofc_logic.py:231: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:242 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
 WARNING  ofc_evaluators:ofc_evaluators.py:154 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_logic:ofc_logic.py:414 Could not determine valid ranks for foul check. T:7476(Trips), M:367(Flush), B:7919(Invalid)
+WARNING  ofc_logic:ofc_logic.py:419 Could not determine valid ranks for foul check. T:7476(Trips), M:367(Flush), B:7919(Invalid) for board:
+TOP   : Qh Qd 2c
+MIDDLE: Ah Kh Th Jh 9h
+BOTTOM: As Ad Ac Ks Kd
+Cards: 13/13, Foul: False
 WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:242 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
 WARNING  ofc_evaluators:ofc_evaluators.py:154 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_logic:ofc_logic.py:414 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:1(Straight Flush)
+WARNING  ofc_logic:ofc_logic.py:419 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:1(Straight Flush) for board:
+TOP   : 2h 3d 4c
+MIDDLE: As Ad Kc Kd Qc
+BOTTOM: Ah Kh Qh Jh Th
+Cards: 13/13, Foul: False
 __________________________ test_get_row_royalty_logic __________________________
 
     @pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
@@ -633,19 +641,13 @@ __________________________ test_get_row_royalty_logic __________________________
     def test_get_row_royalty_logic():
         # FIX 6: Убраны эвалюаторы из вызовов get_row_royalty
         # Top
->       assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top') == 22
-E       AssertionError: assert 0 == 22
-E        +  where 0 = get_row_royalty([268446761, 268454953, 268471337], 'top')
-E        +    where [268446761, 268454953, 268471337] = hand_to_int(['Ah', 'Ad', 'Ac'])
+        assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top') == 22
+>       assert get_row_royalty(hand_to_int(['Qh', 'Qd', '2c']), 'top') == 7
+E       AssertionError: assert 20 == 7
+E        +  where 20 = get_row_royalty([67119647, 67127839, 98306], 'top')
+E        +    where [67119647, 67127839, 98306] = hand_to_int(['Qh', 'Qd', '2c'])
 
-tests/test_ofc_logic.py:256: AssertionError
------------------------------- Captured log call -------------------------------
-ERROR    ofc_logic:ofc_logic.py:492 Error calculating royalty for top (Type: Trips): name 'HAND_TYPE_TRIPS_3' is not defined
-Traceback (most recent call last):
-  File "/workspaces/trainmcts/ofc_logic.py", line 448, in get_row_royalty
-    if type_str == HAND_TYPE_TRIPS_3:
-                   ^^^^^^^^^^^^^^^^^
-NameError: name 'HAND_TYPE_TRIPS_3' is not defined
+tests/test_ofc_logic.py:257: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str0-1-Trips-AAA]
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str1-2-Trips-KKK]
@@ -664,4 +666,4 @@ FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str14-245-
 FAILED tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str15-455-High Card-532]
 FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - AssertionError:...
 FAILED tests/test_ofc_logic.py::test_get_row_royalty_logic - AssertionError: ...
-=================== 17 failed, 36 passed, 2 skipped in 0.65s ===================
+=================== 17 failed, 36 passed, 2 skipped in 0.63s ===================
