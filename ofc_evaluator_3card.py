@@ -1,8 +1,9 @@
-# ofc_evaluator_3card.py v1.9
+# ofc_evaluator_3card.py v2.0
 """
 Оценка 3-карточной руки OFC (верхний бокс) + таблица поиска.
 Вставлена 100% корректная таблица three_card_lookup (еще раз!).
 Добавлено логгирование для отладки.
+Убедились в наличии логов ключа и результата.
 """
 import logging
 from typing import Tuple, List, Dict
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
     logger.setLevel(logging.DEBUG) # Устанавливаем DEBUG для отладки
     handler = logging.StreamHandler() # Вывод в консоль
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s') # Добавил имя файла и строку
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
@@ -318,8 +319,10 @@ def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, s
 
     # Формируем ключ для поиска
     lookup_key = tuple(sorted(ranks, reverse=True))
+    # --- Убедились, что лог ключа есть ---
     logger.debug(f"Generated lookup key: {lookup_key}")
     result = three_card_lookup.get(lookup_key)
+    # --- Убедились, что лог результата есть ---
     logger.debug(f"Lookup result for key {lookup_key}: {result}")
 
     if result is None:
