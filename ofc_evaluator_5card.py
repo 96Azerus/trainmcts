@@ -1,9 +1,10 @@
-# ofc_evaluator_5card.py v1.8
+# ofc_evaluator_5card.py v1.9 (DEBUG VERSION)
 """
 Оценка 5-карточной руки OFC + генерация таблиц поиска.
 Исправлено определение WORST_RANK_5CARD.
 Добавлено детальное логгирование в evaluate для отладки RF и других рук.
 Убедились в наличии логов для prime_product и rank_bitmask.
+!!! ДОБАВЛЕНЫ ОТЛАДОЧНЫЕ ЛОГИ В evaluate !!!
 """
 import itertools
 import traceback
@@ -287,7 +288,7 @@ class Evaluator5Card:
         Возвращает ранг (1-7462) или WORST_RANK_5CARD (7463) при ошибке.
         """
         hand_str_log = [card_to_str(c) for c in cards] # Для логгирования
-        logger.debug(f"Evaluating 5-card hand: {hand_str_log}")
+        logger.debug(f"Evaluating 5-card hand: {hand_str_log} (ints: {cards})") # Лог входа
 
         if len(cards) != 5:
             logger.warning(f"Evaluator5Card.evaluate requires 5 cards, got {len(cards)}")
@@ -305,19 +306,24 @@ class Evaluator5Card:
             logger.warning(f"Invalid input for 5-card evaluation: {e}")
             return self.table.WORST_RANK_5CARD
 
+        # --- ДОБАВЛЕНО ЛОГГИРОВАНИЕ РАНГОВ ---
+        ranks_extracted = []
+        for card_int in valid_cards:
+            rank_int = Card.get_rank_int(card_int)
+            ranks_extracted.append(rank_int)
+        logger.debug(f"  Extracted ranks: {ranks_extracted}")
+
         # Проверка на флеш
         suit_mask = valid_cards[0] & valid_cards[1] & valid_cards[2] & valid_cards[3] & valid_cards[4] & 0xF000
         if suit_mask != 0: # Флеш или Стрит-флеш
             logger.debug(f"Hand {hand_str_log} detected as Flush/SF (suit_mask={suit_mask})")
             # Вычисляем битовую маску рангов
             rank_bitmask = 0
-            for card_int in valid_cards:
-                rank_bitmask |= (1 << Card.get_rank_int(card_int))
-            # --- Убедились, что лог rank_bitmask есть ---
+            for rank_int in ranks_extracted: # Используем уже извлеченные ранги
+                rank_bitmask |= (1 << rank_int)
             logger.debug(f"Rank bitmask: {bin(rank_bitmask)}")
 
             prime_product = self.table._prime_product_from_rankbits(rank_bitmask)
-            # --- Убедились, что лог prime_product (flush) есть ---
             logger.debug(f"Calculated prime product (flush): {prime_product}")
             if prime_product == 0: # Ошибка при вычислении произведения
                  logger.error(f"Zero prime product for flush hand: {hand_str_log}")
@@ -335,18 +341,18 @@ class Evaluator5Card:
                 else:
                     logger.warning(f"Flush prime product {prime_product} not found for hand {hand_str_log} (bitmask {bin(rank_bitmask)})")
                 return self.table.WORST_RANK_5CARD # Возвращаем невалидный ранг
+            logger.debug(f"Returning rank (flush): {rank}") # Лог возврата
             return rank
         else: # Не флеш
             logger.debug(f"Hand {hand_str_log} detected as Unsuited")
             # Используем Counter для правильного ключа
             prime_product = 1
             try:
-                ranks = [Card.get_rank_int(c) for c in valid_cards]
-                rank_counts = Counter(ranks)
+                # Используем уже извлеченные ранги
+                rank_counts = Counter(ranks_extracted)
                 logger.debug(f"Rank counts: {rank_counts}")
                 for rank_index, count in rank_counts.items():
                     prime_product *= PRIMES[rank_index] ** count
-                # --- Убедились, что лог prime_product (unsuited) есть ---
                 logger.debug(f"Calculated prime product (unsuited): {prime_product}")
             except Exception as e:
                 logger.error(f"Error calculating prime product for unsuited hand {hand_str_log}: {e}")
@@ -357,8 +363,9 @@ class Evaluator5Card:
             logger.debug(f"Lookup result in unsuited_lookup for {prime_product}: {rank}")
 
             if rank is None:
-                logger.warning(f"Unsuited prime product {prime_product} not found for hand {hand_str_log} (ranks: {ranks})")
+                logger.warning(f"Unsuited prime product {prime_product} not found for hand {hand_str_log} (ranks: {ranks_extracted})")
                 return self.table.WORST_RANK_5CARD # Возвращаем невалидный ранг
+            logger.debug(f"Returning rank (unsuited): {rank}") # Лог возврата
             return rank
 
     def get_rank_class(self, hand_rank: int) -> int:
