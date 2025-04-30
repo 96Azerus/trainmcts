@@ -1,24 +1,24 @@
-# tests/test_ofc_logic.py v1.3
+# tests/test_ofc_logic.py v1.4
 """
 Unit-тесты для модуля ofc_logic.py.
-Исправлены дубликаты в test_check_board_foul_logic.
-Исправлен импорт hand_to_int.
+Исправлены вызовы check_board_foul и get_row_royalty в тестах.
 """
 
 import pytest
 import random
 from typing import List, Optional, Set
+from collections import Counter # Добавлен импорт Counter
 
 # Импорты из тестируемого модуля
 from ofc_logic import (
-    Card, Deck, PlayerBoard, # <-- Убран импорт hand_to_int отсюда
+    Card, Deck, PlayerBoard,
     check_board_foul, get_row_royalty,
     INVALID_CARD, CARD_PLACEHOLDER, NUM_CARDS,
     ROYALTY_TOP_PAIRS, ROYALTY_TOP_TRIPS,
     ROYALTY_MIDDLE_POINTS, ROYALTY_BOTTOM_POINTS,
     RANK_MAP
 )
-# Импорты эвалюаторов для тестов скоринга
+# Импорты эвалюаторов для тестов скоринга (нужны для hand_to_int и создания карт)
 try:
     from ofc_evaluator_3card import evaluate_3_card_ofc
     from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
@@ -145,14 +145,28 @@ def test_playerboard_set_full_board():
     middle = hand_to_int(mid_s)
     bottom = hand_to_int(bot_s)
 
-    board.set_full_board(top, middle, bottom)
+    # Убираем Optional[int] из сигнатуры, так как set_full_board ожидает только int
+    board.set_full_board(
+        [c for c in top if c is not None],
+        [c for c in middle if c is not None],
+        [c for c in bottom if c is not None]
+    )
     assert board.is_complete()
     assert board.get_total_cards() == 13
     assert board.rows['top'] == top
     with pytest.raises(ValueError): # Дубликат
-        board.set_full_board(top, middle, hand_to_int(['Ah', 'Kh', 'Qs', 'Js', 'Ts']))
+        board.set_full_board(
+            [c for c in top if c is not None],
+            [c for c in middle if c is not None],
+            hand_to_int(['Ah', 'Kh', 'Qs', 'Js', 'Ts']) # type: ignore
+        )
     with pytest.raises(ValueError): # Неверное кол-во
-        board.set_full_board(top[:2], middle, bottom)
+        board.set_full_board(
+            [c for c in top[:2] if c is not None],
+            [c for c in middle if c is not None],
+            [c for c in bottom if c is not None]
+        )
+
 
 def test_playerboard_get_available_slots():
     board = PlayerBoard()
@@ -171,13 +185,11 @@ def test_playerboard_get_board_state_tuple():
     board.add_card(Card.from_str('2c'), 'top', 2)
     board.add_card(Card.from_str('Kd'), 'middle', 1)
     state_tuple = board.get_board_state_tuple()
-    # Проверяем содержимое, порядок может меняться из-за сортировки
-    assert Card.from_str('As') in state_tuple[0]
-    assert Card.from_str('2c') in state_tuple[0]
-    assert None in state_tuple[0]
-    assert Card.from_str('Kd') in state_tuple[1]
-    assert state_tuple[1].count(None) == 4
-    assert state_tuple[2].count(None) == 5
+    # Проверяем содержимое, порядок должен сохраняться
+    assert state_tuple[0] == (Card.from_str('As'), None, Card.from_str('2c'))
+    assert state_tuple[1] == (None, Card.from_str('Kd'), None, None, None)
+    assert state_tuple[2] == (None, None, None, None, None)
+
 
 def test_playerboard_copy():
     board1 = PlayerBoard()
@@ -198,52 +210,66 @@ def test_playerboard_copy():
 def test_check_board_foul_logic():
     # Валидная доска
     board_ok = PlayerBoard()
-    # --- ИСПРАВЛЕНО: Убраны дубликаты (Qh заменена на Th в middle) ---
-    board_ok.set_full_board(hand_to_int(['Qh', 'Qd', '2c']), # Pair Q
-                            hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A (была K, но Th < Qh)
-                            hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])) # FH A over K
-    board_ok.is_foul = check_board_foul(board_ok, evaluate_3_card_ofc, evaluator_5card)
+    board_ok.set_full_board(
+        hand_to_int(['Qh', 'Qd', '2c']), # Pair Q (AdjRank ~7464+40=7504)
+        hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A high (Rank ~500-1000)
+        hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])  # FH A over K (Rank 167)
+    )
+    # FIX 5: Убран вызов check_board_foul с эвалюаторами
+    board_ok.is_foul = check_board_foul(board_ok)
     assert not board_ok.is_foul, f"Board should be valid: {board_ok}"
 
-    # Фол: Middle > Top
+    # Фол: Middle > Top (Flush A > Pair Q)
     board_foul_mt = PlayerBoard()
-    board_foul_mt.set_full_board(hand_to_int(['2h', '3d', '4c']), # High Card 4
-                                 hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK
-                                 hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])) # Straight Flush A
-    board_foul_mt.is_foul = check_board_foul(board_foul_mt, evaluate_3_card_ofc, evaluator_5card)
-    assert board_foul_mt.is_foul, f"Board should be foul (Middle > Top): {board_foul_mt}"
+    board_foul_mt.set_full_board(
+        hand_to_int(['2h', '3d', '4c']), # High Card 4 (AdjRank ~7464+454=7918)
+        hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK (Rank 2468)
+        hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A (Rank 1)
+    )
+    # FIX 5: Убран вызов check_board_foul с эвалюаторами
+    board_foul_mt.is_foul = check_board_foul(board_foul_mt)
+    assert board_foul_mt.is_foul, f"Board should be foul (Middle < Top): {board_foul_mt}" # Middle < Top -> Foul
 
-    # Фол: Bottom > Middle
+    # Фол: Bottom > Middle (Flush K < Two Pair KQ)
     board_foul_bm = PlayerBoard()
-    board_foul_bm.set_full_board(hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A
-                                 hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ
-                                 hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])) # Flush K (ниже чем Two Pair KQ)
-    board_foul_bm.is_foul = check_board_foul(board_foul_bm, evaluate_3_card_ofc, evaluator_5card)
-    assert board_foul_bm.is_foul, f"Board should be foul (Bottom > Middle): {board_foul_bm}"
+    board_foul_bm.set_full_board(
+        hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A (AdjRank ~7464+1=7465)
+        hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ (Rank ~2500)
+        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K (Rank ~1000-1500)
+    )
+    # FIX 5: Убран вызов check_board_foul с эвалюаторами
+    board_foul_bm.is_foul = check_board_foul(board_foul_bm)
+    assert board_foul_bm.is_foul, f"Board should be foul (Bottom < Middle): {board_foul_bm}" # Bottom < Middle -> Foul
 
     # Неполная доска - не фол
     board_incomplete = PlayerBoard()
     board_incomplete.add_card(Card.from_str('As'), 'top', 0)
-    board_incomplete.is_foul = check_board_foul(board_incomplete, evaluate_3_card_ofc, evaluator_5card)
+    # FIX 5: Убран вызов check_board_foul с эвалюаторами
+    board_incomplete.is_foul = check_board_foul(board_incomplete)
     assert not board_incomplete.is_foul
 
 @pytest.mark.skipif('evaluate_3_card_ofc' not in globals() or 'evaluator_5card' not in globals(),
                     reason="Evaluators not imported, skipping scoring tests")
 def test_get_row_royalty_logic():
+    # FIX 6: Убраны эвалюаторы из вызовов get_row_royalty
     # Top
-    assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top', evaluate_3_card_ofc, evaluator_5card) == 22
-    assert get_row_royalty(hand_to_int(['Qh', 'Qd', '2c']), 'top', evaluate_3_card_ofc, evaluator_5card) == 7
-    assert get_row_royalty(hand_to_int(['6h', '6d', 'Ac']), 'top', evaluate_3_card_ofc, evaluator_5card) == 1
-    assert get_row_royalty(hand_to_int(['5h', '5d', 'Ac']), 'top', evaluate_3_card_ofc, evaluator_5card) == 0
-    assert get_row_royalty(hand_to_int(['Ah', 'Kc', 'Qd']), 'top', evaluate_3_card_ofc, evaluator_5card) == 0
+    assert get_row_royalty(hand_to_int(['Ah', 'Ad', 'Ac']), 'top') == 22
+    assert get_row_royalty(hand_to_int(['Qh', 'Qd', '2c']), 'top') == 7
+    assert get_row_royalty(hand_to_int(['6h', '6d', 'Ac']), 'top') == 1
+    assert get_row_royalty(hand_to_int(['5h', '5d', 'Ac']), 'top') == 0
+    assert get_row_royalty(hand_to_int(['Ah', 'Kc', 'Qd']), 'top') == 0
     # Middle
-    assert get_row_royalty(hand_to_int(['As','Ks','Qs','Js','Ts']), 'middle', evaluate_3_card_ofc, evaluator_5card) == 50 # RF
-    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','As','2c']), 'middle', evaluate_3_card_ofc, evaluator_5card) == 20 # Quads
-    assert get_row_royalty(hand_to_int(['Kc','Kd','Kh','Qc','Qs']), 'middle', evaluate_3_card_ofc, evaluator_5card) == 12 # FH
-    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','Ks','Qd']), 'middle', evaluate_3_card_ofc, evaluator_5card) == 2 # Trips
-    assert get_row_royalty(hand_to_int(['Ac','Ad','Kc','Kd','2s']), 'middle', evaluate_3_card_ofc, evaluator_5card) == 0 # 2 Pair
+    assert get_row_royalty(hand_to_int(['As','Ks','Qs','Js','Ts']), 'middle') == 50 # RF
+    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','As','2c']), 'middle') == 20 # Quads
+    assert get_row_royalty(hand_to_int(['Kc','Kd','Kh','Qc','Qs']), 'middle') == 12 # FH
+    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','Ks','Qd']), 'middle') == 2 # Trips
+    assert get_row_royalty(hand_to_int(['Ac','Ad','Kc','Kd','2s']), 'middle') == 0 # 2 Pair
     # Bottom
-    assert get_row_royalty(hand_to_int(['As','Ks','Qs','Js','Ts']), 'bottom', evaluate_3_card_ofc, evaluator_5card) == 25 # RF
-    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','As','2c']), 'bottom', evaluate_3_card_ofc, evaluator_5card) == 10 # Quads
-    assert get_row_royalty(hand_to_int(['Kc','Kd','Kh','Qc','Qs']), 'bottom', evaluate_3_card_ofc, evaluator_5card) == 6 # FH
-    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','Ks','Qd']), 'bottom', evaluate_3_card_ofc, evaluator_5card) == 0 # Trips (no royalty)
+    assert get_row_royalty(hand_to_int(['As','Ks','Qs','Js','Ts']), 'bottom') == 25 # RF
+    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','As','2c']), 'bottom') == 10 # Quads
+    assert get_row_royalty(hand_to_int(['Kc','Kd','Kh','Qc','Qs']), 'bottom') == 6 # FH
+    assert get_row_royalty(hand_to_int(['Ac','Ad','Ah','Ks','Qd']), 'bottom') == 0 # Trips (no royalty)
+    # Невалидные/неполные
+    assert get_row_royalty(hand_to_int(['As', 'Ks', None]), 'top') == 0
+    assert get_row_royalty(hand_to_int(['As', 'Ks', 'Qs', 'Js', None]), 'middle') == 0
+    assert get_row_royalty(hand_to_int(['As', 'As', 'Ks']), 'top') == 0 # Дубликат
