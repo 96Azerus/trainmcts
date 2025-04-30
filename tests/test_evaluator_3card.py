@@ -1,11 +1,11 @@
-# tests/test_evaluator_3card.py v1.2
+# tests/test_evaluator_3card.py v1.3
 """
 Unit-тесты для модуля ofc_evaluator_3card.py.
-Исправлен импорт hand_to_int.
+Добавлены проверки type_str и rank_str_out.
 """
 
 import pytest
-import itertools # Добавлен импорт
+import itertools
 
 # Импорты из тестируемого модуля
 try:
@@ -15,8 +15,7 @@ except ImportError:
 
 # Импорты из ofc_logic для создания карт
 try:
-    # --- ИСПРАВЛЕНО: Убран импорт hand_to_int ---
-    from ofc_logic import Card, INVALID_CARD
+    from ofc_logic import Card, INVALID_CARD, hand_to_int as logic_hand_to_int # Используем хелпер из logic
 except ImportError:
     pytest.skip("Skipping 3-card evaluator tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -24,8 +23,7 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> tuple:
     """Конвертирует список строк в кортеж int карт."""
-    # --- ИСПРАВЛЕНО: Используем Card.hand_to_int ---
-    ints_optional = Card.hand_to_int(card_strs)
+    ints_optional = logic_hand_to_int(card_strs)
     ints = [c for c in ints_optional if c is not None]
     if len(ints) != 3: raise ValueError("Hand must contain 3 valid cards for this test")
     if len(ints) != len(set(ints)): raise ValueError("Duplicate cards not allowed")
@@ -58,9 +56,10 @@ def test_evaluate_3_card_valid(hand_str, expected_rank, expected_type, expected_
     """Тестирует оценку различных валидных 3-карточных рук."""
     card_ints = hand_to_int(hand_str)
     rank, type_str, rank_str_out = evaluate_3_card_ofc(card_ints[0], card_ints[1], card_ints[2])
-    assert rank == expected_rank
-    assert type_str == expected_type
-    assert rank_str_out == expected_rank_str
+    # FIX 19: Добавлены проверки типа и строки ранга
+    assert rank == expected_rank, f"Hand: {hand_str}, Expected Rank: {expected_rank}, Got: {rank}"
+    assert type_str == expected_type, f"Hand: {hand_str}, Expected Type: {expected_type}, Got: {type_str}"
+    assert rank_str_out == expected_rank_str, f"Hand: {hand_str}, Expected Str: {expected_rank_str}, Got: {rank_str_out}"
 
 # --- Тесты невалидных входов ---
 def test_evaluate_3_card_invalid_input():
@@ -78,7 +77,12 @@ def test_evaluate_3_card_invalid_input():
 
 def test_lookup_table_completeness():
     """Проверяет, что все 455 комбинаций рангов присутствуют в таблице."""
-    assert len(three_card_lookup) == WORST_RANK_3CARD, "Lookup table size mismatch"
+    # C(13, 3) + C(13, 2)*11 + C(13, 1) = 286 + 78*11 + 13 = 286 + 858 + 13 = 1157? Нет.
+    # Trips: 13
+    # Pairs: C(13, 1) * C(12, 1) = 13 * 12 = 156
+    # High Card: C(13, 3) = (13 * 12 * 11) / (3 * 2 * 1) = 13 * 2 * 11 = 286
+    # Total = 13 + 156 + 286 = 455
+    assert len(three_card_lookup) == WORST_RANK_3CARD, f"Lookup table size mismatch: expected {WORST_RANK_3CARD}, got {len(three_card_lookup)}"
     # Проверяем наличие ключей для лучших и худших рук
     assert (12, 12, 12) in three_card_lookup # AAA
     assert (3, 1, 0) in three_card_lookup # 532
