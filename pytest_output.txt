@@ -3,39 +3,39 @@ platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-uti
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: anyio-4.9.0
-collecting ... 2025-04-30 21:32:02,740 - app - INFO - [app:51] - --- Flask App Initialization ---
-2025-04-30 21:32:02,740 - app - INFO - [app:56] - Production mode: False
-2025-04-30 21:32:02,740 - app - INFO - [app:105] - Defining Flask routes...
+collecting ... 2025-04-30 21:43:14,543 - app - INFO - [app:51] - --- Flask App Initialization ---
+2025-04-30 21:43:14,543 - app - INFO - [app:56] - Production mode: False
+2025-04-30 21:43:14,544 - app - INFO - [app:105] - Defining Flask routes...
 collected 35 items / 3 skipped
 
-tests/test_app.py::test_index_route 2025-04-30 21:32:02,766 - app - INFO - [app:110] - Route / called (GET)
+tests/test_app.py::test_index_route 2025-04-30 21:43:14,570 - app - INFO - [app:110] - Route / called (GET)
 PASSED
-tests/test_app.py::test_ai_move_valid_request 2025-04-30 21:32:02,773 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-04-30 21:32:02,773 - app - INFO - [app:188] - Starting iterative MCTS for 2 cards...
-2025-04-30 21:32:02,774 - app - INFO - [app:204] - MCTS recommended action: As to top[0]
-2025-04-30 21:32:02,774 - app - INFO - [app:204] - MCTS recommended action: Ks to top[1]
-2025-04-30 21:32:02,774 - app - INFO - [app:230] - AI move request processed in 0.001s. Placements found: 2
+tests/test_app.py::test_ai_move_valid_request 2025-04-30 21:43:14,576 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 21:43:14,576 - app - INFO - [app:188] - Starting iterative MCTS for 2 cards...
+2025-04-30 21:43:14,576 - app - INFO - [app:204] - MCTS recommended action: As to top[0]
+2025-04-30 21:43:14,576 - app - INFO - [app:204] - MCTS recommended action: Ks to top[1]
+2025-04-30 21:43:14,576 - app - INFO - [app:230] - AI move request processed in 0.001s. Placements found: 2
 PASSED
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-04-30 21:32:02,776 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-04-30 21:32:02,776 - app - WARNING - [app:149] - No valid cards to place provided.
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-04-30 21:43:14,578 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 21:43:14,578 - app - WARNING - [app:149] - No valid cards to place provided.
 PASSED
-tests/test_app.py::test_ai_move_invalid_json 2025-04-30 21:32:02,778 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-04-30 21:32:02,778 - app - WARNING - [app:126] - Request is not JSON
+tests/test_app.py::test_ai_move_invalid_json 2025-04-30 21:43:14,580 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 21:43:14,580 - app - WARNING - [app:126] - Request is not JSON
 PASSED
-tests/test_app.py::test_ai_move_missing_data 2025-04-30 21:32:02,779 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-04-30 21:32:02,779 - app - WARNING - [app:138] - Missing or invalid 'selected_cards' or 'board' data
+tests/test_app.py::test_ai_move_missing_data 2025-04-30 21:43:14,581 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 21:43:14,582 - app - WARNING - [app:138] - Missing or invalid 'selected_cards' or 'board' data
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards 2025-04-30 21:32:02,781 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-04-30 21:32:02,781 - app - WARNING - [app:156] - Duplicate cards found between hand and board: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards 2025-04-30 21:43:14,583 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 21:43:14,583 - app - WARNING - [app:156] - Duplicate cards found between hand and board: ['As']
 PASSED
-tests/test_app.py::test_ai_move_agent_returns_none 2025-04-30 21:32:02,783 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-04-30 21:32:02,783 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
-2025-04-30 21:32:02,783 - app - WARNING - [app:225] - MCTS agent returned None action. Stopping iterative placement.
-2025-04-30 21:32:02,783 - app - INFO - [app:230] - AI move request processed in 0.001s. Placements found: 0
+tests/test_app.py::test_ai_move_agent_returns_none 2025-04-30 21:43:14,585 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 21:43:14,585 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
+2025-04-30 21:43:14,585 - app - WARNING - [app:225] - MCTS agent returned None action. Stopping iterative placement.
+2025-04-30 21:43:14,585 - app - INFO - [app:230] - AI move request processed in 0.001s. Placements found: 0
 PASSED
-tests/test_app.py::test_ai_move_internal_error 2025-04-30 21:32:02,785 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-04-30 21:32:02,785 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
-2025-04-30 21:32:02,785 - app - ERROR - [app:238] - Unexpected Error during /ai_move: Unexpected MCTS crash
+tests/test_app.py::test_ai_move_internal_error 2025-04-30 21:43:14,587 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-04-30 21:43:14,587 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
+2025-04-30 21:43:14,587 - app - ERROR - [app:238] - Unexpected Error during /ai_move: Unexpected MCTS crash
 Traceback (most recent call last):
   File "/workspaces/trainmcts/app.py", line 196, in get_ai_move
     best_action = agent.choose_action(
@@ -75,48 +75,8 @@ tests/test_ofc_logic.py::test_playerboard_set_full_board PASSED
 tests/test_ofc_logic.py::test_playerboard_get_available_slots PASSED
 tests/test_ofc_logic.py::test_playerboard_get_board_state_tuple PASSED
 tests/test_ofc_logic.py::test_playerboard_copy PASSED
-tests/test_ofc_logic.py::test_check_board_foul_logic [DEBUG evaluate_3_card_ofc] Input cards: ['??', '??', '??'] (ints: [67119647, 67127839, 98306])
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Ranks list: [0, 0, 0]
-[DEBUG evaluate_3_card_ofc] Generated lookup key: (0, 0, 0)
-[DEBUG evaluate_3_card_ofc] Lookup result for key (0, 0, 0): (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Returning: (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Input cards: ['??', '??', '??'] (ints: [73730, 147715, 295429])
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Ranks list: [0, 0, 0]
-[DEBUG evaluate_3_card_ofc] Generated lookup key: (0, 0, 0)
-[DEBUG evaluate_3_card_ofc] Lookup result for key (0, 0, 0): (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Returning: (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Input cards: ['??', '??', '??'] (ints: [268446761, 268454953, 268471337])
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Ranks list: [0, 0, 0]
-[DEBUG evaluate_3_card_ofc] Generated lookup key: (0, 0, 0)
-[DEBUG evaluate_3_card_ofc] Lookup result for key (0, 0, 0): (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Returning: (13, 'Trips', '222')
-FAILED
-tests/test_ofc_logic.py::test_get_row_royalty_logic [DEBUG evaluate_3_card_ofc] Input cards: ['??', '??', '??'] (ints: [268446761, 268454953, 268471337])
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Ranks list: [0, 0, 0]
-[DEBUG evaluate_3_card_ofc] Generated lookup key: (0, 0, 0)
-[DEBUG evaluate_3_card_ofc] Lookup result for key (0, 0, 0): (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Returning: (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Input cards: ['??', '??', '??'] (ints: [67119647, 67127839, 98306])
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Card ?? -> Rank: 0
-[DEBUG evaluate_3_card_ofc] Ranks list: [0, 0, 0]
-[DEBUG evaluate_3_card_ofc] Generated lookup key: (0, 0, 0)
-[DEBUG evaluate_3_card_ofc] Lookup result for key (0, 0, 0): (13, 'Trips', '222')
-[DEBUG evaluate_3_card_ofc] Returning: (13, 'Trips', '222')
-FAILED
+tests/test_ofc_logic.py::test_check_board_foul_logic FAILED
+tests/test_ofc_logic.py::test_get_row_royalty_logic FAILED
 
 =================================== FAILURES ===================================
 _________________________ test_check_board_foul_logic __________________________
@@ -167,27 +127,27 @@ E        +  where False = PlayerBoard(Cards=13, Foul=False).is_foul
 
 tests/test_ofc_logic.py:245: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:336 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:342 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
 WARNING  ofc_evaluators:ofc_evaluators.py:157 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:360 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:366 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
 WARNING  ofc_evaluators:ofc_evaluators.py:157 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
 WARNING  ofc_logic:ofc_logic.py:426 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
 TOP   : Qh Qd 2c
 MIDDLE: Ah Kh Th Jh 9h
 BOTTOM: As Ad Ac Ks Kd
 Cards: 13/13, Foul: False
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:360 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:366 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
 WARNING  ofc_evaluators:ofc_evaluators.py:157 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:336 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:342 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
 WARNING  ofc_evaluators:ofc_evaluators.py:157 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
 WARNING  ofc_logic:ofc_logic.py:426 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
 TOP   : 2h 3d 4c
 MIDDLE: As Ad Kc Kd Qc
 BOTTOM: Ah Kh Qh Jh Th
 Cards: 13/13, Foul: False
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:360 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:366 Unsuited prime product 32 not found for hand ['??', '??', '??', '??', '??'] (ranks: [0, 0, 0, 0, 0])
 WARNING  ofc_evaluators:ofc_evaluators.py:157 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
-WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:336 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
+WARNING  ofc_evaluator_5card:ofc_evaluator_5card.py:342 Flush prime product 2 not found for hand ['??', '??', '??', '??', '??'] (bitmask 0b1)
 WARNING  ofc_evaluators:ofc_evaluators.py:157 5-card evaluation returned invalid rank: 7463 (expected 1-7462) for hand ['??', '??', '??', '??', '??']
 WARNING  ofc_logic:ofc_logic.py:426 Could not determine valid ranks for foul check. T:7476(Trips), M:7919(Invalid), B:7919(Invalid) for board:
 TOP   : Ah Ad Ac
@@ -211,4 +171,4 @@ tests/test_ofc_logic.py:260: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_ofc_logic.py::test_check_board_foul_logic - AssertionError:...
 FAILED tests/test_ofc_logic.py::test_get_row_royalty_logic - AssertionError: ...
-=================== 2 failed, 33 passed, 3 skipped in 0.52s ====================
+=================== 2 failed, 33 passed, 3 skipped in 0.56s ====================
