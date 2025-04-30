@@ -1,7 +1,8 @@
-# tests/test_ofc_logic.py v1.4
+# tests/test_ofc_logic.py v1.5
 """
 Unit-тесты для модуля ofc_logic.py.
 Исправлены вызовы check_board_foul и get_row_royalty в тестах.
+Исправлен ассерт в test_check_board_foul_logic для board_foul_mt.
 """
 
 import pytest
@@ -219,26 +220,28 @@ def test_check_board_foul_logic():
     board_ok.is_foul = check_board_foul(board_ok)
     assert not board_ok.is_foul, f"Board should be valid: {board_ok}"
 
-    # Фол: Middle > Top (Flush A > Pair Q)
+    # Фол: Middle > Top (Flush A > Pair Q) - ЭТО НЕ ФОЛ!
     board_foul_mt = PlayerBoard()
     board_foul_mt.set_full_board(
-        hand_to_int(['2h', '3d', '4c']), # High Card 4 (AdjRank ~7464+454=7918)
-        hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK (Rank 2468)
-        hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A (Rank 1)
+        hand_to_int(['2h', '3d', '4c']), # High Card 4 (AdjRank ~7464+454=7918) - Слабая
+        hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK (Rank 2468) - Средняя
+        hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A (Rank 1) - Сильная
     )
     # FIX 5: Убран вызов check_board_foul с эвалюаторами
     board_foul_mt.is_foul = check_board_foul(board_foul_mt)
-    assert board_foul_mt.is_foul, f"Board should be foul (Middle < Top): {board_foul_mt}" # Middle < Top -> Foul
+    # --- ИСПРАВЛЕНО: Ассерт и сообщение ---
+    assert not board_foul_mt.is_foul, f"Board should be valid (Top > Middle > Bottom): {board_foul_mt}"
 
     # Фол: Bottom > Middle (Flush K < Two Pair KQ)
     board_foul_bm = PlayerBoard()
     board_foul_bm.set_full_board(
-        hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A (AdjRank ~7464+1=7465)
-        hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ (Rank ~2500)
-        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K (Rank ~1000-1500)
+        hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A (AdjRank ~7464+1=7465) - Слабая
+        hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ (Rank ~2500) - Средняя
+        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K (Rank ~1000-1500) - Сильная
     )
     # FIX 5: Убран вызов check_board_foul с эвалюаторами
     board_foul_bm.is_foul = check_board_foul(board_foul_bm)
+    # --- ИСПРАВЛЕНО: Проверяем, что это фол ---
     assert board_foul_bm.is_foul, f"Board should be foul (Bottom < Middle): {board_foul_bm}" # Bottom < Middle -> Foul
 
     # Неполная доска - не фол
