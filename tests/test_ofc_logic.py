@@ -1,8 +1,8 @@
-# tests/test_ofc_logic.py v1.6
+# tests/test_ofc_logic.py v1.7
 """
 Unit-тесты для модуля ofc_logic.py.
 Исправлены вызовы check_board_foul и get_row_royalty в тестах.
-Исправлен ассерт в test_check_board_foul_logic для board_foul_mt.
+Исправлен ассерт в test_check_board_foul_logic для board_foul_bm.
 Импорты check_board_foul и get_row_royalty изменены на ofc_evaluators.
 """
 
@@ -229,7 +229,7 @@ def test_check_board_foul_logic():
     board_foul_mt.is_foul = check_board_foul(board_foul_mt)
     assert not board_foul_mt.is_foul, f"Board should be valid (Top > Middle > Bottom): {board_foul_mt}"
 
-    # Фол: Bottom < Middle (Flush K < Two Pair KQ)
+    # Фол: Bottom < Middle (Flush K < Two Pair KQ) - ЭТО НЕ ФОЛ!
     board_foul_bm = PlayerBoard()
     board_foul_bm.set_full_board(
         hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A
@@ -237,7 +237,8 @@ def test_check_board_foul_logic():
         hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K
     )
     board_foul_bm.is_foul = check_board_foul(board_foul_bm)
-    assert board_foul_bm.is_foul, f"Board should be foul (Bottom < Middle): {board_foul_bm}" # Bottom < Middle -> Foul
+    # --- ИСПРАВЛЕНО: Проверяем, что это НЕ фол ---
+    assert not board_foul_bm.is_foul, f"Board should be valid (Bottom > Middle): {board_foul_bm}"
 
     # Неполная доска - не фол
     board_incomplete = PlayerBoard()
