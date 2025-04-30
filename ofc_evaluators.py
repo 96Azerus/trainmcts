@@ -1,14 +1,16 @@
-# ofc_evaluators.py v1.7
+# ofc_evaluators.py v1.8
 """
 Интерфейс для оценки покерных комбинаций OFC (3 и 5 карт).
 Использует специализированные модули для 3- и 5-карточных рук.
 Исправлена проверка 5-карт в get_hand_rank_safe.
 Добавлено детальное логгирование.
 Добавлены логи перед вызовом оценщиков.
+Перенесены функции check_board_foul, get_row_royalty и константы роялти из ofc_logic.py.
 """
 
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict # Добавлен Dict
+from collections import Counter # Добавлен Counter
 
 # Импортируем конкретные эвалюаторы
 try:
@@ -37,16 +39,23 @@ except ImportError:
     evaluator_5card = MockEvaluator5Card() # type: ignore
     LookupTable5Card = MockEvaluator5Card # type: ignore
 
-# Импортируем утилиты карт для логирования и проверок
+# Импортируем утилиты карт и доску из ofc_logic
 try:
-    from ofc_logic import Card, INVALID_CARD, card_to_str
+    from ofc_logic import Card, INVALID_CARD, card_to_str, PlayerBoard, RANK_MAP # Добавлены PlayerBoard, RANK_MAP
 except ImportError:
     logging.critical("Failed to import from ofc_logic in ofc_evaluators.py")
     # Заглушки для Card, если ofc_logic недоступен
     class Card: # type: ignore
         @staticmethod
         def to_str(c): return "??"
+        @staticmethod
+        def get_rank_int(c): return 0 # Добавим заглушку
+    class PlayerBoard: # type: ignore
+        ROW_NAMES = ['top', 'middle', 'bottom']
+        def __init__(self): self.rows = {r:[] for r in self.ROW_NAMES}; self.is_foul = False
+        def is_complete(self): return False
     INVALID_CARD = -1
+    RANK_MAP = {} # Заглушка
     def card_to_str(c): return Card.to_str(c)
 
 # Получаем логгер
@@ -173,3 +182,146 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
     except Exception as e:
         logger.error(f"Unexpected error evaluating {expected_len}-card hand {hand_str_log}: {e}", exc_info=True) # Логируем traceback для неожиданных ошибок
         return WORST_RANK, "Invalid"
+
+
+# --- Функции Подсчета Очков (Scoring) - ПЕРЕНЕСЕНЫ ИЗ ofc_logic.py ---
+
+# Таблицы Роялти (Американские правила)
+ROYALTY_BOTTOM_POINTS: Dict[str, int] = {
+    "Straight": 2, "Flush": 4, "Full House": 6, "Four of a Kind": 10,
+    "Straight Flush": 15, "Royal Flush": 25
+}
+ROYALTY_MIDDLE_POINTS: Dict[str, int] = {
+    "Three of a Kind": 2, "Straight": 4, "Flush": 8, "Full House": 12,
+    "Four of a Kind": 20, "Straight Flush": 30, "Royal Flush": 50
+}
+ROYALTY_TOP_PAIRS: Dict[int, int] = {
+    RANK_MAP['6']: 1, RANK_MAP['7']: 2, RANK_MAP['8']: 3, RANK_MAP['9']: 4,
+    RANK_MAP['T']: 5, RANK_MAP['J']: 6, RANK_MAP['Q']: 7, RANK_MAP['K']: 8,
+    RANK_MAP['A']: 9
+}
+ROYALTY_TOP_TRIPS: Dict[int, int] = {
+    RANK_MAP['2']: 10, RANK_MAP['3']: 11, RANK_MAP['4']: 12, RANK_MAP['5']: 13,
+    RANK_MAP['6']: 14, RANK_MAP['7']: 15, RANK_MAP['8']: 16, RANK_MAP['9']: 17,
+    RANK_MAP['T']: 18, RANK_MAP['J']: 19, RANK_MAP['Q']: 20, RANK_MAP['K']: 21,
+    RANK_MAP['A']: 22
+}
+
+def check_board_foul(board: PlayerBoard) -> bool:
+    """
+    Проверяет доску на фол (нарушение порядка силы линий).
+    Использует get_hand_rank_safe для получения скорректированных рангов.
+    Правило: Сила Top <= Сила Middle <= Сила Bottom.
+    Сильнее = Меньший ранг.
+    Фол, если rank(Top) < rank(Middle) ИЛИ rank(Middle) < rank(Bottom).
+    """
+    if not board.is_complete():
+        return False # Неполная доска не может быть фолом
+
+    try:
+        # Получаем карты как List[Optional[int]] для передачи в get_hand_rank_safe
+        top_cards_opt = board.rows['top']
+        mid_cards_opt = board.rows['middle']
+        bot_cards_opt = board.rows['bottom']
+
+        # Получаем скорректированные ранги
+        adj_rank_t, type_t = get_hand_rank_safe(top_cards_opt)
+        adj_rank_m, type_m = get_hand_rank_safe(mid_cards_opt)
+        adj_rank_b, type_b = get_hand_rank_safe(bot_cards_opt)
+
+        # Проверяем, что все ранги были успешно вычислены (не равны WORST_RANK)
+        if adj_rank_t == WORST_RANK or adj_rank_m == WORST_RANK or adj_rank_b == WORST_RANK:
+            logger.warning(f"Could not determine valid ranks for foul check. T:{adj_rank_t}({type_t}), M:{adj_rank_m}({type_m}), B:{adj_rank_b}({type_b}) for board:\n{board}")
+            # Если не можем определить ранги, считаем не фолом, чтобы избежать ложных срабатываний
+            board.is_foul = False # Устанавливаем флаг на доске
+            return False
+
+        # Логика фола: Top сильнее Middle ИЛИ Middle сильнее Bottom
+        # Сильнее = Меньший скорректированный ранг
+        is_foul = (adj_rank_t < adj_rank_m) or (adj_rank_m < adj_rank_b)
+
+        # Обновляем флаг is_foul на самой доске
+        board.is_foul = is_foul
+        return is_foul
+
+    except Exception as e:
+        logger.error(f"Error during check_board_foul: {e}", exc_info=True)
+        # При любой другой ошибке считаем не фолом
+        board.is_foul = False
+        return False
+
+def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
+    """
+    Вычисляет роялти для ряда. Использует глобальные эвалюаторы.
+    """
+    cards_str = Card.hand_to_str(cards) # Для логгирования
+    logger.debug(f"Calculating royalty for row '{row_name}', cards: {cards_str}")
+    if not isinstance(cards, list): return 0
+
+    # Используем get_hand_rank_safe для получения типа руки и проверки валидности
+    rank, type_str = get_hand_rank_safe(cards)
+    logger.debug(f"get_hand_rank_safe returned rank={rank}, type='{type_str}' for row '{row_name}'")
+
+    if rank == WORST_RANK: # Если рука невалидна или неполна
+        logger.debug(f"Hand is invalid or incomplete, returning 0 royalty.")
+        return 0
+
+    royalty = 0
+    try:
+        valid_cards = [c for c in cards if c is not None and c != INVALID_CARD and c > 0]
+        if not valid_cards: return 0 # На случай, если cards был [None, None, ...]
+
+        if row_name == "top":
+            logger.debug(f"Processing top row royalty. Type: '{type_str}'")
+            # Типы для 3-карт: Trips, Pair, High Card
+            if type_str == HAND_TYPE_TRIPS_3: # Константа импортирована
+                # Исправлено: Ищем ранг трипса, а не первой карты
+                ranks = [Card.get_rank_int(c) for c in valid_cards]
+                rank_counts = Counter(ranks)
+                trip_rank = -1
+                for r, count in rank_counts.items():
+                    if count == 3: trip_rank = r; break
+                royalty = ROYALTY_TOP_TRIPS.get(trip_rank, 0)
+                logger.debug(f"Trips detected. Trip rank index: {trip_rank}, Royalty: {royalty}")
+            elif type_str == HAND_TYPE_PAIR_3: # Константа импортирована
+                 ranks = [Card.get_rank_int(c) for c in valid_cards]
+                 rank_counts = Counter(ranks)
+                 pair_rank = -1
+                 for r, count in rank_counts.items():
+                     if count == 2: pair_rank = r; break
+                 royalty = ROYALTY_TOP_PAIRS.get(pair_rank, 0)
+                 logger.debug(f"Pair detected. Pair rank index: {pair_rank}, Royalty: {royalty}")
+            else: # High Card
+                 logger.debug("High card detected. Royalty: 0")
+            return royalty
+
+        elif row_name in ["middle", "bottom"]:
+            logger.debug(f"Processing {row_name} row royalty. Type: '{type_str}'")
+            table = ROYALTY_MIDDLE_POINTS if row_name == "middle" else ROYALTY_BOTTOM_POINTS
+            hand_name = type_str # get_hand_rank_safe возвращает строку типа
+
+            # Проверка на Royal Flush
+            is_royal = False
+            if hand_name == "Straight Flush":
+                 ranks_int = {Card.get_rank_int(c) for c in valid_cards}
+                 if ranks_int == {RANK_MAP['A'], RANK_MAP['K'], RANK_MAP['Q'], RANK_MAP['J'], RANK_MAP['T']}:
+                     is_royal = True
+                     logger.debug("Royal Flush detected.")
+
+            if is_royal:
+                royalty = table.get("Royal Flush", 0)
+            else:
+                royalty = table.get(hand_name, 0)
+            logger.debug(f"Lookup in royalty table for '{'Royal Flush' if is_royal else hand_name}': {royalty}")
+
+            # Трипс не дает роялти на боттоме
+            if row_name == "bottom" and hand_name == "Three of a Kind":
+                 logger.debug("Trips on bottom, setting royalty to 0.")
+                 royalty = 0
+            return royalty
+        else:
+            logger.warning(f"Unknown row name '{row_name}' in get_row_royalty.")
+            return 0
+    except Exception as e:
+        logger.error(f"Error calculating royalty for {row_name} (Cards: {cards_str}, Type: {type_str}): {e}", exc_info=True)
+        return 0
