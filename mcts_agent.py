@@ -1,9 +1,10 @@
-# mcts_agent.py v1.6
+# mcts_agent.py v1.7
 """
 Реализация MCTS-агента для задачи размещения карт OFC Pineapple.
 Цель - максимизация роялти.
 Возвращена логика снижения rollouts_per_leaf при num_workers=1 (как в v1.3).
 Импорт get_row_royalty изменен на ofc_evaluators.
+Импорт evaluator_5card изменен на ofc_evaluator_5card.
 """
 
 import time
@@ -17,16 +18,17 @@ from collections import Counter
 
 # Импорты из локальных модулей
 try:
-    from ofc_logic import PlayerBoard, Card, Deck # Убран get_row_royalty
+    from ofc_logic import PlayerBoard, Card, Deck
     from mcts_node import MCTSNode, run_parallel_rollout
-    # Импортируем эвалюаторы и функции скоринга напрямую
-    from ofc_evaluators import (
+    # Импортируем эвалюаторы и функции скоринга из соответствующих модулей
+    from ofc_evaluators import ( # Import scoring functions and 3-card evaluator
         evaluate_3_card_ofc, HAND_TYPE_TRIPS_3,
-        evaluator_5card_instance as evaluator_5card,
-        get_row_royalty # Добавлен импорт get_row_royalty
+        get_row_royalty
     )
+    # --- ИСПРАВЛЕНО: Импортируем 5-card instance напрямую ---
+    from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
 except ImportError as e:
-    logging.critical(f"Failed to import from ofc_logic/mcts_node/ofc_evaluators in mcts_agent.py: {e}")
+    logging.critical(f"Failed to import from ofc_logic/mcts_node/ofc_evaluators/ofc_evaluator_5card in mcts_agent.py: {e}")
     # Заглушки
     class PlayerBoard: pass # type: ignore
     class Card: # type: ignore
