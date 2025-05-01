@@ -1,8 +1,8 @@
-# tests/test_ofc_logic.py v1.7
+# tests/test_ofc_logic.py v1.8
 """
 Unit-тесты для модуля ofc_logic.py.
 Исправлены вызовы check_board_foul и get_row_royalty в тестах.
-Исправлен ассерт в test_check_board_foul_logic для board_foul_bm.
+Исправлен ассерт в test_check_board_foul_logic для board_foul_bm (теперь проверяет на фол).
 Импорты check_board_foul и get_row_royalty изменены на ofc_evaluators.
 """
 
@@ -219,7 +219,7 @@ def test_check_board_foul_logic():
     board_ok.is_foul = check_board_foul(board_ok)
     assert not board_ok.is_foul, f"Board should be valid: {board_ok}"
 
-    # Валидная доска (ранее считалась фолом)
+    # Валидная доска (Top < Middle < Bottom)
     board_foul_mt = PlayerBoard()
     board_foul_mt.set_full_board(
         hand_to_int(['2h', '3d', '4c']), # High Card 4
@@ -227,18 +227,18 @@ def test_check_board_foul_logic():
         hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A
     )
     board_foul_mt.is_foul = check_board_foul(board_foul_mt)
-    assert not board_foul_mt.is_foul, f"Board should be valid (Top > Middle > Bottom): {board_foul_mt}"
+    assert not board_foul_mt.is_foul, f"Board should be valid (Top < Middle < Bottom): {board_foul_mt}"
 
-    # Фол: Bottom < Middle (Flush K < Two Pair KQ) - ЭТО НЕ ФОЛ!
+    # Фол: Top > Middle (Trips A > Two Pair KQ)
     board_foul_bm = PlayerBoard()
     board_foul_bm.set_full_board(
         hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A
         hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ
-        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K
+        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K (Bottom > Middle, но Top > Middle -> Фол)
     )
     board_foul_bm.is_foul = check_board_foul(board_foul_bm)
-    # --- ИСПРАВЛЕНО: Проверяем, что это НЕ фол ---
-    assert not board_foul_bm.is_foul, f"Board should be valid (Bottom > Middle): {board_foul_bm}"
+    # --- ИСПРАВЛЕНО: Проверяем, что это ФОЛ ---
+    assert board_foul_bm.is_foul, f"Board should be foul (Top > Middle): {board_foul_bm}"
 
     # Неполная доска - не фол
     board_incomplete = PlayerBoard()
