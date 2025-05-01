@@ -2,44 +2,121 @@
 platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-utils/venvs/pytest/bin/python
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
-plugins: anyio-4.9.0
-collecting ... 2025-05-01 12:53:27,943 - app - INFO - [app:51] - --- Flask App Initialization ---
-2025-05-01 12:53:27,943 - app - INFO - [app:56] - Production mode: False
-2025-05-01 12:53:27,943 - app - INFO - [app:105] - Defining Flask routes...
-collected 35 items / 3 skipped
+plugins: cov-6.1.1, anyio-4.9.0
+collecting ... 2025-05-01 15:19:20,189 - app - INFO - [app:51] - --- Flask App Initialization (v2.0) ---
+2025-05-01 15:19:20,189 - app - INFO - [app:55] - Production mode: False
+2025-05-01 15:19:20,189 - app - INFO - [app:138] - Defining Flask routes...
+collected 41 items / 3 skipped
 
-tests/test_app.py::test_index_route 2025-05-01 12:53:28,065 - app - INFO - [app:110] - Route / called (GET)
+tests/test_app.py::test_index_route 2025-05-01 15:19:20,219 - app - INFO - [app:143] - Route / called (GET)
 PASSED
-tests/test_app.py::test_ai_move_valid_request 2025-05-01 12:53:28,072 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-05-01 12:53:28,072 - app - INFO - [app:188] - Starting iterative MCTS for 2 cards...
-2025-05-01 12:53:28,072 - app - INFO - [app:204] - MCTS recommended action: As to top[0]
-2025-05-01 12:53:28,072 - app - INFO - [app:204] - MCTS recommended action: Ks to top[1]
-2025-05-01 12:53:28,073 - app - INFO - [app:230] - AI move request processed in 0.001s. Placements found: 2
+tests/test_app.py::test_ai_move_valid_request 2025-05-01 15:19:20,226 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,226 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,226 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,226 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,226 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,226 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,226 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,227 - app - INFO - [app:245] - Starting MCTS placement search for 3 cards...
+2025-05-01 15:19:20,227 - app - INFO - [app:257] - AI move request processed in 0.002s. Best placement found.
+FAILED
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-01 15:19:20,261 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,261 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,262 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,262 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,262 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,262 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,262 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,262 - app - WARNING - [app:190] - No valid cards to place provided.
 PASSED
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-01 12:53:28,074 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-05-01 12:53:28,074 - app - WARNING - [app:149] - No valid cards to place provided.
+tests/test_app.py::test_ai_move_invalid_json 2025-05-01 15:19:20,263 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,264 - app - WARNING - [app:159] - Request is not JSON
 PASSED
-tests/test_app.py::test_ai_move_invalid_json 2025-05-01 12:53:28,076 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-05-01 12:53:28,076 - app - WARNING - [app:126] - Request is not JSON
+tests/test_app.py::test_ai_move_missing_data 2025-05-01 15:19:20,265 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,265 - app - WARNING - [app:174] - Missing or invalid 'selected_cards' or 'board' data
 PASSED
-tests/test_app.py::test_ai_move_missing_data 2025-05-01 12:53:28,077 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-05-01 12:53:28,077 - app - WARNING - [app:138] - Missing or invalid 'selected_cards' or 'board' data
+tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-05-01 15:19:20,266 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,266 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,266 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,267 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,268 - app - WARNING - [app:201] - Duplicate cards found between hand and board: ['As']
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards 2025-05-01 12:53:28,078 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-05-01 12:53:28,078 - app - WARNING - [app:156] - Duplicate cards found between hand and board: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-05-01 15:19:20,270 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,270 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,270 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,270 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,271 - app - WARNING - [app:204] - Cards to place are already permanently discarded: ['As']
 PASSED
-tests/test_app.py::test_ai_move_agent_returns_none 2025-05-01 12:53:28,080 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-05-01 12:53:28,080 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
-2025-05-01 12:53:28,081 - app - WARNING - [app:225] - MCTS agent returned None action. Stopping iterative placement.
-2025-05-01 12:53:28,081 - app - INFO - [app:230] - AI move request processed in 0.000s. Placements found: 0
+tests/test_app.py::test_ai_move_agent_returns_none 2025-05-01 15:19:20,273 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,273 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,273 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,274 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,275 - app - INFO - [app:245] - Starting MCTS placement search for 1 cards...
+2025-05-01 15:19:20,275 - app - WARNING - [app:299] - AI agent did not return a placement after 0.002s.
 PASSED
-tests/test_app.py::test_ai_move_internal_error 2025-05-01 12:53:28,082 - app - INFO - [app:124] - Route /ai_move called (POST)
-2025-05-01 12:53:28,082 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
-2025-05-01 12:53:28,083 - app - ERROR - [app:238] - Unexpected Error during /ai_move: Unexpected MCTS crash
+tests/test_app.py::test_ai_move_internal_error 2025-05-01 15:19:20,287 - app - INFO - [app:157] - Route /ai_move called (POST)
+2025-05-01 15:19:20,287 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,287 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,287 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,287 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,287 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,287 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,287 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,288 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,288 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,288 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,288 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,288 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,288 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,288 - app - INFO - [app:245] - Starting MCTS placement search for 1 cards...
+2025-05-01 15:19:20,288 - app - ERROR - [app:305] - Unexpected Error during /ai_move: Unexpected MCTS crash
 Traceback (most recent call last):
-  File "/workspaces/trainmcts/app.py", line 196, in get_ai_move
-    best_action = agent.choose_action(
-                  ^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/app.py", line 248, in get_ai_move
+    best_placement_info: Optional[Dict[str, Any]] = agent.choose_placement(
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^
   File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1134, in __call__
     return self._mock_call(*args, **kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -50,14 +127,40 @@ Traceback (most recent call last):
     raise effect
 Exception: Unexpected MCTS crash
 PASSED
+tests/test_app.py::test_calculate_score_valid_board 2025-05-01 15:19:20,291 - app - INFO - [app:315] - Route /calculate_score called (POST)
+2025-05-01 15:19:20,291 - app - INFO - [app:337] - Foul check result: False
+2025-05-01 15:19:20,291 - app - INFO - [app:351] - Calculated royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
+2025-05-01 15:19:20,291 - app - INFO - [app:353] - Score calculation request processed in 0.001s.
+PASSED
+tests/test_app.py::test_calculate_score_foul_board 2025-05-01 15:19:20,293 - app - INFO - [app:315] - Route /calculate_score called (POST)
+2025-05-01 15:19:20,293 - app - INFO - [app:337] - Foul check result: True
+PASSED
+tests/test_app.py::test_calculate_score_incomplete_board 2025-05-01 15:19:20,294 - app - INFO - [app:315] - Route /calculate_score called (POST)
+2025-05-01 15:19:20,294 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,294 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:82] - Unexpected item type in card data: <class 'NoneType'>, value: None
+2025-05-01 15:19:20,295 - app - WARNING - [app:331] - Score calculation requested for incomplete board (3/13).
+PASSED
+tests/test_app.py::test_calculate_score_missing_board 2025-05-01 15:19:20,296 - app - INFO - [app:315] - Route /calculate_score called (POST)
+2025-05-01 15:19:20,297 - app - WARNING - [app:324] - Missing 'board' data for score calculation
+PASSED
+tests/test_app.py::test_update_state PASSED
+tests/test_app.py::test_reset_game_state 2025-05-01 15:19:20,299 - app - INFO - [app:393] - Route /reset_game_state called (POST)
+PASSED
 tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED
 tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED
-tests/test_mcts_agent.py::test_choose_action_basic_run PASSED
-tests/test_mcts_agent.py::test_choose_action_no_cards PASSED
-tests/test_mcts_agent.py::test_choose_action_complete_board PASSED
-tests/test_mcts_agent.py::test_choose_action_mcts_loop_simplified PASSED
-tests/test_mcts_agent.py::test_choose_action_no_trip_on_top_rule PASSED
-tests/test_mcts_agent.py::test_format_action PASSED
+tests/test_mcts_agent.py::test_choose_placement_basic_run PASSED
+tests/test_mcts_agent.py::test_choose_placement_no_cards PASSED
+tests/test_mcts_agent.py::test_choose_placement_complete_board PASSED
+tests/test_mcts_agent.py::test_choose_placement_mcts_loop_simplified FAILED
+tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule PASSED
 tests/test_ofc_logic.py::test_card_from_str_valid PASSED
 tests/test_ofc_logic.py::test_card_to_str_valid PASSED
 tests/test_ofc_logic.py::test_card_to_str_invalid PASSED
@@ -78,4 +181,166 @@ tests/test_ofc_logic.py::test_playerboard_copy PASSED
 tests/test_ofc_logic.py::test_check_board_foul_logic PASSED
 tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
 
-======================== 35 passed, 3 skipped in 0.64s =========================
+=================================== FAILURES ===================================
+__________________________ test_ai_move_valid_request __________________________
+
+MockMCTSAgent = <MagicMock name='MCTSAgent' id='132114088427936'>
+client = <FlaskClient <Flask 'app'>>
+
+    @patch('app.MCTSAgent')
+    def test_ai_move_valid_request(MockMCTSAgent, client):
+        """Тестирует валидный POST запрос к /ai_move с новой логикой."""
+        # Настройка мока агента и его метода choose_placement
+        mock_agent_instance = MockMCTSAgent.return_value
+        # Моделируем возвращаемое значение choose_placement
+        card_as_int = Card.from_str('As')
+        card_ks_int = Card.from_str('Ks')
+        card_qs_int = Card.from_str('Qs') # Для сброса
+        mock_placement_info = {
+            'placements': [
+                (card_as_int, 'top', 0),
+                (card_ks_int, 'middle', 0)
+            ],
+            'discarded': card_qs_int
+        }
+        mock_agent_instance.choose_placement.return_value = mock_placement_info
+    
+        # Данные запроса (улица 2+, 3 карты)
+        request_data = {
+            "selected_cards": ["As", "Ks", "Qs"], # Карты для размещения/сброса
+            "board": { # Пустая доска для простоты
+                "top": [None, None, None],
+                "middle": [None] * 5,
+                "bottom": [None] * 5
+            },
+            "discarded_cards": ["2c", "3d"], # Перманентно удаленные
+            "ai_settings": {"aiTime": 1}
+        }
+    
+        response = client.post('/ai_move', json=request_data)
+        assert response.status_code == 200
+        data = response.get_json()
+    
+        # Проверяем структуру ответа
+        assert "move" in data
+        assert "top" in data["move"]
+        assert "middle" in data["move"]
+        assert "bottom" in data["move"]
+        assert "discarded" in data["move"]
+    
+        # Проверяем содержимое ответа (преобразованное из placement_info)
+        assert data["move"]["top"] == [{"rank": "A", "suit": "s"}]
+        assert data["move"]["middle"] == [{"rank": "K", "suit": "s"}]
+        assert data["move"]["bottom"] == []
+        assert data["move"]["discarded"] == "Qs"
+    
+        # Проверяем, что choose_placement был вызван один раз с правильными аргументами
+        mock_agent_instance.choose_placement.assert_called_once()
+        call_args, call_kwargs = mock_agent_instance.choose_placement.call_args
+        # call_args[0] - self, call_args[1] - initial_board, call_args[2] - cards_just_dealt, call_args[3] - current_remaining_deck
+>       assert isinstance(call_args[1], PlayerBoard) # Проверяем тип доски
+E       IndexError: tuple index out of range
+
+tests/test_app.py:93: IndexError
+------------------------------ Captured log call -------------------------------
+INFO     app:app.py:157 Route /ai_move called (POST)
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+WARNING  app:app.py:82 Unexpected item type in card data: <class 'NoneType'>, value: None
+INFO     app:app.py:245 Starting MCTS placement search for 3 cards...
+INFO     app:app.py:257 AI move request processed in 0.002s. Best placement found.
+__________________ test_choose_placement_mcts_loop_simplified __________________
+
+mock_generate_states = <MagicMock name='_generate_next_states' id='132114049527168'>
+mock_expand = <MagicMock name='expand' id='132114049531056'>
+mock_rollout = <MagicMock name='run_parallel_rollout' id='132114049567680'>
+
+    @patch('mcts_agent.run_parallel_rollout') # Мокаем воркер
+    @patch('mcts_agent.MCTSNode.expand') # Мокаем expand
+    @patch('mcts_agent.MCTSNode._generate_next_states') # Мокаем генерацию состояний
+    def test_choose_placement_mcts_loop_simplified(mock_generate_states, mock_expand, mock_rollout):
+        """Тестирует, что цикл MCTS запускается и вызывает основные фазы с новой логикой."""
+        # --- Настройка ---
+        agent = MCTSAgent(time_limit_ms=50, num_workers=1, rollouts_per_leaf=1)
+        initial_board = PlayerBoard()
+        cards_dealt = hand_to_int(['Ac', 'Kc', 'Qc'])
+        deck = Deck.FULL_DECK_CARDS - set(c for c in cards_dealt if c is not None)
+    
+        # --- Мокирование Корня и его инициализации ---
+        mock_root = MagicMock(spec=MCTSNode)
+        mock_root.board = initial_board
+        mock_root.remaining_deck = deck
+        mock_root.children = {}
+        mock_root.visits = 0
+        mock_root.total_reward = 0.0
+        mock_root.is_terminal.return_value = False
+    
+        # Мокируем _generate_next_states для корня (вызывается в choose_placement)
+        # Возвращаем одно возможное следующее состояние (доска, сброс)
+        mock_next_board1 = initial_board.copy()
+        mock_next_board1.add_card(Card.from_str('Ac'), 'top', 0)
+        mock_next_board1.add_card(Card.from_str('Kc'), 'middle', 0)
+        mock_discard1 = Card.from_str('Qc')
+        mock_root.untried_next_states = [(mock_next_board1, mock_discard1)]
+        # Сохраняем данные для expand
+        mock_placement_info1 = {'placements': [(Card.from_str('Ac'), 'top', 0), (Card.from_str('Kc'), 'middle', 0)], 'discarded': mock_discard1}
+        key1 = tuple(sorted(mock_placement_info1['placements']))
+        mock_root._generated_states_for_expand = {key1: (mock_next_board1, mock_discard1, mock_placement_info1)}
+    
+        # --- Мокирование Выбора и Расширения ---
+        # Мокируем uct_select_child, чтобы он возвращал корень (для первой итерации)
+        # или мок дочернего узла
+        mock_child1 = MagicMock(spec=MCTSNode)
+        mock_child1.board = mock_next_board1
+        mock_child1.remaining_deck = deck # Колода та же
+        mock_child1.visits = 0
+        mock_child1.total_reward = 0.0
+        mock_child1.is_terminal.return_value = False
+        mock_child1.untried_next_states = None # Еще не генерировал
+        mock_child1.placement_info = mock_placement_info1
+    
+        # Настраиваем expand: при вызове на корне вернет mock_child1
+        mock_expand.side_effect = lambda: mock_child1 if mock_expand.call_count == 1 else None
+    
+        # Настраиваем _select: первый раз вернет корень, второй раз - mock_child1
+        def select_side_effect(node):
+            if node == mock_root: return [mock_root], mock_root
+            elif node == mock_child1: return [mock_root, mock_child1], mock_child1
+            else: return [node], node # По умолчанию
+        agent._select = MagicMock(side_effect=select_side_effect)
+    
+        # --- Мокирование Генерации Состояний для Дочернего Узла ---
+        # Когда _select вернет mock_child1, для него будет вызвана генерация
+        mock_generate_states.return_value = [] # Пусть для дочернего узла нет следующих состояний
+    
+        # --- Мокирование Роллаута ---
+        mock_rollout.return_value = 5.0
+    
+        # --- Запуск MCTS ---
+        with patch('mcts_agent.MCTSNode', return_value=mock_root): # Убедимся, что создается наш мок корня
+            chosen_placement = agent.choose_placement(initial_board, cards_dealt, deck)
+    
+        # --- Проверки ---
+        assert agent._select.call_count > 0 # Выбор вызывался
+>       assert mock_expand.call_count > 0 # Расширение вызывалось (хотя бы раз для корня)
+E       AssertionError: assert 0 > 0
+E        +  where 0 = <MagicMock name='expand' id='132114049531056'>.call_count
+
+tests/test_mcts_agent.py:186: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  mcts_agent:mcts_agent.py:335 No children found at root node. Cannot select best placement.
+WARNING  mcts_agent:mcts_agent.py:339 Returning first generated placement as fallback.
+=========================== short test summary info ============================
+FAILED tests/test_app.py::test_ai_move_valid_request - IndexError: tuple inde...
+FAILED tests/test_mcts_agent.py::test_choose_placement_mcts_loop_simplified
+=================== 2 failed, 39 passed, 3 skipped in 0.65s ====================
