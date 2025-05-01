@@ -1,8 +1,9 @@
-# app.py v2.0 (Refactored for Set Placement MCTS)
+# app.py v2.1 (Refactored for Set Placement MCTS, Parsing Fix)
 """
 Основной файл веб-приложения Flask для режима тренировки OFC Pineapple.
 Обрабатывает HTTP-запросы, вызывает MCTS AI для получения оптимального
 размещения НАБОРА карт и отдает HTML-страницу.
+Исправлен парсинг None значений.
 """
 
 import os
@@ -48,7 +49,7 @@ app.logger.addHandler(stream_handler)
 app.logger.setLevel(log_level)
 logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
-app.logger.info("--- Flask App Initialization (v2.0) ---")
+app.logger.info("--- Flask App Initialization (v2.1) ---")
 
 # Конфигурация Flask (без изменений)
 is_production = os.environ.get('RENDER') == 'true' or os.environ.get('FLASK_ENV') == 'production'
@@ -65,15 +66,18 @@ def parse_cards_data(card_data: Any) -> List[int]:
 
     for item in card_data:
         card_str: Optional[str] = None
+        # --- ИСПРАВЛЕНО: Пропускаем None элементы ---
+        if item is None:
+            continue
+
         if isinstance(item, str):
             card_str = item
         elif isinstance(item, dict) and 'rank' in item and 'suit' in item:
-            # Обработка формата {rank: 'A', suit: 's'}
+            # Обработка формата {rank: 'A', suit: 's'} или {rank: 'A', suit: '♠'}
             rank = item['rank']
             suit_char = item['suit']
-            # Преобразуем символ масти обратно в букву, если нужно
             suit_map_inv = {'♠': 's', '♥': 'h', '♦': 'd', '♣': 'c'}
-            suit = suit_map_inv.get(suit_char, suit_char).lower() # Обрабатываем и символы, и буквы
+            suit = suit_map_inv.get(suit_char, suit_char).lower()
             if rank and suit:
                  card_str = str(rank) + str(suit)
             else:
@@ -101,27 +105,25 @@ def parse_board_data(board_data: Any) -> Tuple[PlayerBoard, Set[int]]:
         return board, board_cards_set
 
     for row_name in PlayerBoard.ROW_NAMES:
-        row_items = board_data.get(row_name, []) # Может содержать строки или объекты карт
+        row_items = board_data.get(row_name, [])
         if not isinstance(row_items, list):
             app.logger.warning(f"Invalid row data format for '{row_name}': expected list, got {type(row_items)}.")
             continue
 
         capacity = PlayerBoard.ROW_CAPACITY.get(row_name, 0)
-        # Используем parse_cards_data для конвертации элементов ряда в int
-        row_ints = parse_cards_data(row_items) # Получаем список int или пустой список
-
-        # Заполняем доску полученными int картами
-        idx_int = 0
         for i in range(capacity):
-             # Ищем соответствующую карту в row_items по индексу i
              card_item = row_items[i] if i < len(row_items) else None
-             card_int: Optional[int] = None
+             # --- ИСПРАВЛЕНО: Пропускаем None слоты ---
+             if card_item is None:
+                 continue
 
+             card_int: Optional[int] = None
              # Пытаемся получить int карты из card_item
              if isinstance(card_item, str) and card_item != CARD_PLACEHOLDER:
                  try: card_int = Card.from_str(card_item)
                  except (ValueError, TypeError): pass
              elif isinstance(card_item, dict):
+                 # Используем parse_cards_data для обработки объекта
                  temp_list = parse_cards_data([card_item])
                  if temp_list: card_int = temp_list[0]
 
@@ -163,11 +165,9 @@ def get_ai_move():
     app.logger.debug(f"Received data: {data}")
 
     # --- Валидация и парсинг входных данных ---
-    # selected_cards: Карты, которые нужно разместить СЕЙЧАС (из combination area)
     selected_cards_data = data.get('selected_cards')
     board_data = data.get('board')
-    # discarded_cards: Карты, УДАЛЕННЫЕ НАВСЕГДА кнопкой "-"
-    discarded_cards_data = data.get('discarded_cards', []) # Ожидаем список строк/объектов
+    discarded_cards_data = data.get('discarded_cards', [])
     ai_settings = data.get('ai_settings', {})
 
     if not isinstance(selected_cards_data, list) or not board_data:
@@ -175,13 +175,9 @@ def get_ai_move():
         return jsonify({"error": "Missing or invalid input data"}), 400
 
     try:
-        # Карты, которые нужно разместить
         cards_to_place_ints = parse_cards_data(selected_cards_data)
-        # Текущее состояние доски
         board, board_cards_set = parse_board_data(board_data)
-        # Карты, удаленные навсегда
         permanently_discarded_ints = set(parse_cards_data(discarded_cards_data))
-
     except Exception as e_parse:
         app.logger.error(f"Error parsing input data: {e_parse}", exc_info=True)
         return jsonify({"error": f"Error parsing input: {e_parse}"}), 400
@@ -190,7 +186,7 @@ def get_ai_move():
         app.logger.warning("No valid cards to place provided.")
         return jsonify({"error": "No valid cards to place"}), 400
 
-    # Проверка на дубликаты между рукой, доской и удаленными
+    # Проверка на дубликаты
     hand_cards_set = set(cards_to_place_ints)
     known_on_board_or_hand = board_cards_set.union(hand_cards_set)
     duplicates_board_hand = board_cards_set.intersection(hand_cards_set)
@@ -204,108 +200,76 @@ def get_ai_move():
         app.logger.warning(f"Cards to place are already permanently discarded: {[Card.to_str(c) for c in duplicates_discard_hand]}")
         return jsonify({"error": "Cards to place are already permanently discarded"}), 400
     if duplicates_discard_board:
-         # Это не должно происходить при правильной логике фронтенда, но проверим
          app.logger.warning(f"Cards on board are also permanently discarded: {[Card.to_str(c) for c in duplicates_discard_board]}")
-         # Не возвращаем ошибку, но это странно
 
     # --- Определение оставшейся колоды ---
     all_known_cards = known_on_board_or_hand.union(permanently_discarded_ints)
     remaining_deck_set = Deck.FULL_DECK_CARDS - all_known_cards
-
-    # Проверка корректности подсчета карт
-    expected_total = len(board_cards_set) + len(hand_cards_set) + len(permanently_discarded_ints) + len(remaining_deck_set)
-    # Учитываем возможные пересечения между discarded и board/hand (хотя их быть не должно)
     actual_total = len(all_known_cards) + len(remaining_deck_set)
-
     if actual_total != 52:
         app.logger.error(f"Card accounting error: Known({len(all_known_cards)}) + Remaining({len(remaining_deck_set)}) = {actual_total} != 52. "
                          f"Board({len(board_cards_set)}), Hand({len(hand_cards_set)}), Discarded({len(permanently_discarded_ints)}).")
-        # Попытка восстановить колоду
         remaining_deck_set = Deck.FULL_DECK_CARDS - all_known_cards
         app.logger.warning(f"Re-calculated remaining deck size: {len(remaining_deck_set)}")
-        # Можно вернуть ошибку, если подсчет не сходится
-        # return jsonify({"error": "Card accounting error"}), 500
-
 
     # --- Настройка и запуск MCTS ---
     try:
-        # Настройки MCTS из запроса или по умолчанию
-        mcts_time_limit = int(ai_settings.get('aiTime', 5)) * 1000 # Время в мс
-        # Другие настройки MCTS (exploration, num_workers, rollouts_per_leaf) можно добавить сюда
-        # mcts_exploration = float(ai_settings.get('exploration', MCTSAgent.DEFAULT_EXPLORATION))
-        # mcts_workers = int(ai_settings.get('numWorkers', MCTSAgent.DEFAULT_NUM_WORKERS))
-        # mcts_rollouts = int(ai_settings.get('rolloutsPerLeaf', MCTSAgent.DEFAULT_ROLLOUTS_PER_LEAF))
-
-        # Ограничиваем время
-        mcts_time_limit = max(100, min(mcts_time_limit, 60000)) # 0.1с - 60с
-
-        # Создаем агент
-        agent = MCTSAgent(time_limit_ms=mcts_time_limit) # Передаем другие настройки, если нужно
-
+        mcts_time_limit = int(ai_settings.get('aiTime', 5)) * 1000
+        mcts_time_limit = max(100, min(mcts_time_limit, 60000))
+        agent = MCTSAgent(time_limit_ms=mcts_time_limit)
         app.logger.info(f"Starting MCTS placement search for {len(cards_to_place_ints)} cards...")
 
-        # Вызываем НОВЫЙ метод агента ОДИН РАЗ
         best_placement_info: Optional[Dict[str, Any]] = agent.choose_placement(
             initial_board=board,
             cards_just_dealt=cards_to_place_ints,
             current_remaining_deck=remaining_deck_set
         )
-
         request_duration = time.time() - start_request_time
 
         if best_placement_info:
             app.logger.info(f"AI move request processed in {request_duration:.3f}s. Best placement found.")
-            # --- Формирование ответа для фронтенда ---
-            # Преобразуем карты в строки для JSON
             response_placements = []
             if best_placement_info.get('placements'):
                  response_placements = [
                      {"card": Card.to_str(p[0]), "row": p[1], "index": p[2]}
                      for p in best_placement_info['placements']
                  ]
-
             response_discarded = None
             if best_placement_info.get('discarded'):
                  response_discarded = Card.to_str(best_placement_info['discarded'])
 
-            # Собираем ответ в формате, ожидаемом фронтендом
+            # Формируем ответ для совместимости со старым placeCardsOnBoard
             response_data = {
                 "move": {
-                    "top": [],
-                    "middle": [],
-                    "bottom": [],
-                    "discarded": response_discarded # Добавляем сброшенную карту
+                    "top": [], "middle": [], "bottom": [],
+                    "discarded": response_discarded
                 }
             }
-            # Распределяем размещения по линиям
             for p in response_placements:
                 if p['row'] in response_data['move']:
-                     # Добавляем в соответствующий список линии
-                     # Важно: Фронтенд ожидает, что карты будут добавлены в ПЕРВЫЕ свободные слоты.
-                     # Ответ бэкенда уже содержит конкретные индексы, фронтенд должен их использовать.
-                     # Поэтому просто передаем все размещения как есть, но сгруппированные.
-                     # Фронтенд должен будет сам найти слот по row/index.
-                     # ИЛИ изменить формат ответа, чтобы он соответствовал старому?
-                     # Давайте пока оставим так: фронтенд получит список {card, row, index}
-                     # и сам разместит по этим координатам.
-                     # НО! Старый фронтенд ожидал списки карт для каждой линии.
-                     # Переформатируем ответ для совместимости со старым placeCardsOnBoard:
-                     response_data['move'][p['row']].append({"rank": Card.to_str(Card.from_str(p['card']))[0], "suit": Card.to_str(Card.from_str(p['card']))[1]})
-
+                     try:
+                         # Пытаемся получить ранг и масть из строки карты
+                         card_int = Card.from_str(p['card'])
+                         rank_char = Card.INT_RANK_TO_CHAR.get(Card.get_rank_int(card_int))
+                         suit_char = Card.INT_SUIT_TO_CHAR.get(Card.get_suit_int(card_int))
+                         if rank_char and suit_char:
+                              response_data['move'][p['row']].append({"rank": rank_char, "suit": suit_char})
+                         else:
+                              app.logger.warning(f"Could not format card {p['card']} for response.")
+                     except Exception as e_format:
+                          app.logger.warning(f"Error formatting card {p['card']} for response: {e_format}")
 
             app.logger.debug(f"Sending response data: {response_data}")
             return jsonify(response_data)
         else:
             app.logger.warning(f"AI agent did not return a placement after {request_duration:.3f}s.")
-            # Возвращаем пустой ход или ошибку?
-            # Вернем пустой ход, чтобы фронтенд не падал.
             return jsonify({"move": {"top": [], "middle": [], "bottom": [], "discarded": None}})
 
     except Exception as e:
         app.logger.error(f"Unexpected Error during /ai_move: {e}", exc_info=True)
         return jsonify({"error": "An unexpected server error occurred."}), 500
 
-# --- НОВЫЙ Эндпоинт для подсчета очков ---
+# --- Эндпоинт /calculate_score ---
 @app.route('/calculate_score', methods=['POST'])
 def calculate_score():
     """
@@ -329,17 +293,14 @@ def calculate_score():
 
         if not board.is_complete():
              app.logger.warning(f"Score calculation requested for incomplete board ({board.get_total_cards()}/13).")
-             # Считаем как фол или возвращаем ошибку? Вернем фол.
              return jsonify({"foul": True, "error": "Board is not complete"})
 
-        # Проверяем фол
         is_foul = check_board_foul(board)
         app.logger.info(f"Foul check result: {is_foul}")
 
         if is_foul:
             return jsonify({"foul": True})
         else:
-            # Считаем роялти
             royalties = {}
             total_royalty = 0
             for row_name in PlayerBoard.ROW_NAMES:
@@ -362,43 +323,32 @@ def calculate_score():
         app.logger.error(f"Error during /calculate_score: {e}", exc_info=True)
         return jsonify({"error": "An unexpected server error occurred during score calculation."}), 500
 
-# --- Эндпоинт для обновления состояния (опционально, для сохранения) ---
+# --- Эндпоинт /update_state ---
 @app.route('/update_state', methods=['POST'])
 def update_state():
     """
-    Принимает текущее состояние игры от фронтенда.
-    Может использоваться для логирования или сохранения состояния на сервере (если нужно).
-    В текущей реализации просто логирует и возвращает успех.
+    Принимает текущее состояние игры от фронтенда. Логирует и возвращает успех.
     """
     app.logger.debug("Route /update_state called (POST)")
     if not request.is_json:
         app.logger.warning("/update_state: Request is not JSON")
         return jsonify({"status": "error", "message": "Request must be JSON"}), 400
-
     data = request.get_json()
     app.logger.debug(f"Received state update data: {data}")
-
-    # Здесь можно добавить логику сохранения состояния в базу данных или файл,
-    # если требуется персистентность между сессиями или для анализа.
-    # Например: save_game_state_to_db(data)
-
     return jsonify({"status": "success", "message": "State received"})
 
-# --- Эндпоинт для сброса состояния (опционально) ---
+# --- Эндпоинт /reset_game_state ---
 @app.route('/reset_game_state', methods=['POST'])
 def reset_game_state():
     """
-    Обрабатывает запрос на сброс состояния игры на сервере (если есть что сбрасывать).
+    Обрабатывает запрос на сброс состояния игры на сервере.
     """
     app.logger.info("Route /reset_game_state called (POST)")
-    # Здесь можно добавить логику очистки сохраненного состояния на сервере, если оно есть.
-    # Например: clear_saved_game_state()
     return jsonify({"status": "success", "message": "Server state reset acknowledged"})
-
 
 # --- Запуск приложения ---
 if __name__ == '__main__':
-    app.logger.info("--- Starting Main Execution (v2.0) ---")
+    app.logger.info("--- Starting Main Execution (v2.1) ---")
     port = int(os.environ.get('PORT', 10000))
     debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ['true', '1', 'yes'] and not is_production
     if debug_mode:
