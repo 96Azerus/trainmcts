@@ -1,8 +1,9 @@
-# mcts_agent.py v2.1 (Refactored for Set Placement, Root Init Fix)
+# mcts_agent.py v2.2 (Refactored for Set Placement, Root Init Fix, Logging Added)
 """
 Реализация MCTS-агента для задачи размещения НАБОРА карт OFC Pineapple.
 Использует переработанный MCTSNode.
 Исправлена инициализация корневого узла и логика генерации состояний в цикле MCTS.
+Добавлено логирование времени генерации состояний.
 """
 
 import time
@@ -106,7 +107,7 @@ class MCTSAgent:
             return None
 
         num_dealt = len(cards_just_dealt)
-        street = 1 if initial_board.get_total_cards() == 0 else (initial_board.get_total_cards() // 2) + 2 # Уточнен расчет улицы
+        street = 1 if initial_board.get_total_cards() == 0 else (initial_board.get_total_cards() // 2) + 2
         logger.info(f"\n--- AI Agent: Choosing placement for {num_dealt} cards (Street ~{street}) ---")
         logger.info(f"Initial Board state:\n{initial_board}")
         logger.info(f"Cards Dealt: {[Card.to_str(c) for c in cards_just_dealt]}")
@@ -119,7 +120,7 @@ class MCTSAgent:
                 parent=None,
                 placement_info=None
             )
-            # --- ИСПРАВЛЕНО: Генерация состояний для корня происходит в цикле MCTS ---
+            # Генерация состояний для корня произойдет при первом вызове _select
         except Exception as e_root:
             logger.error(f"Failed to create MCTS root node: {e_root}", exc_info=True)
             return None
@@ -153,16 +154,12 @@ class MCTSAgent:
                         cards_on_board = leaf_node.board.get_total_cards()
                         cards_to_generate_for: List[int]
 
-                        # --- ИСПРАВЛЕНО: Определяем карты для генерации ---
                         if leaf_node is root_node:
-                            # Для корня используем карты, только что разданные
                             cards_to_generate_for = cards_just_dealt
                             logger.debug(f"Generating initial states for root node with {len(cards_to_generate_for)} cards.")
                         else:
-                            # Для других узлов симулируем раздачу
                             num_cards_to_deal_next = 3
                             if cards_on_board >= 11: num_cards_to_deal_next = 0
-
                             if num_cards_to_deal_next > 0:
                                 if len(leaf_node.remaining_deck) < num_cards_to_deal_next:
                                     logger.warning(f"Not enough cards in deck ({len(leaf_node.remaining_deck)}) to simulate next street deal ({num_cards_to_deal_next}).")
@@ -176,10 +173,13 @@ class MCTSAgent:
                             else:
                                  cards_to_generate_for = []
 
-                        # Генерируем состояния
                         if cards_to_generate_for:
+                             # --- ЛОГИРОВАНИЕ ВРЕМЕНИ ---
+                             gen_start_time = time.time()
                              leaf_node.untried_next_states = leaf_node._generate_next_states(cards_to_generate_for)
-                             logger.debug(f"Generated {len(leaf_node.untried_next_states)} next states for node.")
+                             gen_duration = time.time() - gen_start_time
+                             logger.debug(f"Generated {len(leaf_node.untried_next_states)} next states for node in {gen_duration:.4f}s.")
+                             # --- КОНЕЦ ЛОГИРОВАНИЯ ---
                         else:
                              leaf_node.untried_next_states = []
 
@@ -250,24 +250,13 @@ class MCTSAgent:
         path = [node]
         current_node = node
         while True:
-            if current_node.is_terminal():
-                return path, current_node
-
-            # Если узел еще не генерировал следующие состояния, останавливаемся здесь
-            # Генерация произойдет в основном цикле перед expand
-            if current_node.untried_next_states is None:
-                return path, current_node
-
-            # Если есть нераскрытые состояния, останавливаемся для расширения
-            if current_node.untried_next_states:
-                return path, current_node
-
-            # Если нет нераскрытых и нет детей (тупик?)
+            if current_node.is_terminal(): return path, current_node
+            if current_node.untried_next_states is None: return path, current_node
+            if current_node.untried_next_states: return path, current_node
             if not current_node.children:
                 logger.warning(f"Selection reached non-terminal node {current_node} with no children and no untried states.")
                 return path, current_node
 
-            # Выбираем лучшего потомка
             selected_child = current_node.uct_select_child(self.exploration)
             if selected_child is None:
                 logger.warning(f"UCT selection returned None for node {current_node}.")
@@ -279,8 +268,7 @@ class MCTSAgent:
     def _backpropagate(self, path: List[MCTSNode], reward: float):
         """Фаза обратного распространения."""
         for node in reversed(path):
-            node.visits += 1
-            node.total_reward += reward
+            node.visits += 1; node.total_reward += reward
 
     def _select_best_placement(self,
                                root_node: MCTSNode,
@@ -291,23 +279,16 @@ class MCTSAgent:
         """
         if not root_node.children:
             logger.warning("No children found at root node. Cannot select best placement.")
-            # Пытаемся вернуть первое из сгенерированных, если есть
             if hasattr(root_node, '_generated_states_for_expand') and root_node._generated_states_for_expand:
                  try:
-                     # Берем первый элемент из словаря
                      first_key = next(iter(root_node._generated_states_for_expand))
                      _, _, placement_info = root_node._generated_states_for_expand[first_key]
                      logger.warning("Returning first generated placement as fallback.")
                      return placement_info
-                 except StopIteration:
-                      logger.error("Fallback failed: _generated_states_for_expand is empty.")
-                      return None
-                 except Exception as e_fallback:
-                      logger.error(f"Error during fallback placement selection: {e_fallback}")
-                      return None
+                 except StopIteration: logger.error("Fallback failed: _generated_states_for_expand is empty.")
+                 except Exception as e_fallback: logger.error(f"Error during fallback placement selection: {e_fallback}")
             return None
 
-        # Проверка правила "Без трипса на топе"
         is_first_street = (root_node.board.get_total_cards() == 0 and len(initial_cards_dealt) == 5)
         trip_in_hand_rank = -1
         if is_first_street:
@@ -315,29 +296,22 @@ class MCTSAgent:
             rank_counts = Counter(ranks)
             for rank, count in rank_counts.items():
                 if count >= 3: trip_in_hand_rank = rank; break
-            if trip_in_hand_rank != -1:
-                 logger.info(f"Rule Check: First street with trip of rank {trip_in_hand_rank} detected.")
+            if trip_in_hand_rank != -1: logger.info(f"Rule Check: First street with trip of rank {trip_in_hand_rank} detected.")
 
-        # Сбор статистики
         child_stats: List[Tuple[Dict[str, Any], int, float]] = []
         items = list(root_node.children.items())
         logger.info(f"--- Evaluating {len(items)} child nodes (initial placements) ---")
         for placement_key, child_node in items:
              avg_reward = child_node.total_reward / child_node.visits if child_node.visits > 0 else -float('inf')
              p_info = getattr(child_node, 'placement_info', None)
-             if p_info is None:
-                  logger.warning(f"Child node {child_node} missing placement_info.")
-                  continue
-
+             if p_info is None: logger.warning(f"Child node {child_node} missing placement_info."); continue
              child_stats.append((p_info, child_node.visits, avg_reward))
              log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in p_info.get('placements', [])])
              log_discard = f"(D: {Card.to_str(p_info.get('discarded'))})" if p_info.get('discarded') else ""
              logger.info(f"  Placement: {log_placements} {log_discard} -> V: {child_node.visits:<6} R: {avg_reward:<8.2f}")
 
-        # Сортировка
         child_stats.sort(key=lambda x: (x[1], x[2]), reverse=True)
 
-        # Выбор лучшего разрешенного
         best_allowed_placement: Optional[Dict[str, Any]] = None
         for placement_info, visits, avg_reward in child_stats:
             skip_placement = False
@@ -347,9 +321,7 @@ class MCTSAgent:
                     if Card.get_rank_int(card_int) == trip_in_hand_rank and row_name == 'top':
                         log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in placements])
                         logger.warning(f"Rule Violation: Skipping placement {log_placements} (Trip rank {trip_in_hand_rank} on Top).")
-                        skip_placement = True
-                        break
-
+                        skip_placement = True; break
             if not skip_placement:
                 best_allowed_placement = placement_info
                 log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in best_allowed_placement.get('placements', [])])
@@ -357,12 +329,9 @@ class MCTSAgent:
                 logger.info(f"Selected placement (V={visits}, R={avg_reward:.2f}): {log_placements} {log_discard}")
                 return best_allowed_placement
 
-        # Если все запрещены
         if best_allowed_placement is None:
             logger.warning("All evaluated placements were disallowed by rules or no placements available.")
             if child_stats:
                  logger.warning("Returning the first placement (highest visits/reward) despite potential rule violation as fallback.")
                  return child_stats[0][0]
             return None
-        # Этот return не нужен
-        # return best_allowed_placement
