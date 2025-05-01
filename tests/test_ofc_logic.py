@@ -1,8 +1,8 @@
-# tests/test_ofc_logic.py v1.8
+# tests/test_ofc_logic.py v2.0
 """
 Unit-тесты для модуля ofc_logic.py.
 Исправлены вызовы check_board_foul и get_row_royalty в тестах.
-Исправлен ассерт в test_check_board_foul_logic для board_foul_bm (теперь проверяет на фол).
+Исправлены ассерты в test_check_board_foul_logic для всех досок в соответствии с правилами OFC.
 Импорты check_board_foul и get_row_royalty изменены на ofc_evaluators.
 """
 
@@ -209,36 +209,49 @@ def test_playerboard_copy():
 @pytest.mark.skipif('check_board_foul' not in globals() or 'get_row_royalty' not in globals(),
                     reason="Scoring functions not imported from ofc_evaluators, skipping scoring tests")
 def test_check_board_foul_logic():
-    # Валидная доска
+    # Валидная доска (ранее считалась фолом)
     board_ok = PlayerBoard()
     board_ok.set_full_board(
-        hand_to_int(['Qh', 'Qd', '2c']), # Pair Q
-        hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A high
-        hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])  # FH A over K
+        hand_to_int(['Qh', 'Qd', '2c']), # Pair Q (Class 8)
+        hand_to_int(['Ah', 'Kh', 'Th', 'Jh', '9h']), # Flush A high (Class 4)
+        hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Kd'])  # FH A over K (Class 3)
     )
     board_ok.is_foul = check_board_foul(board_ok)
+    # --- ИСПРАВЛЕНО: Эта доска ВАЛИДНА (8 > 4 > 3) ---
     assert not board_ok.is_foul, f"Board should be valid: {board_ok}"
 
     # Валидная доска (Top < Middle < Bottom)
-    board_foul_mt = PlayerBoard()
-    board_foul_mt.set_full_board(
-        hand_to_int(['2h', '3d', '4c']), # High Card 4
-        hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK
-        hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A
+    board_valid_2 = PlayerBoard()
+    board_valid_2.set_full_board(
+        hand_to_int(['2h', '3d', '4c']), # High Card 4 (Class 9)
+        hand_to_int(['As', 'Ad', 'Kc', 'Kd', 'Qc']), # Two Pair AK (Class 7)
+        hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', 'Th'])  # Straight Flush A (Class 1)
     )
-    board_foul_mt.is_foul = check_board_foul(board_foul_mt)
-    assert not board_foul_mt.is_foul, f"Board should be valid (Top < Middle < Bottom): {board_foul_mt}"
+    board_valid_2.is_foul = check_board_foul(board_valid_2)
+    # --- Ассерт был правильный ---
+    assert not board_valid_2.is_foul, f"Board should be valid (Top < Middle < Bottom): {board_valid_2}"
 
     # Фол: Top > Middle (Trips A > Two Pair KQ)
-    board_foul_bm = PlayerBoard()
-    board_foul_bm.set_full_board(
-        hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A
-        hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ
-        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K (Bottom > Middle, но Top > Middle -> Фол)
+    board_foul_top_mid = PlayerBoard()
+    board_foul_top_mid.set_full_board(
+        hand_to_int(['Ah', 'Ad', 'Ac']), # Trips A (Class 6)
+        hand_to_int(['Ks', 'Kd', 'Qc', 'Qd', '2s']), # Two Pair KQ (Class 7)
+        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h'])  # Flush K (Class 4) - Bottom > Middle, но Top > Middle -> Фол
     )
-    board_foul_bm.is_foul = check_board_foul(board_foul_bm)
-    # --- ИСПРАВЛЕНО: Проверяем, что это ФОЛ ---
-    assert board_foul_bm.is_foul, f"Board should be foul (Top > Middle): {board_foul_bm}"
+    board_foul_top_mid.is_foul = check_board_foul(board_foul_top_mid)
+    # --- Ассерт был правильный ---
+    assert board_foul_top_mid.is_foul, f"Board should be foul (Top > Middle): {board_foul_top_mid}"
+
+    # Фол: Middle > Bottom (Flush K > Pair A)
+    board_foul_mid_bot = PlayerBoard()
+    board_foul_mid_bot.set_full_board(
+        hand_to_int(['2h', '3d', '4c']), # High Card 4 (Class 9)
+        hand_to_int(['Th', 'Jh', 'Qh', 'Kh', '9h']), # Flush K (Class 4)
+        hand_to_int(['As', 'Ad', '2c', '3s', '4d'])  # Pair A (Class 8)
+    )
+    board_foul_mid_bot.is_foul = check_board_foul(board_foul_mid_bot)
+    assert board_foul_mid_bot.is_foul, f"Board should be foul (Middle > Bottom): {board_foul_mid_bot}"
+
 
     # Неполная доска - не фол
     board_incomplete = PlayerBoard()
