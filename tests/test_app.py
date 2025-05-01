@@ -1,15 +1,14 @@
-# tests/test_app.py v2.2 (Refactored for Set Placement MCTS, Arg Check Fix, Suit Fix)
+# tests/test_app.py v2.3 (Refactored for Set Placement MCTS, Arg Check Fix v2)
 """
 Интеграционные тесты для Flask приложения app.py.
 Обновлены для работы с choose_placement и новым API.
 Добавлены тесты для /calculate_score, /update_state, /reset_game_state.
-Исправлена проверка аргументов в test_ai_move_valid_request.
-Исправлено ожидание символа масти в test_ai_move_valid_request.
+Исправлена проверка аргументов в test_ai_move_valid_request с использованием assert_called_once_with.
 """
 
 import pytest
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, ANY # <-- Добавлен ANY
 
 # Импортируем Flask app и зависимости
 try:
@@ -65,28 +64,33 @@ def test_ai_move_valid_request(MockMCTSAgent, client):
     assert "move" in data
     assert "top" in data["move"] and "middle" in data["move"] and "bottom" in data["move"]
     assert "discarded" in data["move"]
-
-    # --- ИСПРАВЛЕНО: Ожидаем символ масти ---
     assert data["move"]["top"] == [{"rank": "A", "suit": "♠"}]
     assert data["move"]["middle"] == [{"rank": "K", "suit": "♠"}]
     assert data["move"]["bottom"] == []
     assert data["move"]["discarded"] == "Qs"
 
-    # Проверка аргументов через call_args_list
-    mock_agent_instance.choose_placement.assert_called_once()
-    assert mock_agent_instance.choose_placement.call_count == 1
-    first_call = mock_agent_instance.choose_placement.call_args_list[0]
-    call_args = first_call.args
-    call_kwargs = first_call.kwargs
-
-    assert len(call_args) == 3, f"Expected 3 positional args, got {len(call_args)}"
-    assert isinstance(call_args[0], PlayerBoard), f"Arg 0 type mismatch: expected PlayerBoard, got {type(call_args[0])}"
-    assert call_args[1] == [card_as_int, card_ks_int, card_qs_int], f"Arg 1 mismatch: expected cards, got {call_args[1]}"
-
+    # --- ИСПРАВЛЕНО: Проверка аргументов через assert_called_once_with ---
     expected_known = {card_as_int, card_ks_int, card_qs_int, Card.from_str("2c"), Card.from_str("3d")}
     expected_remaining = Deck.FULL_DECK_CARDS - expected_known
-    assert call_args[2] == expected_remaining, f"Arg 2 mismatch: expected deck, got {call_args[2]}"
+    expected_cards_dealt = [card_as_int, card_ks_int, card_qs_int]
+
+    # Проверяем, что вызов был один раз с ожидаемыми типами и значениями карт/колоды
+    # Используем ANY для доски, так как сравнение объектов PlayerBoard может быть сложным
+    mock_agent_instance.choose_placement.assert_called_once_with(
+        ANY, # initial_board (проверяем тип ниже)
+        expected_cards_dealt, # cards_just_dealt
+        expected_remaining # current_remaining_deck
+    )
+
+    # Дополнительно проверим тип первого аргумента (доски) из последнего вызова
+    # (так как assert_called_once_with уже проверил, что вызов был один)
+    call_args = mock_agent_instance.choose_placement.call_args.args
+    assert isinstance(call_args[0], PlayerBoard), f"Arg 0 type mismatch: expected PlayerBoard, got {type(call_args[0])}"
+
+    # Проверяем, что именованные аргументы не передавались (если метод их не принимает)
+    call_kwargs = mock_agent_instance.choose_placement.call_args.kwargs
     assert call_kwargs == {}, f"Expected empty kwargs, got {call_kwargs}"
+
 
 # Остальные тесты для /ai_move
 @patch('app.MCTSAgent')
