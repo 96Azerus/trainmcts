@@ -1,10 +1,7 @@
-# mcts_agent.py v1.7
+# mcts_agent.py v2.0 (Refactored for Set Placement)
 """
-Реализация MCTS-агента для задачи размещения карт OFC Pineapple.
-Цель - максимизация роялти.
-Возвращена логика снижения rollouts_per_leaf при num_workers=1 (как в v1.3).
-Импорт get_row_royalty изменен на ofc_evaluators.
-Импорт evaluator_5card изменен на ofc_evaluator_5card.
+Реализация MCTS-агента для задачи размещения НАБОРА карт OFC Pineapple.
+Использует переработанный MCTSNode.
 """
 
 import time
@@ -18,61 +15,47 @@ from collections import Counter
 
 # Импорты из локальных модулей
 try:
-    from ofc_logic import PlayerBoard, Card, Deck
+    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP # Добавлен RANK_MAP
+    # Импортируем MCTSNode и воркер
     from mcts_node import MCTSNode, run_parallel_rollout
-    # Импортируем эвалюаторы и функции скоринга из соответствующих модулей
-    from ofc_evaluators import ( # Import scoring functions and 3-card evaluator
-        evaluate_3_card_ofc, HAND_TYPE_TRIPS_3,
-        get_row_royalty
+    # Импортируем эвалюаторы и функции скоринга из ofc_evaluators
+    from ofc_evaluators import (
+        get_hand_rank_safe, WORST_RANK, WORST_CLASS,
+        check_board_foul, get_row_royalty,
+        ROYALTY_TOP_PAIRS # Для правила Фантазии
     )
-    # --- ИСПРАВЛЕНО: Импортируем 5-card instance напрямую ---
+    # Импортируем 5-card instance напрямую
     from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
 except ImportError as e:
-    logging.critical(f"Failed to import from ofc_logic/mcts_node/ofc_evaluators/ofc_evaluator_5card in mcts_agent.py: {e}")
-    # Заглушки
-    class PlayerBoard: pass # type: ignore
-    class Card: # type: ignore
-        @staticmethod
-        def get_rank_int(c): return 0
-        @staticmethod
-        def to_str(c): return "??"
-        @staticmethod
-        def hand_to_str(h): return ["??"]
-    class Deck: FULL_DECK_CARDS = set() # type: ignore
-    class MCTSNode: # type: ignore
-        def __init__(self, *args): pass
-        def _get_available_placements(self): return []
-        def expand(self): return None
-        def is_terminal(self): return True
-        def uct_select_child(self, e): return None
-        def backpropagate(self, r): pass
-        board = None
-        children = {}
-        untried_actions = []
-        visits = 0
-        total_reward = 0.0
-        cards_to_place = []
-        remaining_deck = set()
+    logging.critical(f"Failed to import modules in mcts_agent.py: {e}")
+    # Заглушки ... (остаются как были)
+    class PlayerBoard: pass
+    class Card: pass
+    class Deck: FULL_DECK_CARDS = set()
+    class MCTSNode: pass
     def run_parallel_rollout(*args): return 0.0
-    def evaluate_3_card_ofc(*args): return (999, "Error", "ERR")
-    HAND_TYPE_TRIPS_3 = "Error"
+    def get_hand_rank_safe(*args): return (9999, 9, "Invalid")
+    WORST_RANK = 9999; WORST_CLASS = 9
+    def check_board_foul(*args): return False
+    def get_row_royalty(*args): return 0
+    ROYALTY_TOP_PAIRS = {}
+    RANK_MAP = {}
     class MockEvaluator5Card: evaluate = lambda s, c: 9999
     evaluator_5card = MockEvaluator5Card()
-    def get_row_royalty(*args): return 0
-    # Перевыбрасываем ошибку, т.к. без этих модулей работа невозможна
     raise ImportError("Missing core logic/node/evaluator modules for MCTSAgent") from e
 
-# Получаем логгер
+# Получаем логгер (без изменений)
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
     logger.setLevel(logging.WARNING)
+    # ... (настройка хендлера)
 
 class MCTSAgent:
-    """ Агент MCTS для размещения карт OFC Pineapple. """
-    DEFAULT_EXPLORATION: float = 1.414 # Константа UCB1
+    """ Агент MCTS для размещения НАБОРА карт OFC Pineapple. """
+    DEFAULT_EXPLORATION: float = 1.414
     DEFAULT_TIME_LIMIT_MS: int = 5000
     DEFAULT_NUM_WORKERS: int = max(1, multiprocessing.cpu_count() - 1 if multiprocessing.cpu_count() > 1 else 1)
-    DEFAULT_ROLLOUTS_PER_LEAF: int = 4 # Количество роллаутов на лист
+    DEFAULT_ROLLOUTS_PER_LEAF: int = 4 # Оставляем 4 по умолчанию
 
     def __init__(self,
                  exploration: Optional[float] = None,
@@ -82,24 +65,21 @@ class MCTSAgent:
         """ Инициализирует MCTS-агента. """
         self.exploration: float = exploration if exploration is not None else self.DEFAULT_EXPLORATION
         time_limit_val: int = time_limit_ms if time_limit_ms is not None else self.DEFAULT_TIME_LIMIT_MS
-        self.time_limit: float = max(0.1, time_limit_val / 1000.0) # Минимум 0.1 сек
+        self.time_limit: float = max(0.1, time_limit_val / 1000.0)
         max_cpus = multiprocessing.cpu_count()
         requested_workers: int = num_workers if num_workers is not None else self.DEFAULT_NUM_WORKERS
-        self.num_workers: int = max(1, min(requested_workers, max_cpus, 8)) # Ограничим 8
+        self.num_workers: int = max(1, min(requested_workers, max_cpus, 8))
         self.rollouts_per_leaf: int = rollouts_per_leaf if rollouts_per_leaf is not None else self.DEFAULT_ROLLOUTS_PER_LEAF
 
-        # FIX 17: Возвращена логика снижения rollouts_per_leaf при num_workers=1 (как в v1.3)
-        # Это исправит тест test_mcts_agent_init_custom, но может сломать test_mcts_agent_init_defaults
-        if self.num_workers == 1 and self.rollouts_per_leaf > 1:
-            logger.warning(f"num_workers=1, reducing rollouts_per_leaf from {self.rollouts_per_leaf} to 1.")
-            self.rollouts_per_leaf = 1
+        # Убрана корректировка rollouts_per_leaf для num_workers=1,
+        # так как параллелизация теперь только для роллаутов, а не для выбора.
+        # Если rollouts_per_leaf > 1, они будут выполняться последовательно при num_workers=1.
 
         logger.info(f"MCTS Agent initialized: TimeLimit={self.time_limit:.2f}s, Exploration={self.exploration}, "
                     f"Workers={self.num_workers}, RolloutsPerLeaf={self.rollouts_per_leaf}")
+        # ... (настройка multiprocessing start method остается)
         try:
-            # Пытаемся установить метод 'spawn' для лучшей совместимости на разных ОС
             current_method = multiprocessing.get_start_method(allow_none=True)
-            # Не устанавливаем принудительно, если уже 'spawn' или если не можем установить
             if current_method != 'spawn':
                 available_methods = multiprocessing.get_all_start_methods()
                 if 'spawn' in available_methods:
@@ -113,40 +93,58 @@ class MCTSAgent:
         except Exception as e:
             logger.warning(f"Error checking/setting multiprocessing start method: {e}. Using default ({multiprocessing.get_start_method()}).")
 
-    def choose_action(self,
-                      board: PlayerBoard,
-                      cards_to_place: List[int],
-                      remaining_deck: Set[int]) -> Optional[Tuple[int, str, int]]:
+
+    def choose_placement(self,
+                         initial_board: PlayerBoard,
+                         cards_just_dealt: List[int],
+                         current_remaining_deck: Set[int]) -> Optional[Dict[str, Any]]:
         """
-        Выбирает лучшее ДЕЙСТВИЕ (размещение одной карты) с помощью MCTS.
+        Выбирает лучшее РАЗМЕЩЕНИЕ для НАБОРА карт с помощью MCTS.
 
         Args:
-            board (PlayerBoard): Текущее состояние доски.
-            cards_to_place (List[int]): Карты, которые нужно разместить.
-            remaining_deck (Set[int]): Карты, оставшиеся в колоде.
+            initial_board (PlayerBoard): Текущее состояние доски *до* размещения новых карт.
+            cards_just_dealt (List[int]): Карты, которые только что были разданы (5 или 3).
+            current_remaining_deck (Set[int]): Карты, оставшиеся в колоде *после* раздачи cards_just_dealt.
 
         Returns:
-            Optional[Tuple[int, str, int]]: Лучшее действие (card_int, row_name, index)
-                                            или None, если ход невозможен или произошла ошибка.
+            Optional[Dict[str, Any]]: Словарь с информацией о лучшем размещении
+                                      {'placements': [(card, row, idx), ...], 'discarded': card_or_none}
+                                      или None, если ход невозможен или произошла ошибка.
         """
         start_time_total = time.time()
-        if not cards_to_place:
-            logger.warning("MCTSAgent: choose_action called with no cards to place.")
+        if not cards_just_dealt:
+            logger.warning("MCTSAgent: choose_placement called with no cards dealt.")
             return None
-        if board.is_complete():
-            logger.warning("MCTSAgent: choose_action called with complete board.")
+        if initial_board.is_complete():
+            logger.warning("MCTSAgent: choose_placement called with complete board.")
             return None
 
-        logger.info(f"\n--- AI Agent: Choosing placement for {len(cards_to_place)} cards ---")
-        logger.info(f"Board state:\n{board}")
-        logger.info(f"Cards to place: {[Card.to_str(c) for c in cards_to_place]}")
-        # logger.debug(f"Remaining deck size: {len(remaining_deck)}")
+        num_dealt = len(cards_just_dealt)
+        street = 1 if initial_board.get_total_cards() == 0 else (initial_board.get_total_cards() // 2) + 1 # Приблизительно
+        logger.info(f"\n--- AI Agent: Choosing placement for {num_dealt} cards (Street ~{street}) ---")
+        logger.info(f"Initial Board state:\n{initial_board}")
+        logger.info(f"Cards Dealt: {[Card.to_str(c) for c in cards_just_dealt]}")
+        # logger.debug(f"Remaining deck size: {len(current_remaining_deck)}")
 
-        # Создаем корневой узел
+        # Создаем корневой узел MCTS
+        # Корень представляет состояние *до* размещения текущих карт
         try:
-            root_node = MCTSNode(board, cards_to_place, remaining_deck)
+            root_node = MCTSNode(
+                board=initial_board,
+                remaining_deck=current_remaining_deck, # Колода для симуляций из *дочерних* узлов
+                parent=None,
+                placement_info=None
+            )
+            # Генерируем возможные первые ходы (размещения текущего набора)
+            # Это нужно сделать один раз для корня, чтобы создать дочерние узлы
+            root_node.untried_next_states = root_node._generate_next_states(cards_just_dealt)
+            if not root_node.untried_next_states:
+                 logger.error("Failed to generate any initial placements from root node.")
+                 return None
+            logger.info(f"Generated {len(root_node.untried_next_states)} possible initial placements.")
+
         except Exception as e_root:
-            logger.error(f"Failed to create MCTS root node: {e_root}", exc_info=True)
+            logger.error(f"Failed to create or initialize MCTS root node: {e_root}", exc_info=True)
             return None
 
         start_mcts_time = time.time()
@@ -154,14 +152,14 @@ class MCTSAgent:
         pool = None
 
         try:
-            # Создаем пул процессов, если воркеров больше 1
+            # Создаем пул процессов для роллаутов
             if self.num_workers > 1:
                  try:
                      pool = multiprocessing.Pool(processes=self.num_workers)
                      logger.debug(f"Created multiprocessing pool with {self.num_workers} workers.")
                  except Exception as e_pool_create:
                      logger.error(f"Failed to create multiprocessing pool: {e_pool_create}. Falling back to 1 worker.", exc_info=True)
-                     self.num_workers = 1 # Сбрасываем на 1 воркер при ошибке
+                     self.num_workers = 1
 
             # Основной цикл MCTS
             while time.time() - start_mcts_time < self.time_limit:
@@ -171,195 +169,240 @@ class MCTSAgent:
                      logger.warning("Selection phase returned None leaf node. Breaking MCTS loop.")
                      break
 
-                # 2. Расширение (Expansion)
+                # 2. Расширение (Expansion) - если узел не терминальный и есть нераскрытые состояния
                 node_to_rollout_from = leaf_node
                 if not leaf_node.is_terminal():
-                    expanded_node = leaf_node.expand()
-                    if expanded_node:
-                         node_to_rollout_from = expanded_node
-                         path.append(expanded_node)
-                    # Если expand вернул None (нет действий), node_to_rollout_from остается leaf_node
+                    # --- Логика генерации следующих состояний ПЕРЕД расширением ---
+                    if leaf_node.untried_next_states is None:
+                        # Определяем, сколько карт раздать для следующей улицы
+                        cards_on_board = leaf_node.board.get_total_cards()
+                        num_cards_to_deal_next = 3 # По умолчанию для улиц 2-5
+                        # Проверяем, не последняя ли это улица (11 карт -> раздаем 3, ставим 2)
+                        if cards_on_board >= 11: # Если 11 или 12 карт, следующей улицы нет
+                             num_cards_to_deal_next = 0
+                        elif cards_on_board == 0: # Если это корень (0 карт), то раздаем 5 (уже сделано)
+                             # Этот случай не должен происходить здесь, т.к. корень инициализируется отдельно
+                             logger.error("Selection reached root node without untried states, should not happen.")
+                             num_cards_to_deal_next = 0
+                        # elif cards_on_board == 5: num_cards_to_deal_next = 3
+                        # elif cards_on_board == 7: num_cards_to_deal_next = 3
+                        # elif cards_on_board == 9: num_cards_to_deal_next = 3
+
+                        if num_cards_to_deal_next > 0:
+                            # Симулируем раздачу карт для следующей улицы
+                            if len(leaf_node.remaining_deck) < num_cards_to_deal_next:
+                                logger.warning(f"Not enough cards in deck ({len(leaf_node.remaining_deck)}) to simulate next street deal ({num_cards_to_deal_next}) for node expansion.")
+                                # Узел становится псевдо-терминальным для симуляции
+                            else:
+                                try:
+                                    # Используем random.sample для получения случайных карт без извлечения
+                                    simulated_deal = random.sample(list(leaf_node.remaining_deck), num_cards_to_deal_next)
+                                    # Генерируем возможные состояния
+                                    leaf_node.untried_next_states = leaf_node._generate_next_states(simulated_deal)
+                                    # logger.debug(f"Generated {len(leaf_node.untried_next_states)} next states for node {leaf_node}")
+                                except ValueError as ve:
+                                     logger.error(f"ValueError during simulated deal sampling: {ve}")
+                                     leaf_node.untried_next_states = [] # Ошибка генерации
+                                except Exception as e_gen:
+                                     logger.error(f"Error generating next states in selection: {e_gen}", exc_info=True)
+                                     leaf_node.untried_next_states = [] # Ошибка генерации
+                        else:
+                             leaf_node.untried_next_states = [] # Нет следующей улицы
+
+                    # --- Само расширение ---
+                    if leaf_node.untried_next_states: # Если есть что расширять
+                        expanded_node = leaf_node.expand()
+                        if expanded_node:
+                            node_to_rollout_from = expanded_node
+                            path.append(expanded_node)
+                        # Если expand вернул None (ошибка или нет действий), node_to_rollout_from остается leaf_node
+                    # else: logger.debug(f"Node {leaf_node} has no untried states to expand.")
 
                 # 3. Симуляция (Rollout)
                 results: List[float] = []
-                if not node_to_rollout_from.is_terminal():
-                    try:
-                        # Подготовка данных для воркеров
-                        # Передаем копии данных, чтобы избежать проблем с состоянием
-                        # Используем безопасный доступ к атрибутам моков в тестах
-                        board_rows = getattr(node_to_rollout_from.board, 'rows', {})
-                        board_cards_placed = getattr(node_to_rollout_from.board, '_cards_placed', 0)
-                        board_is_foul = getattr(node_to_rollout_from.board, 'is_foul', False)
+                # Роллаут запускается из node_to_rollout_from (либо лист, либо новый узел)
+                try:
+                    # Подготовка данных для воркеров
+                    # Передаем копии данных, чтобы избежать проблем с состоянием
+                    board_to_sim = node_to_rollout_from.board # Доска уже в нужном состоянии
+                    deck_to_sim = list(node_to_rollout_from.remaining_deck) # Оставшаяся колода
 
-                        board_dict = {
-                            'rows': {r: Card.hand_to_str(cards) for r, cards in board_rows.items()},
-                            '_cards_placed': board_cards_placed,
-                            'is_foul': board_is_foul
-                        }
-                        cards_ints = list(node_to_rollout_from.cards_to_place) # Копия
-                        deck_ints = list(node_to_rollout_from.remaining_deck) # Копия
+                    # Преобразуем доску в словарь для передачи
+                    board_dict = {
+                        'rows': {r: Card.hand_to_str(cards) for r, cards in board_to_sim.rows.items()},
+                        '_cards_placed': board_to_sim.get_total_cards(),
+                        # 'is_foul' не передаем, он определяется в конце роллаута
+                    }
 
-                        rollout_tasks = [(board_dict, cards_ints, deck_ints)] * self.rollouts_per_leaf
+                    rollout_tasks = [(board_dict, deck_to_sim)] * self.rollouts_per_leaf
 
-                        if pool and self.num_workers > 1: # Параллельные роллауты
-                             async_results = [pool.apply_async(run_parallel_rollout, task) for task in rollout_tasks]
-                             for res in async_results:
-                                  try:
-                                       # Динамический таймаут, но не менее 1 секунды
-                                       timeout_get = max(1.0, self.time_limit * 0.1)
-                                       reward = res.get(timeout=timeout_get)
-                                       results.append(reward)
-                                       num_simulations += 1
-                                  except multiprocessing.TimeoutError: logger.warning("Rollout worker timed out.")
-                                  except Exception as e_get: logger.warning(f"Error getting result from worker: {e_get}")
-                        else: # Последовательные роллауты (или если пул не создался)
-                             for task in rollout_tasks:
-                                  try:
-                                       reward = run_parallel_rollout(*task)
-                                       results.append(reward)
-                                       num_simulations += 1
-                                  except Exception as e_seq: logger.warning(f"Error during sequential rollout: {e_seq}")
+                    if pool and self.num_workers > 1: # Параллельные роллауты
+                         async_results = [pool.apply_async(run_parallel_rollout, task) for task in rollout_tasks]
+                         for res in async_results:
+                              try:
+                                   timeout_get = max(1.0, self.time_limit * 0.1)
+                                   reward = res.get(timeout=timeout_get)
+                                   results.append(reward)
+                                   num_simulations += 1
+                              except multiprocessing.TimeoutError: logger.warning("Rollout worker timed out.")
+                              except Exception as e_get: logger.warning(f"Error getting result from worker: {e_get}")
+                    else: # Последовательные роллауты
+                         for task in rollout_tasks:
+                              try:
+                                   reward = run_parallel_rollout(*task)
+                                   results.append(reward)
+                                   num_simulations += 1
+                              except Exception as e_seq: logger.warning(f"Error during sequential rollout: {e_seq}")
 
-                    except Exception as e_roll:
-                         logger.error(f"Error preparing/running rollout phase: {e_roll}", exc_info=True)
-                         continue # Пропускаем итерацию
-                else:
-                    # Терминальный узел - получаем роялти напрямую
-                    try:
-                        if getattr(node_to_rollout_from.board, 'is_foul', True): # Считаем фолом по умолчанию при ошибке
-                            reward = 0.0
-                        else:
-                             # Используем импортированную функцию get_row_royalty
-                             reward = sum(get_row_royalty(node_to_rollout_from.board.get_row_cards(r), r)
-                                          for r in PlayerBoard.ROW_NAMES)
-                        results.append(reward)
-                        num_simulations += 1
-                    except Exception as e_term: logger.error(f"Error getting terminal royalty: {e_term}", exc_info=True)
+                except Exception as e_roll:
+                     logger.error(f"Error preparing/running rollout phase: {e_roll}", exc_info=True)
+                     # Не пропускаем итерацию, пытаемся сделать backpropagate с тем, что есть (может быть [])
 
                 # 4. Обратное распространение (Backpropagation)
                 if results:
                     avg_reward = sum(results) / len(results)
                     self._backpropagate(path, avg_reward) # Передаем среднюю награду
+                # else: logger.debug("No results from rollout phase.") # Если роллауты не удались
 
         except KeyboardInterrupt:
              logger.warning("MCTS execution interrupted by user.")
-             # Не возвращаем None, пытаемся выбрать лучшее из того, что есть
         except Exception as e_mcts:
             logger.error(f"Critical error during MCTS execution: {e_mcts}", exc_info=True)
-            # Возвращаем None при критической ошибке
-            return None
+            return None # Возвращаем None при критической ошибке
         finally:
             if pool:
-                 try:
-                     pool.close() # Сигнал, что больше задач не будет
-                     pool.join() # Ждем завершения всех задач
+                 try: pool.close(); pool.join()
                  except Exception as e_pool: logger.error(f"Error closing MCTS pool: {e_pool}")
 
         elapsed_time = time.time() - start_mcts_time
         sims_per_sec = (num_simulations / elapsed_time) if elapsed_time > 0 else 0
         logger.info(f"MCTS finished: Ran {num_simulations} simulations in {elapsed_time:.3f}s ({sims_per_sec:.1f} sims/s).")
 
-        # Выбор лучшего действия
-        best_action = self._select_best_action(root_node, board, cards_to_place)
+        # Выбор лучшего действия (размещения)
+        best_placement_info = self._select_best_placement(root_node, cards_just_dealt)
         total_time = time.time() - start_time_total
-        logger.info(f"--- AI Agent: Action chosen in {total_time:.3f}s ---")
-        return best_action
+        logger.info(f"--- AI Agent: Placement chosen in {total_time:.3f}s ---")
+        return best_placement_info
 
     def _select(self, node: MCTSNode) -> Tuple[List[MCTSNode], Optional[MCTSNode]]:
         """Фаза выбора: спускаемся по дереву, выбирая лучшие узлы по UCB1."""
         path = [node]
         current_node = node
         while True:
-            if current_node.is_terminal(): return path, current_node
-            # Инициализация неиспробованных действий при первом посещении
-            # Используем безопасный доступ к атрибуту
-            if getattr(current_node, 'untried_actions', None) is None:
-                current_node.untried_actions = current_node._get_available_placements()
-                if current_node.untried_actions: # Перемешиваем, только если список не пуст
-                    random.shuffle(current_node.untried_actions)
+            if current_node.is_terminal():
+                # logger.debug("Selection reached terminal node.")
+                return path, current_node
 
-            if current_node.untried_actions: return path, current_node # Есть неиспробованные -> расширяем
-            if not current_node.children: return path, current_node # Лист без действий (и без неиспробованных)
+            # Если узел еще не генерировал следующие состояния, останавливаемся здесь
+            if current_node.untried_next_states is None:
+                # logger.debug(f"Selection stopped at node {current_node} for state generation.")
+                return path, current_node
 
+            # Если есть нераскрытые состояния (новые дочерние узлы еще не созданы), останавливаемся
+            if current_node.untried_next_states:
+                # logger.debug(f"Selection stopped at node {current_node} for expansion.")
+                return path, current_node
+
+            # Если нет нераскрытых состояний и нет дочерних узлов (тупик?), останавливаемся
+            if not current_node.children:
+                logger.warning(f"Selection reached non-terminal node {current_node} with no children and no untried states.")
+                return path, current_node
+
+            # Выбираем лучшего потомка по UCB1
             selected_child = current_node.uct_select_child(self.exploration)
             if selected_child is None:
-                # Это может случиться, если у узла нет потомков (хотя проверка выше должна это отловить)
-                # или если все потомки имеют 0 посещений (что uct_select_child должен обрабатывать)
                 logger.warning(f"UCT selection returned None for node {current_node}. Parent visits: {current_node.visits}. Children: {len(current_node.children)}")
                 return path, current_node # Не смогли выбрать потомка
 
             current_node = selected_child
             path.append(current_node)
 
+
     def _backpropagate(self, path: List[MCTSNode], reward: float):
         """Фаза обратного распространения."""
         for node in reversed(path):
             node.visits += 1
-            node.total_reward += reward # Награда - это роялти, максимизируем
+            node.total_reward += reward
 
-    def _select_best_action(self,
-                            root_node: MCTSNode,
-                            initial_board: PlayerBoard,
-                            initial_cards: List[int]) -> Optional[Tuple[int, str, int]]:
-        """Выбирает лучшее действие из корневого узла (максимум посещений)."""
+    def _select_best_placement(self,
+                               root_node: MCTSNode,
+                               initial_cards_dealt: List[int]) -> Optional[Dict[str, Any]]:
+        """
+        Выбирает лучшее размещение из дочерних узлов корневого узла.
+        Применяет правило "Без трипса на топе на улице 1".
+        """
         if not root_node.children:
-            logger.warning("No children found at root node. Cannot select best action.")
-            # Пытаемся вернуть случайное из доступных, если есть
-            available_actions = root_node._get_available_placements()
-            return random.choice(available_actions) if available_actions else None
+            logger.warning("No children found at root node. Cannot select best placement.")
+            # Пытаемся вернуть первое из сгенерированных, если есть
+            if hasattr(root_node, '_generated_states_for_expand') and root_node._generated_states_for_expand:
+                 _, _, placement_info = next(iter(root_node._generated_states_for_expand.values()))
+                 logger.warning("Returning first generated placement as fallback.")
+                 return placement_info
+            return None
 
-        # --- Применяем правило "Без трипса на топе" ---
-        is_first_street = (initial_board.get_total_cards() == 0 and len(initial_cards) == 5)
+        # --- Проверка правила "Без трипса на топе" ---
+        is_first_street = (root_node.board.get_total_cards() == 0 and len(initial_cards_dealt) == 5)
         trip_in_hand_rank = -1
         if is_first_street:
-            ranks = [Card.get_rank_int(c) for c in initial_cards]
+            ranks = [Card.get_rank_int(c) for c in initial_cards_dealt]
             rank_counts = Counter(ranks)
             for rank, count in rank_counts.items():
                 if count >= 3: trip_in_hand_rank = rank; break
+            if trip_in_hand_rank != -1:
+                 logger.info(f"Rule Check: First street with trip of rank {trip_in_hand_rank} detected.")
 
-        # Собираем статистику по действиям
-        action_stats: List[Tuple[Any, int, float]] = [] # (action, visits, avg_reward)
+        # Собираем статистику по дочерним узлам (первым ходам)
+        child_stats: List[Tuple[Dict[str, Any], int, float]] = [] # (placement_info, visits, avg_reward)
         items = list(root_node.children.items())
-        logger.info(f"--- Evaluating {len(items)} child nodes (first placements) ---")
-        for action, child_node in items:
-             # Добавим проверку на child_node.visits > 0 перед делением
+        logger.info(f"--- Evaluating {len(items)} child nodes (initial placements) ---")
+        for placement_key, child_node in items:
              avg_reward = child_node.total_reward / child_node.visits if child_node.visits > 0 else -float('inf')
-             action_stats.append((action, child_node.visits, avg_reward))
-             # Используем f-string для форматирования
-             logger.info(f"  Action: {self._format_action(action):<25} Visits: {child_node.visits:<6} AvgRoyalty: {avg_reward:<8.2f}")
+             # Получаем placement_info из узла (если оно там хранится) или из ключа?
+             # Лучше хранить в узле. Добавим проверку.
+             p_info = getattr(child_node, 'placement_info', None)
+             if p_info is None:
+                  logger.warning(f"Child node {child_node} missing placement_info.")
+                  continue # Пропускаем узел без информации о размещении
+
+             child_stats.append((p_info, child_node.visits, avg_reward))
+             # Форматируем для лога
+             log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in p_info.get('placements', [])])
+             log_discard = f"(Discard: {Card.to_str(p_info.get('discarded'))})" if p_info.get('discarded') else ""
+             logger.info(f"  Placement: {log_placements} {log_discard} -> Visits: {child_node.visits:<6} AvgReward: {avg_reward:<8.2f}")
 
         # Сортируем по посещениям (основной критерий), затем по средней награде
-        action_stats.sort(key=lambda x: (x[1], x[2]), reverse=True)
+        child_stats.sort(key=lambda x: (x[1], x[2]), reverse=True)
 
-        # Выбираем лучшее действие, пропуская запрещенные (трипс на топ)
-        best_allowed_action: Optional[Tuple[int, str, int]] = None
-        for action, visits, avg_reward in action_stats:
+        # Выбираем лучшее действие, пропуская запрещенные
+        best_allowed_placement: Optional[Dict[str, Any]] = None
+        for placement_info, visits, avg_reward in child_stats:
+            # Применяем правило, если нужно
+            skip_placement = False
             if is_first_street and trip_in_hand_rank != -1:
-                card_int, row_name, index = action
-                # Проверяем, что размещаемая карта - часть трипса и идет на топ
-                if Card.get_rank_int(card_int) == trip_in_hand_rank and row_name == 'top':
-                    logger.warning(f"Rule Violation: Skipping action {self._format_action(action)} (Trip {Card.to_str(card_int)[0]} on Top on Street 1).")
-                    continue # Пропускаем это действие
+                placements = placement_info.get('placements', [])
+                for card_int, row_name, index in placements:
+                    if Card.get_rank_int(card_int) == trip_in_hand_rank and row_name == 'top':
+                        log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in placements])
+                        logger.warning(f"Rule Violation: Skipping placement {log_placements} (Trip rank {trip_in_hand_rank} on Top on Street 1).")
+                        skip_placement = True
+                        break # Достаточно одного нарушения в размещении
 
-            # Если действие не нарушает правило (или правило не применяется), выбираем его
-            best_allowed_action = action
-            logger.info(f"Selected action (Visits={visits}, AvgRoyalty={avg_reward:.2f}): {self._format_action(best_allowed_action)}")
-            return best_allowed_action # Возвращаем первое же лучшее разрешенное действие
+            if not skip_placement:
+                best_allowed_placement = placement_info
+                log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in best_allowed_placement.get('placements', [])])
+                log_discard = f"(Discard: {Card.to_str(best_allowed_placement.get('discarded'))})" if best_allowed_placement.get('discarded') else ""
+                logger.info(f"Selected placement (Visits={visits}, AvgReward={avg_reward:.2f}): {log_placements} {log_discard}")
+                return best_allowed_placement # Возвращаем первое же лучшее разрешенное
 
         # Если все действия были запрещены (маловероятно)
-        if best_allowed_action is None:
-            logger.warning("All evaluated actions were disallowed by rules or no actions available. Returning None.")
+        if best_allowed_placement is None:
+            logger.warning("All evaluated placements were disallowed by rules or no placements available. Returning None.")
+            # Можно попробовать вернуть первое попавшееся, если они были
+            if child_stats:
+                 logger.warning("Returning the first placement despite potential rule violation as fallback.")
+                 return child_stats[0][0]
             return None
-        # Этот return уже не нужен, так как мы возвращаем внутри цикла
-        # return best_allowed_action
+        # Этот return уже не нужен
+        # return best_allowed_placement
 
-
-    def _format_action(self, action: Any) -> str:
-        """ Форматирует действие в читаемую строку для логов. """
-        if action is None: return "None"
-        try:
-            if isinstance(action, tuple) and len(action) == 3:
-                 card_int, row_name, index = action
-                 return f"{Card.to_str(card_int)}@{row_name}[{index}]"
-            else: return str(action)
-        except Exception: return "ErrorFormattingAction"
+    # Убран _format_action, так как форматирование теперь в _select_best_placement
