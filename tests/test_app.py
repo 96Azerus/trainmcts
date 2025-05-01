@@ -1,9 +1,10 @@
-# tests/test_app.py v2.1 (Refactored for Set Placement MCTS, Arg Check Fix)
+# tests/test_app.py v2.2 (Refactored for Set Placement MCTS, Arg Check Fix, Suit Fix)
 """
 Интеграционные тесты для Flask приложения app.py.
 Обновлены для работы с choose_placement и новым API.
 Добавлены тесты для /calculate_score, /update_state, /reset_game_state.
 Исправлена проверка аргументов в test_ai_move_valid_request.
+Исправлено ожидание символа масти в test_ai_move_valid_request.
 """
 
 import pytest
@@ -24,7 +25,7 @@ except ImportError:
 def client():
     """Создает тестовый клиент Flask."""
     flask_app.config['TESTING'] = True
-    # flask_app.logger.setLevel(logging.CRITICAL)
+    # flask_app.logger.setLevel(logging.CRITICAL) # Раскомментировать для подавления логов
     with flask_app.test_client() as client:
         yield client
 
@@ -64,12 +65,14 @@ def test_ai_move_valid_request(MockMCTSAgent, client):
     assert "move" in data
     assert "top" in data["move"] and "middle" in data["move"] and "bottom" in data["move"]
     assert "discarded" in data["move"]
-    assert data["move"]["top"] == [{"rank": "A", "suit": "s"}]
-    assert data["move"]["middle"] == [{"rank": "K", "suit": "s"}]
+
+    # --- ИСПРАВЛЕНО: Ожидаем символ масти ---
+    assert data["move"]["top"] == [{"rank": "A", "suit": "♠"}]
+    assert data["move"]["middle"] == [{"rank": "K", "suit": "♠"}]
     assert data["move"]["bottom"] == []
     assert data["move"]["discarded"] == "Qs"
 
-    # --- ИСПРАВЛЕНО: Проверка аргументов через call_args_list ---
+    # Проверка аргументов через call_args_list
     mock_agent_instance.choose_placement.assert_called_once()
     assert mock_agent_instance.choose_placement.call_count == 1
     first_call = mock_agent_instance.choose_placement.call_args_list[0]
@@ -85,8 +88,7 @@ def test_ai_move_valid_request(MockMCTSAgent, client):
     assert call_args[2] == expected_remaining, f"Arg 2 mismatch: expected deck, got {call_args[2]}"
     assert call_kwargs == {}, f"Expected empty kwargs, got {call_kwargs}"
 
-# Остальные тесты для /ai_move остаются без изменений, так как они проверяют
-# обработку ошибок и граничные случаи, которые не зависят от внутренней логики MCTS.
+# Остальные тесты для /ai_move
 @patch('app.MCTSAgent')
 def test_ai_move_no_cards_to_place(MockMCTSAgent, client):
     request_data = {
@@ -163,7 +165,6 @@ def test_ai_move_internal_error(MockMCTSAgent, client):
     data = response.get_json(); assert "error" in data and "unexpected server error" in data["error"].lower()
 
 # --- Тесты эндпоинта /calculate_score ---
-# (Остаются без изменений, так как API не менялся)
 @patch('app.check_board_foul')
 @patch('app.get_row_royalty')
 def test_calculate_score_valid_board(mock_get_royalty, mock_check_foul, client):
@@ -212,7 +213,6 @@ def test_calculate_score_missing_board(client):
     data = response.get_json(); assert "error" in data and "Missing board data" in data["error"]
 
 # --- Тесты эндпоинтов /update_state и /reset_game_state ---
-# (Остаются без изменений)
 def test_update_state(client):
     state_data = {"board": {"top": ["As", None, None]}, "discarded_cards": ["2c"]}
     response = client.post('/update_state', json=state_data)
