@@ -1,0 +1,5 @@
+Script started on 2025-05-01 16:43:11+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="81" LINES="33"]
+[0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ exit
+exit
+
+Script done on 2025-05-01 16:47:20+00:00 [COMMAND_EXIT_CODE="0"]
