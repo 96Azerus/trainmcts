@@ -1,9 +1,10 @@
-# app.py v2.1 (Refactored for Set Placement MCTS, Parsing Fix)
+# app.py v2.2 (Refactored for Set Placement MCTS, Parsing Fix, Response Format Fix)
 """
 Основной файл веб-приложения Flask для режима тренировки OFC Pineapple.
 Обрабатывает HTTP-запросы, вызывает MCTS AI для получения оптимального
 размещения НАБОРА карт и отдает HTML-страницу.
 Исправлен парсинг None значений.
+Исправлено форматирование ответа /ai_move.
 """
 
 import os
@@ -17,11 +18,11 @@ from typing import Optional, Dict, Any, Tuple, List, Set
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 
-# Импорты из локальных модулей (проверяем, что все нужное есть)
+# Импорты из локальных модулей
 try:
-    from ofc_logic import Card, Deck, PlayerBoard, CARD_PLACEHOLDER, INVALID_CARD
+    # Добавляем INT_RANK_TO_CHAR и INT_SUIT_TO_CHAR
+    from ofc_logic import Card, Deck, PlayerBoard, CARD_PLACEHOLDER, INVALID_CARD, INT_RANK_TO_CHAR, INT_SUIT_TO_CHAR
     from mcts_agent import MCTSAgent
-    # Импортируем функции оценки напрямую, если нужны для /calculate_score
     from ofc_evaluators import check_board_foul, get_row_royalty, WORST_RANK
 except ImportError as e:
     print(f"FATAL ERROR: Import failed from local modules: {e}", file=sys.stderr)
@@ -37,7 +38,7 @@ except Exception as e_global:
 load_dotenv()
 app = Flask(__name__, template_folder='templates')
 
-# Настройка логирования (без изменений)
+# Настройка логирования
 log_level_str = os.environ.get('LOG_LEVEL', 'INFO').upper()
 log_level = getattr(logging, log_level_str, logging.INFO)
 log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(module)s:%(lineno)d] - %(message)s')
@@ -49,9 +50,9 @@ app.logger.addHandler(stream_handler)
 app.logger.setLevel(log_level)
 logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
-app.logger.info("--- Flask App Initialization (v2.1) ---")
+app.logger.info("--- Flask App Initialization (v2.2) ---")
 
-# Конфигурация Flask (без изменений)
+# Конфигурация Flask
 is_production = os.environ.get('RENDER') == 'true' or os.environ.get('FLASK_ENV') == 'production'
 app.logger.info(f"Production mode: {is_production}")
 
@@ -73,7 +74,6 @@ def parse_cards_data(card_data: Any) -> List[int]:
         if isinstance(item, str):
             card_str = item
         elif isinstance(item, dict) and 'rank' in item and 'suit' in item:
-            # Обработка формата {rank: 'A', suit: 's'} или {rank: 'A', suit: '♠'}
             rank = item['rank']
             suit_char = item['suit']
             suit_map_inv = {'♠': 's', '♥': 'h', '♦': 'd', '♣': 'c'}
@@ -118,12 +118,10 @@ def parse_board_data(board_data: Any) -> Tuple[PlayerBoard, Set[int]]:
                  continue
 
              card_int: Optional[int] = None
-             # Пытаемся получить int карты из card_item
              if isinstance(card_item, str) and card_item != CARD_PLACEHOLDER:
                  try: card_int = Card.from_str(card_item)
                  except (ValueError, TypeError): pass
              elif isinstance(card_item, dict):
-                 # Используем parse_cards_data для обработки объекта
                  temp_list = parse_cards_data([card_item])
                  if temp_list: card_int = temp_list[0]
 
@@ -132,7 +130,6 @@ def parse_board_data(board_data: Any) -> Tuple[PlayerBoard, Set[int]]:
                      app.logger.warning(f"Failed to add card {Card.to_str(card_int)} to board at {row_name}[{i}] during parsing (slot occupied?).")
                  else:
                      board_cards_set.add(card_int)
-             # else: слот остается пустым (None по умолчанию)
 
     return board, board_cards_set
 
@@ -164,7 +161,6 @@ def get_ai_move():
     data = request.get_json()
     app.logger.debug(f"Received data: {data}")
 
-    # --- Валидация и парсинг входных данных ---
     selected_cards_data = data.get('selected_cards')
     board_data = data.get('board')
     discarded_cards_data = data.get('discarded_cards', [])
@@ -186,7 +182,6 @@ def get_ai_move():
         app.logger.warning("No valid cards to place provided.")
         return jsonify({"error": "No valid cards to place"}), 400
 
-    # Проверка на дубликаты
     hand_cards_set = set(cards_to_place_ints)
     known_on_board_or_hand = board_cards_set.union(hand_cards_set)
     duplicates_board_hand = board_cards_set.intersection(hand_cards_set)
@@ -202,7 +197,6 @@ def get_ai_move():
     if duplicates_discard_board:
          app.logger.warning(f"Cards on board are also permanently discarded: {[Card.to_str(c) for c in duplicates_discard_board]}")
 
-    # --- Определение оставшейся колоды ---
     all_known_cards = known_on_board_or_hand.union(permanently_discarded_ints)
     remaining_deck_set = Deck.FULL_DECK_CARDS - all_known_cards
     actual_total = len(all_known_cards) + len(remaining_deck_set)
@@ -212,7 +206,6 @@ def get_ai_move():
         remaining_deck_set = Deck.FULL_DECK_CARDS - all_known_cards
         app.logger.warning(f"Re-calculated remaining deck size: {len(remaining_deck_set)}")
 
-    # --- Настройка и запуск MCTS ---
     try:
         mcts_time_limit = int(ai_settings.get('aiTime', 5)) * 1000
         mcts_time_limit = max(100, min(mcts_time_limit, 60000))
@@ -231,14 +224,13 @@ def get_ai_move():
             response_placements = []
             if best_placement_info.get('placements'):
                  response_placements = [
-                     {"card": Card.to_str(p[0]), "row": p[1], "index": p[2]}
+                     {"card_int": p[0], "row": p[1], "index": p[2]} # Сохраняем int для форматирования
                      for p in best_placement_info['placements']
                  ]
             response_discarded = None
             if best_placement_info.get('discarded'):
                  response_discarded = Card.to_str(best_placement_info['discarded'])
 
-            # Формируем ответ для совместимости со старым placeCardsOnBoard
             response_data = {
                 "move": {
                     "top": [], "middle": [], "bottom": [],
@@ -246,18 +238,23 @@ def get_ai_move():
                 }
             }
             for p in response_placements:
-                if p['row'] in response_data['move']:
+                row_key = p['row']
+                if row_key in response_data['move']:
                      try:
-                         # Пытаемся получить ранг и масть из строки карты
-                         card_int = Card.from_str(p['card'])
-                         rank_char = Card.INT_RANK_TO_CHAR.get(Card.get_rank_int(card_int))
-                         suit_char = Card.INT_SUIT_TO_CHAR.get(Card.get_suit_int(card_int))
+                         card_int = p['card_int']
+                         # --- ИСПРАВЛЕНО: Используем импортированные словари ---
+                         rank_char = INT_RANK_TO_CHAR.get(Card.get_rank_int(card_int))
+                         suit_char = INT_SUIT_TO_CHAR.get(Card.get_suit_int(card_int))
                          if rank_char and suit_char:
-                              response_data['move'][p['row']].append({"rank": rank_char, "suit": suit_char})
+                              # --- ИСПРАВЛЕНО: Формируем объект с rank/suit ---
+                              # Важно: фронтенд ожидает символ масти, а не букву
+                              suit_map_to_symbol = {'s': '♠', 'h': '♥', 'd': '♦', 'c': '♣'}
+                              suit_symbol = suit_map_to_symbol.get(suit_char, '?')
+                              response_data['move'][row_key].append({"rank": rank_char, "suit": suit_symbol})
                          else:
-                              app.logger.warning(f"Could not format card {p['card']} for response.")
+                              app.logger.warning(f"Could not format card int {card_int} for response.")
                      except Exception as e_format:
-                          app.logger.warning(f"Error formatting card {p['card']} for response: {e_format}")
+                          app.logger.warning(f"Error formatting card int {p.get('card_int', 'N/A')} for response: {e_format}")
 
             app.logger.debug(f"Sending response data: {response_data}")
             return jsonify(response_data)
@@ -272,9 +269,6 @@ def get_ai_move():
 # --- Эндпоинт /calculate_score ---
 @app.route('/calculate_score', methods=['POST'])
 def calculate_score():
-    """
-    Принимает финальное состояние доски и возвращает очки роялти и флаг фола.
-    """
     start_request_time = time.time()
     app.logger.info("Route /calculate_score called (POST)")
     if not request.is_json:
@@ -326,9 +320,6 @@ def calculate_score():
 # --- Эндпоинт /update_state ---
 @app.route('/update_state', methods=['POST'])
 def update_state():
-    """
-    Принимает текущее состояние игры от фронтенда. Логирует и возвращает успех.
-    """
     app.logger.debug("Route /update_state called (POST)")
     if not request.is_json:
         app.logger.warning("/update_state: Request is not JSON")
@@ -340,15 +331,12 @@ def update_state():
 # --- Эндпоинт /reset_game_state ---
 @app.route('/reset_game_state', methods=['POST'])
 def reset_game_state():
-    """
-    Обрабатывает запрос на сброс состояния игры на сервере.
-    """
     app.logger.info("Route /reset_game_state called (POST)")
     return jsonify({"status": "success", "message": "Server state reset acknowledged"})
 
 # --- Запуск приложения ---
 if __name__ == '__main__':
-    app.logger.info("--- Starting Main Execution (v2.1) ---")
+    app.logger.info("--- Starting Main Execution (v2.2) ---")
     port = int(os.environ.get('PORT', 10000))
     debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ['true', '1', 'yes'] and not is_production
     if debug_mode:
