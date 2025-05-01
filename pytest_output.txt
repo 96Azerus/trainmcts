@@ -3,39 +3,39 @@ platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-uti
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: cov-6.1.1, anyio-4.9.0
-collecting ... 2025-05-01 15:56:46,889 - app - INFO - [app:53] - --- Flask App Initialization (v2.2) ---
-2025-05-01 15:56:46,889 - app - INFO - [app:57] - Production mode: False
-2025-05-01 15:56:46,889 - app - INFO - [app:137] - Defining Flask routes...
+collecting ... 2025-05-01 16:03:50,898 - app - INFO - [app:53] - --- Flask App Initialization (v2.2) ---
+2025-05-01 16:03:50,898 - app - INFO - [app:57] - Production mode: False
+2025-05-01 16:03:50,898 - app - INFO - [app:137] - Defining Flask routes...
 collected 41 items / 3 skipped
 
-tests/test_app.py::test_index_route 2025-05-01 15:56:46,919 - app - INFO - [app:142] - Route / called (GET)
+tests/test_app.py::test_index_route 2025-05-01 16:03:50,928 - app - INFO - [app:142] - Route / called (GET)
 PASSED
-tests/test_app.py::test_ai_move_valid_request 2025-05-01 15:56:46,926 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,926 - app - INFO - [app:213] - Starting MCTS placement search for 3 cards...
-2025-05-01 15:56:46,926 - app - INFO - [app:223] - AI move request processed in 0.000s. Best placement found.
+tests/test_app.py::test_ai_move_valid_request 2025-05-01 16:03:50,934 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:50,934 - app - INFO - [app:213] - Starting MCTS placement search for 3 cards...
+2025-05-01 16:03:50,935 - app - INFO - [app:223] - AI move request processed in 0.000s. Best placement found.
 FAILED
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-01 15:56:46,960 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,960 - app - WARNING - [app:182] - No valid cards to place provided.
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-01 16:03:51,011 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:51,011 - app - WARNING - [app:182] - No valid cards to place provided.
 PASSED
-tests/test_app.py::test_ai_move_invalid_json 2025-05-01 15:56:46,962 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,962 - app - WARNING - [app:158] - Request is not JSON
+tests/test_app.py::test_ai_move_invalid_json 2025-05-01 16:03:51,013 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:51,013 - app - WARNING - [app:158] - Request is not JSON
 PASSED
-tests/test_app.py::test_ai_move_missing_data 2025-05-01 15:56:46,963 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,963 - app - WARNING - [app:170] - Missing or invalid 'selected_cards' or 'board' data
+tests/test_app.py::test_ai_move_missing_data 2025-05-01 16:03:51,014 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:51,014 - app - WARNING - [app:170] - Missing or invalid 'selected_cards' or 'board' data
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-05-01 15:56:46,965 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,965 - app - WARNING - [app:192] - Duplicate cards found between hand and board: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-05-01 16:03:51,016 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:51,016 - app - WARNING - [app:192] - Duplicate cards found between hand and board: ['As']
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-05-01 15:56:46,966 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,967 - app - WARNING - [app:195] - Cards to place are already permanently discarded: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-05-01 16:03:51,017 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:51,018 - app - WARNING - [app:195] - Cards to place are already permanently discarded: ['As']
 PASSED
-tests/test_app.py::test_ai_move_agent_returns_none 2025-05-01 15:56:46,968 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,968 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
-2025-05-01 15:56:46,969 - app - WARNING - [app:262] - AI agent did not return a placement after 0.000s.
+tests/test_app.py::test_ai_move_agent_returns_none 2025-05-01 16:03:51,019 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:51,020 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
+2025-05-01 16:03:51,020 - app - WARNING - [app:262] - AI agent did not return a placement after 0.000s.
 PASSED
-tests/test_app.py::test_ai_move_internal_error 2025-05-01 15:56:46,970 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 15:56:46,970 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
-2025-05-01 15:56:46,971 - app - ERROR - [app:266] - Unexpected Error during /ai_move: Unexpected MCTS crash
+tests/test_app.py::test_ai_move_internal_error 2025-05-01 16:03:51,021 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-01 16:03:51,021 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
+2025-05-01 16:03:51,022 - app - ERROR - [app:266] - Unexpected Error during /ai_move: Unexpected MCTS crash
 Traceback (most recent call last):
   File "/workspaces/trainmcts/app.py", line 215, in get_ai_move
     best_placement_info: Optional[Dict[str, Any]] = agent.choose_placement(
@@ -50,22 +50,22 @@ Traceback (most recent call last):
     raise effect
 Exception: Unexpected MCTS crash
 PASSED
-tests/test_app.py::test_calculate_score_valid_board 2025-05-01 15:56:46,973 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 15:56:46,973 - app - INFO - [app:293] - Foul check result: False
-2025-05-01 15:56:46,973 - app - INFO - [app:306] - Calculated royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
-2025-05-01 15:56:46,974 - app - INFO - [app:308] - Score calculation request processed in 0.001s.
+tests/test_app.py::test_calculate_score_valid_board 2025-05-01 16:03:51,024 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-01 16:03:51,024 - app - INFO - [app:293] - Foul check result: False
+2025-05-01 16:03:51,024 - app - INFO - [app:306] - Calculated royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
+2025-05-01 16:03:51,024 - app - INFO - [app:308] - Score calculation request processed in 0.001s.
 PASSED
-tests/test_app.py::test_calculate_score_foul_board 2025-05-01 15:56:46,975 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 15:56:46,975 - app - INFO - [app:293] - Foul check result: True
+tests/test_app.py::test_calculate_score_foul_board 2025-05-01 16:03:51,026 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-01 16:03:51,026 - app - INFO - [app:293] - Foul check result: True
 PASSED
-tests/test_app.py::test_calculate_score_incomplete_board 2025-05-01 15:56:46,976 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 15:56:46,977 - app - WARNING - [app:289] - Score calculation requested for incomplete board (3/13).
+tests/test_app.py::test_calculate_score_incomplete_board 2025-05-01 16:03:51,027 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-01 16:03:51,027 - app - WARNING - [app:289] - Score calculation requested for incomplete board (3/13).
 PASSED
-tests/test_app.py::test_calculate_score_missing_board 2025-05-01 15:56:46,978 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 15:56:46,978 - app - WARNING - [app:282] - Missing 'board' data for score calculation
+tests/test_app.py::test_calculate_score_missing_board 2025-05-01 16:03:51,028 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-01 16:03:51,029 - app - WARNING - [app:282] - Missing 'board' data for score calculation
 PASSED
 tests/test_app.py::test_update_state PASSED
-tests/test_app.py::test_reset_game_state 2025-05-01 15:56:46,980 - app - INFO - [app:334] - Route /reset_game_state called (POST)
+tests/test_app.py::test_reset_game_state 2025-05-01 16:03:51,031 - app - INFO - [app:334] - Route /reset_game_state called (POST)
 PASSED
 tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED
 tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED
@@ -97,7 +97,7 @@ tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
 =================================== FAILURES ===================================
 __________________________ test_ai_move_valid_request __________________________
 
-MockMCTSAgent = <MagicMock name='MCTSAgent' id='139260563427248'>
+MockMCTSAgent = <MagicMock name='MCTSAgent' id='136675731165104'>
 client = <FlaskClient <Flask 'app'>>
 
     @patch('app.MCTSAgent')
@@ -127,30 +127,67 @@ client = <FlaskClient <Flask 'app'>>
         assert "move" in data
         assert "top" in data["move"] and "middle" in data["move"] and "bottom" in data["move"]
         assert "discarded" in data["move"]
-    
-        # --- ИСПРАВЛЕНО: Ожидаем символ масти ---
         assert data["move"]["top"] == [{"rank": "A", "suit": "♠"}]
         assert data["move"]["middle"] == [{"rank": "K", "suit": "♠"}]
         assert data["move"]["bottom"] == []
         assert data["move"]["discarded"] == "Qs"
     
-        # Проверка аргументов через call_args_list
-        mock_agent_instance.choose_placement.assert_called_once()
-        assert mock_agent_instance.choose_placement.call_count == 1
-        first_call = mock_agent_instance.choose_placement.call_args_list[0]
-        call_args = first_call.args
-        call_kwargs = first_call.kwargs
+        # --- ИСПРАВЛЕНО: Проверка аргументов через assert_called_once_with ---
+        expected_known = {card_as_int, card_ks_int, card_qs_int, Card.from_str("2c"), Card.from_str("3d")}
+        expected_remaining = Deck.FULL_DECK_CARDS - expected_known
+        expected_cards_dealt = [card_as_int, card_ks_int, card_qs_int]
     
->       assert len(call_args) == 3, f"Expected 3 positional args, got {len(call_args)}"
-E       AssertionError: Expected 3 positional args, got 0
-E       assert 0 == 3
-E        +  where 0 = len(())
+        # Проверяем, что вызов был один раз с ожидаемыми типами и значениями карт/колоды
+        # Используем ANY для доски, так как сравнение объектов PlayerBoard может быть сложным
+>       mock_agent_instance.choose_placement.assert_called_once_with(
+            ANY, # initial_board (проверяем тип ниже)
+            expected_cards_dealt, # cards_just_dealt
+            expected_remaining # current_remaining_deck
+        )
 
-tests/test_app.py:82: AssertionError
+tests/test_app.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py:956: in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='MCTSAgent().choose_placement' id='136675725573920'>
+args = (<ANY>, [268442665, 134224677, 67115551], {69634, 73730, 81922, 135427, 139523, 164099, ...})
+kwargs = {}
+expected = call(<ANY>, [268442665, 134224677, 67115551], {81922, 266757, 279045, 295429, 270853, 529159, 533255, 1057803, 1065995...3349, 268471337, 268454953, 268446761, 16783383, 16795671, 557831, 541447, 1053707, 1082379, 33564957, 2106637, 69634})
+actual = call(initial_board=PlayerBoard(Cards=0, Foul=False), cards_just_dealt=[268442665, 134224677, 67115551], current_remain...3349, 268471337, 268454953, 268446761, 16783383, 16795671, 557831, 541447, 1053707, 1082379, 33564957, 2106637, 69634})
+_error_message = <function NonCallableMock.assert_called_with.<locals>._error_message at 0x7c4e4bdd9620>
+cause = None
+
+    def assert_called_with(self, /, *args, **kwargs):
+        """assert that the last call was made with the specified arguments.
+    
+        Raises an AssertionError if the args and keyword args passed in are
+        different to the last call to the mock."""
+        if self.call_args is None:
+            expected = self._format_mock_call_signature(args, kwargs)
+            actual = 'not called.'
+            error_message = ('expected call not found.\nExpected: %s\n  Actual: %s'
+                    % (expected, actual))
+            raise AssertionError(error_message)
+    
+        def _error_message():
+            msg = self._format_mock_failure_message(args, kwargs)
+            return msg
+        expected = self._call_matcher(_Call((args, kwargs), two=True))
+        actual = self._call_matcher(self.call_args)
+        if actual != expected:
+            cause = expected if isinstance(expected, Exception) else None
+>           raise AssertionError(_error_message()) from cause
+E           AssertionError: expected call not found.
+E           Expected: choose_placement(<ANY>, [268442665, 134224677, 67115551], {81922, 266757, 279045, 295429, 270853, 529159, 533255, 1057803, 1065995, 2131213, 2114829, 2102541, 73730, 4212241, 4204049, 8423187, 4228625, 8398611, 8406803, 16787479, 16812055, 164099, 139523, 135427, 8394515, 33573149, 33589533, 67144223, 67127839, 67119647, 33560861, 4199953, 134236965, 134228773, 134253349, 268471337, 268454953, 268446761, 16783383, 16795671, 557831, 541447, 1053707, 1082379, 33564957, 2106637, 69634})
+E             Actual: choose_placement(initial_board=PlayerBoard(Cards=0, Foul=False), cards_just_dealt=[268442665, 134224677, 67115551], current_remaining_deck={81922, 266757, 279045, 295429, 270853, 529159, 533255, 1057803, 1065995, 2131213, 2114829, 2102541, 73730, 4212241, 4204049, 8423187, 4228625, 8398611, 8406803, 16787479, 16812055, 164099, 139523, 135427, 8394515, 33573149, 33589533, 67144223, 67127839, 67119647, 33560861, 4199953, 134236965, 134228773, 134253349, 268471337, 268454953, 268446761, 16783383, 16795671, 557831, 541447, 1053707, 1082379, 33564957, 2106637, 69634})
+
+/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py:944: AssertionError
 ------------------------------ Captured log call -------------------------------
 INFO     app:app.py:156 Route /ai_move called (POST)
 INFO     app:app.py:213 Starting MCTS placement search for 3 cards...
 INFO     app:app.py:223 AI move request processed in 0.000s. Best placement found.
 =========================== short test summary info ============================
-FAILED tests/test_app.py::test_ai_move_valid_request - AssertionError: Expect...
+FAILED tests/test_app.py::test_ai_move_valid_request - AssertionError: expect...
 =================== 1 failed, 40 passed, 3 skipped in 0.72s ====================
