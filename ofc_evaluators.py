@@ -1,11 +1,12 @@
-# ofc_evaluators.py v1.8
+# ofc_evaluators.py v1.9
 """
 Интерфейс для оценки покерных комбинаций OFC (3 и 5 карт).
 Использует специализированные модули для 3- и 5-карточных рук.
 Исправлена проверка 5-карт в get_hand_rank_safe.
 Добавлено детальное логгирование.
-Добавлены логи перед вызовом оценщиков.
 Перенесены функции check_board_foul, get_row_royalty и константы роялти из ofc_logic.py.
+ИСПРАВЛЕНО: get_hand_rank_safe теперь возвращает СЫРОЙ ранг (без смещения).
+ИСПРАВЛЕНО: check_board_foul теперь сравнивает СЫРЫЕ ранги.
 """
 
 import logging
@@ -14,8 +15,8 @@ from collections import Counter # Добавлен Counter
 
 # Импортируем конкретные эвалюаторы
 try:
-    from ofc_evaluator_3card import evaluate_3_card_ofc, WORST_RANK_3CARD as WORST_RANK_3CARD_RAW # Переименовываем для ясности
-    from ofc_evaluator_3card import HAND_TYPE_TRIPS_3, HAND_TYPE_PAIR_3, HAND_TYPE_HIGH_CARD_3 # Импортируем типы
+    from ofc_evaluator_3card import evaluate_3_card_ofc, WORST_RANK_3CARD as WORST_RANK_3CARD_RAW
+    from ofc_evaluator_3card import HAND_TYPE_TRIPS_3, HAND_TYPE_PAIR_3, HAND_TYPE_HIGH_CARD_3
 except ImportError:
     logging.critical("Failed to import evaluate_3_card_ofc from ofc_evaluator_3card.py")
     def evaluate_3_card_ofc(c1, c2, c3) -> Tuple[int, str, str]: return (999, "Error", "ERR")
@@ -41,7 +42,7 @@ except ImportError:
 
 # Импортируем утилиты карт и доску из ofc_logic
 try:
-    from ofc_logic import Card, INVALID_CARD, card_to_str, PlayerBoard, RANK_MAP # Добавлены PlayerBoard, RANK_MAP
+    from ofc_logic import Card, INVALID_CARD, card_to_str, PlayerBoard, RANK_MAP
 except ImportError:
     logging.critical("Failed to import from ofc_logic in ofc_evaluators.py")
     # Заглушки для Card, если ofc_logic недоступен
@@ -61,7 +62,7 @@ except ImportError:
 # Получаем логгер
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logger.setLevel(logging.DEBUG) # Устанавливаем DEBUG для отладки
+    logger.setLevel(logging.WARNING) # Возвращаем уровень WARNING по умолчанию
     handler = logging.StreamHandler() # Вывод в консоль
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
     handler.setFormatter(formatter)
@@ -76,27 +77,21 @@ WORST_RANK_5CARD_INVALID: int = LookupTable5Card.WORST_RANK_5CARD # 7463 - *не
 # Ранги 3-карточных рук: 1 (лучший) - 455 (худший)
 # WORST_RANK_3CARD_RAW уже импортирован (455)
 
-# Скорректированный диапазон для 3-карт
-ADJUSTMENT_3CARD: int = WORST_RANK_5CARD_INVALID # Смещение = 7463
-BEST_ADJUSTED_RANK_3CARD: int = 1 + ADJUSTMENT_3CARD # 7464
-WORST_ADJUSTED_RANK_3CARD: int = WORST_RANK_3CARD_RAW + ADJUSTMENT_3CARD # 7918
-
-# Общий худший ранг (для ошибок)
-WORST_RANK: int = WORST_ADJUSTED_RANK_3CARD + 1 # 7919
+# --- ИСПРАВЛЕНО: Общий худший ранг теперь просто больше максимального валидного ---
+# Используем его для любых ошибок оценки
+WORST_RANK: int = max(MAX_HIGH_CARD_5, WORST_RANK_3CARD_RAW) + 1 # 7462 + 1 = 7463
 
 # --- Основная функция оценки ---
 
 def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
     """
-    Безопасно вычисляет ранг и тип руки (3 или 5 карт).
+    Безопасно вычисляет СЫРОЙ ранг и тип руки (3 или 5 карт).
     Меньший ранг означает более сильную руку.
-    3-карточные ранги смещены (добавлением ADJUSTMENT_3CARD), чтобы быть
-    гарантированно хуже (численно больше) любого 5-карточного ранга.
-    Возвращает WORST_RANK (7919) при любой ошибке или невалидном входе.
+    Возвращает WORST_RANK (7463) при любой ошибке или невалидном входе.
 
     Returns:
-        Tuple[int, str]: Скорректированный ранг (1-7462 для 5-карт, 7464-7918 для 3-карт)
-                         или WORST_RANK (7919) при ошибке, и строка типа руки ("Invalid" при ошибке).
+        Tuple[int, str]: Сырой ранг (1-455 для 3-карт, 1-7462 для 5-карт)
+                         или WORST_RANK (7463) при ошибке, и строка типа руки ("Invalid" при ошибке).
     """
     hand_str_log = "N/A" # Для логгирования в случае ошибки до обработки карт
     expected_len = 0
@@ -128,43 +123,34 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, str]:
                 logger.debug(f"Invalid 3-card hand (expected 3, got {num_valid}): {hand_str_log}")
                 return WORST_RANK, "Invalid"
 
-            # --- ДОБАВЛЕНО ЛОГГИРОВАНИЕ ---
             logger.debug(f"Calling evaluate_3_card_ofc with ints: {valid_cards}")
             # Получаем "сырой" ранг (1-455)
             rank, type_str, rank_str = evaluate_3_card_ofc(valid_cards[0], valid_cards[1], valid_cards[2])
             logger.debug(f"evaluate_3_card_ofc returned: rank={rank}, type={type_str}, rank_str={rank_str} for {hand_str_log}")
 
-            # Проверяем валидность "сырого" ранга перед корректировкой
+            # Проверяем валидность "сырого" ранга
             if not (1 <= rank <= WORST_RANK_3CARD_RAW):
                  logger.error(f"evaluate_3_card_ofc returned invalid raw rank: {rank} for hand {hand_str_log}")
-                 return WORST_RANK, "Invalid" # Возвращаем ошибку, если сырой ранг некорректен
+                 return WORST_RANK, "Invalid"
 
-            # Корректируем ранг
-            adjusted_rank = rank + ADJUSTMENT_3CARD
-            logger.debug(f"Evaluated 3-card: {hand_str_log} -> RawRank: {rank}, AdjRank: {adjusted_rank}, Type: {type_str}")
-
-            # Проверка на выход за пределы ожидаемого *скорректированного* диапазона (7464-7918)
-            if not (BEST_ADJUSTED_RANK_3CARD <= adjusted_rank <= WORST_ADJUSTED_RANK_3CARD):
-                 logger.error(f"Adjusted 3-card rank {adjusted_rank} out of expected range ({BEST_ADJUSTED_RANK_3CARD} - {WORST_ADJUSTED_RANK_3CARD}) for hand {hand_str_log}")
-                 return WORST_RANK, "Invalid" # Возвращаем ошибку, если скорректированный ранг некорректен
-
-            return adjusted_rank, type_str
+            # --- ИСПРАВЛЕНО: Возвращаем СЫРОЙ ранг без смещения ---
+            logger.debug(f"Evaluated 3-card: {hand_str_log} -> RawRank: {rank}, Type: {type_str}")
+            return rank, type_str
 
         elif expected_len == 5:
             if num_valid != 5:
                 logger.debug(f"Invalid 5-card hand (expected 5, got {num_valid}): {hand_str_log}")
                 return WORST_RANK, "Invalid"
 
-            # --- ДОБАВЛЕНО ЛОГГИРОВАНИЕ ---
             logger.debug(f"Calling evaluator_5card.evaluate with ints: {valid_cards}")
-            # Получаем ранг (1-7462 или 7463 при ошибке)
+            # Получаем ранг (1-7462 или WORST_RANK (7463) при ошибке)
             rank = evaluator_5card.evaluate(valid_cards)
             logger.debug(f"evaluator_5card.evaluate returned: {rank} for {hand_str_log}")
 
-            # FIX 18: Проверяем, что ранг находится в валидном диапазоне 5-карточных рук (1 - MAX_HIGH_CARD_5)
-            if not (1 <= rank <= MAX_HIGH_CARD_5): # Проверяем диапазон 1-7462
+            # Проверяем, что ранг находится в валидном диапазоне 5-карточных рук (1 - MAX_HIGH_CARD_5)
+            if not (1 <= rank <= MAX_HIGH_CARD_5):
                  logger.warning(f"5-card evaluation returned invalid rank: {rank} (expected 1-{MAX_HIGH_CARD_5}) for hand {hand_str_log}")
-                 return WORST_RANK, "Invalid" # Возвращаем общий WORST_RANK (7919)
+                 return WORST_RANK, "Invalid" # Возвращаем общий WORST_RANK
 
             # Если ранг валиден (1-7462), получаем класс и строку
             rank_class = evaluator_5card.get_rank_class(rank)
@@ -210,7 +196,7 @@ ROYALTY_TOP_TRIPS: Dict[int, int] = {
 def check_board_foul(board: PlayerBoard) -> bool:
     """
     Проверяет доску на фол (нарушение порядка силы линий).
-    Использует get_hand_rank_safe для получения скорректированных рангов.
+    Использует get_hand_rank_safe для получения СЫРЫХ рангов.
     Правило: Сила Top <= Сила Middle <= Сила Bottom.
     Сильнее = Меньший ранг.
     Фол, если rank(Top) < rank(Middle) ИЛИ rank(Middle) < rank(Bottom).
@@ -224,21 +210,23 @@ def check_board_foul(board: PlayerBoard) -> bool:
         mid_cards_opt = board.rows['middle']
         bot_cards_opt = board.rows['bottom']
 
-        # Получаем скорректированные ранги
-        adj_rank_t, type_t = get_hand_rank_safe(top_cards_opt)
-        adj_rank_m, type_m = get_hand_rank_safe(mid_cards_opt)
-        adj_rank_b, type_b = get_hand_rank_safe(bot_cards_opt)
+        # --- ИСПРАВЛЕНО: Получаем СЫРЫЕ ранги ---
+        raw_rank_t, type_t = get_hand_rank_safe(top_cards_opt)
+        raw_rank_m, type_m = get_hand_rank_safe(mid_cards_opt)
+        raw_rank_b, type_b = get_hand_rank_safe(bot_cards_opt)
 
         # Проверяем, что все ранги были успешно вычислены (не равны WORST_RANK)
-        if adj_rank_t == WORST_RANK or adj_rank_m == WORST_RANK or adj_rank_b == WORST_RANK:
-            logger.warning(f"Could not determine valid ranks for foul check. T:{adj_rank_t}({type_t}), M:{adj_rank_m}({type_m}), B:{adj_rank_b}({type_b}) for board:\n{board}")
+        if raw_rank_t == WORST_RANK or raw_rank_m == WORST_RANK or raw_rank_b == WORST_RANK:
+            logger.warning(f"Could not determine valid ranks for foul check. T:{raw_rank_t}({type_t}), M:{raw_rank_m}({type_m}), B:{raw_rank_b}({type_b}) for board:\n{board}")
             # Если не можем определить ранги, считаем не фолом, чтобы избежать ложных срабатываний
             board.is_foul = False # Устанавливаем флаг на доске
             return False
 
-        # Логика фола: Top сильнее Middle ИЛИ Middle сильнее Bottom
-        # Сильнее = Меньший скорректированный ранг
-        is_foul = (adj_rank_t < adj_rank_m) or (adj_rank_m < adj_rank_b)
+        # --- ИСПРАВЛЕНО: Логика фола на СЫРЫХ рангах ---
+        # Фол, если Top сильнее Middle ИЛИ Middle сильнее Bottom
+        # Сильнее = Меньший сырой ранг
+        is_foul = (raw_rank_t < raw_rank_m) or (raw_rank_m < raw_rank_b)
+        logger.debug(f"Foul check: T={raw_rank_t}({type_t}), M={raw_rank_m}({type_m}), B={raw_rank_b}({type_b}) -> is_foul={is_foul}")
 
         # Обновляем флаг is_foul на самой доске
         board.is_foul = is_foul
@@ -259,6 +247,7 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
     if not isinstance(cards, list): return 0
 
     # Используем get_hand_rank_safe для получения типа руки и проверки валидности
+    # --- ИСПРАВЛЕНО: rank теперь сырой ранг ---
     rank, type_str = get_hand_rank_safe(cards)
     logger.debug(f"get_hand_rank_safe returned rank={rank}, type='{type_str}' for row '{row_name}'")
 
