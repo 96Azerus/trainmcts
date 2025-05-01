@@ -1,0 +1,81 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-utils/venvs/pytest/bin/python
+cachedir: .pytest_cache
+rootdir: /workspaces/trainmcts
+plugins: anyio-4.9.0
+collecting ... 2025-05-01 12:53:27,943 - app - INFO - [app:51] - --- Flask App Initialization ---
+2025-05-01 12:53:27,943 - app - INFO - [app:56] - Production mode: False
+2025-05-01 12:53:27,943 - app - INFO - [app:105] - Defining Flask routes...
+collected 35 items / 3 skipped
+
+tests/test_app.py::test_index_route 2025-05-01 12:53:28,065 - app - INFO - [app:110] - Route / called (GET)
+PASSED
+tests/test_app.py::test_ai_move_valid_request 2025-05-01 12:53:28,072 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-05-01 12:53:28,072 - app - INFO - [app:188] - Starting iterative MCTS for 2 cards...
+2025-05-01 12:53:28,072 - app - INFO - [app:204] - MCTS recommended action: As to top[0]
+2025-05-01 12:53:28,072 - app - INFO - [app:204] - MCTS recommended action: Ks to top[1]
+2025-05-01 12:53:28,073 - app - INFO - [app:230] - AI move request processed in 0.001s. Placements found: 2
+PASSED
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-01 12:53:28,074 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-05-01 12:53:28,074 - app - WARNING - [app:149] - No valid cards to place provided.
+PASSED
+tests/test_app.py::test_ai_move_invalid_json 2025-05-01 12:53:28,076 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-05-01 12:53:28,076 - app - WARNING - [app:126] - Request is not JSON
+PASSED
+tests/test_app.py::test_ai_move_missing_data 2025-05-01 12:53:28,077 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-05-01 12:53:28,077 - app - WARNING - [app:138] - Missing or invalid 'selected_cards' or 'board' data
+PASSED
+tests/test_app.py::test_ai_move_duplicate_cards 2025-05-01 12:53:28,078 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-05-01 12:53:28,078 - app - WARNING - [app:156] - Duplicate cards found between hand and board: ['As']
+PASSED
+tests/test_app.py::test_ai_move_agent_returns_none 2025-05-01 12:53:28,080 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-05-01 12:53:28,080 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
+2025-05-01 12:53:28,081 - app - WARNING - [app:225] - MCTS agent returned None action. Stopping iterative placement.
+2025-05-01 12:53:28,081 - app - INFO - [app:230] - AI move request processed in 0.000s. Placements found: 0
+PASSED
+tests/test_app.py::test_ai_move_internal_error 2025-05-01 12:53:28,082 - app - INFO - [app:124] - Route /ai_move called (POST)
+2025-05-01 12:53:28,082 - app - INFO - [app:188] - Starting iterative MCTS for 1 cards...
+2025-05-01 12:53:28,083 - app - ERROR - [app:238] - Unexpected Error during /ai_move: Unexpected MCTS crash
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/app.py", line 196, in get_ai_move
+    best_action = agent.choose_action(
+                  ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+Exception: Unexpected MCTS crash
+PASSED
+tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED
+tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED
+tests/test_mcts_agent.py::test_choose_action_basic_run PASSED
+tests/test_mcts_agent.py::test_choose_action_no_cards PASSED
+tests/test_mcts_agent.py::test_choose_action_complete_board PASSED
+tests/test_mcts_agent.py::test_choose_action_mcts_loop_simplified PASSED
+tests/test_mcts_agent.py::test_choose_action_no_trip_on_top_rule PASSED
+tests/test_mcts_agent.py::test_format_action PASSED
+tests/test_ofc_logic.py::test_card_from_str_valid PASSED
+tests/test_ofc_logic.py::test_card_to_str_valid PASSED
+tests/test_ofc_logic.py::test_card_to_str_invalid PASSED
+tests/test_ofc_logic.py::test_card_getters PASSED
+tests/test_ofc_logic.py::test_card_hand_conversion PASSED
+tests/test_ofc_logic.py::test_deck_init_full PASSED
+tests/test_ofc_logic.py::test_deck_init_with_cards PASSED
+tests/test_ofc_logic.py::test_deck_deal PASSED
+tests/test_ofc_logic.py::test_deck_deal_more_than_available PASSED
+tests/test_ofc_logic.py::test_deck_remove PASSED
+tests/test_ofc_logic.py::test_deck_copy PASSED
+tests/test_ofc_logic.py::test_playerboard_init PASSED
+tests/test_ofc_logic.py::test_playerboard_add_card PASSED
+tests/test_ofc_logic.py::test_playerboard_set_full_board PASSED
+tests/test_ofc_logic.py::test_playerboard_get_available_slots PASSED
+tests/test_ofc_logic.py::test_playerboard_get_board_state_tuple PASSED
+tests/test_ofc_logic.py::test_playerboard_copy PASSED
+tests/test_ofc_logic.py::test_check_board_foul_logic PASSED
+tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
+
+======================== 35 passed, 3 skipped in 0.64s =========================
