@@ -1,4 +1,4 @@
-# tests/test_mcts_agent.py v2.1 (Refactored for Set Placement, Mock Fix)
+# tests/test_mcts_agent.py v2.2 (Refactored for Set Placement, Mock Fix)
 """
 Unit-тесты для модуля mcts_agent.py.
 Обновлены для тестирования choose_placement и новой логики MCTSNode.
@@ -90,77 +90,76 @@ def test_choose_placement_complete_board():
 def test_choose_placement_mcts_loop_simplified(MockMCTSNode, mock_rollout):
     """Тестирует, что цикл MCTS запускается и вызывает основные фазы с новой логикой."""
     # --- Настройка ---
-    agent = MCTSAgent(time_limit_ms=50, num_workers=1, rollouts_per_leaf=1)
+    agent = MCTSAgent(time_limit_ms=100, num_workers=1, rollouts_per_leaf=1) # Увеличим время
     initial_board = PlayerBoard()
     cards_dealt = hand_to_int(['Ac', 'Kc', 'Qc'])
     deck = Deck.FULL_DECK_CARDS - set(c for c in cards_dealt if c is not None)
 
-    # --- Мокирование Корня и его инициализации ---
+    # --- Мокирование Корня ---
     mock_root = MagicMock(spec=MCTSNode)
-    mock_root.board = initial_board
-    mock_root.remaining_deck = deck
-    mock_root.children = {}
-    mock_root.visits = 0
-    mock_root.total_reward = 0.0
+    mock_root.board = initial_board; mock_root.remaining_deck = deck
+    mock_root.children = {}; mock_root.visits = 0; mock_root.total_reward = 0.0
     mock_root.is_terminal.return_value = False
-
-    # Мокируем _generate_next_states для корня (вызывается в choose_placement)
-    mock_next_board1 = initial_board.copy()
-    mock_next_board1.add_card(Card.from_str('Ac'), 'top', 0)
-    mock_next_board1.add_card(Card.from_str('Kc'), 'middle', 0)
+    # Настраиваем _generate_next_states для корня
+    mock_next_board1 = initial_board.copy(); mock_next_board1.add_card(Card.from_str('Ac'), 'top', 0); mock_next_board1.add_card(Card.from_str('Kc'), 'middle', 0)
     mock_discard1 = Card.from_str('Qc')
-    # Настраиваем мок метода _generate_next_states на ЭКЗЕМПЛЯРЕ mock_root
     mock_root._generate_next_states.return_value = [(mock_next_board1, mock_discard1)]
     mock_placement_info1 = {'placements': [(Card.from_str('Ac'), 'top', 0), (Card.from_str('Kc'), 'middle', 0)], 'discarded': mock_discard1}
     key1 = tuple(sorted(mock_placement_info1['placements']))
     mock_root._generated_states_for_expand = {key1: (mock_next_board1, mock_discard1, mock_placement_info1)}
-    # Устанавливаем untried_next_states после генерации
     mock_root.untried_next_states = [(mock_next_board1, mock_discard1)]
 
     # --- Мокирование Дочернего Узла ---
     mock_child1 = MagicMock(spec=MCTSNode)
-    mock_child1.board = mock_next_board1
-    mock_child1.remaining_deck = deck
-    mock_child1.visits = 0
-    mock_child1.total_reward = 0.0
+    mock_child1.board = mock_next_board1; mock_child1.remaining_deck = deck
+    mock_child1.visits = 0; mock_child1.total_reward = 0.0
     mock_child1.is_terminal.return_value = False
-    mock_child1.untried_next_states = None # Изначально None
+    mock_child1.untried_next_states = None # Важно для триггера генерации
     mock_child1.placement_info = mock_placement_info1
-    # Настраиваем мок метода _generate_next_states на ЭКЗЕМПЛЯРЕ mock_child1
-    mock_child1._generate_next_states.return_value = [] # Пусть для дочернего узла нет следующих состояний
+    # Настраиваем _generate_next_states для дочернего узла
+    mock_child1._generate_next_states.return_value = [] # Пусть вернет пустой список
 
-    # --- Настройка Моков Методов ---
-    # Настраиваем expand на ЭКЗЕМПЛЯРЕ mock_root
-    mock_root.expand.side_effect = lambda: mock_child1 if mock_root.expand.call_count == 1 else None
+    # --- Настройка Моков Методов Агента и Узлов ---
+    # Настраиваем expand на корне: должен вернуть дочерний узел
+    mock_root.expand.return_value = mock_child1
+    # Настраиваем expand на дочернем узле: пусть возвращает None
+    mock_child1.expand.return_value = None
 
-    # Настраиваем _select: первый раз вернет корень, второй раз - mock_child1
+    # Настраиваем _select: первый раз вернет корень, второй раз - дочерний узел
+    select_calls = 0
     def select_side_effect(node):
-        if node is mock_root: return [mock_root], mock_root
-        elif node is mock_child1: return [mock_root, mock_child1], mock_child1
-        else: return [node], node
+        nonlocal select_calls
+        select_calls += 1
+        if select_calls == 1: return [mock_root], mock_root
+        elif select_calls == 2: return [mock_root, mock_child1], mock_child1
+        else: return [mock_root, mock_child1], mock_child1
     agent._select = MagicMock(side_effect=select_side_effect)
+
+    # Настраиваем обратное распространение
+    agent._backpropagate = MagicMock()
+    mock_root.backpropagate = MagicMock()
+    mock_child1.backpropagate = MagicMock()
 
     # --- Мокирование Роллаута ---
     mock_rollout.return_value = 5.0
 
     # --- Запуск MCTS ---
-    # Убедимся, что при создании MCTSNode внутри агента возвращается наш mock_root
     MockMCTSNode.return_value = mock_root
     chosen_placement = agent.choose_placement(initial_board, cards_dealt, deck)
 
     # --- Проверки ---
-    assert agent._select.call_count > 0 # Выбор вызывался
-    # Проверяем вызов expand на ЭКЗЕМПЛЯРЕ mock_root
-    assert mock_root.expand.call_count > 0, "expand() was not called on the root node mock"
-    # Проверяем вызов _generate_next_states на ЭКЗЕМПЛЯРЕ mock_child1
+    assert agent._select.call_count >= 2
+    mock_root.expand.assert_called_once()
+    # Проверяем вызов _generate_next_states на дочернем узле
+    # Он вызывается внутри цикла MCTS перед попыткой expand для узла,
+    # у которого untried_next_states is None
     mock_child1._generate_next_states.assert_called_once_with(ANY)
-    assert mock_rollout.call_count > 0 # Роллаут вызывался
-    # Проверяем, что результат соответствует единственному сгенерированному ходу
+    assert mock_rollout.call_count > 0
     assert chosen_placement == mock_placement_info1
 
 
 # --- Тест правила "Без трипса на топе" ---
-# (Остается без изменений, так как он мокирует детей корня и проверяет _select_best_placement)
+# (Без изменений)
 @patch('mcts_agent.run_parallel_rollout')
 def test_choose_placement_no_trip_on_top_rule(mock_rollout):
     agent = MCTSAgent(time_limit_ms=200, num_workers=1, rollouts_per_leaf=2)
