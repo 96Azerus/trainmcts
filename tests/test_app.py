@@ -1,14 +1,14 @@
-# tests/test_app.py v2.3 (Refactored for Set Placement MCTS, Arg Check Fix v2)
+# tests/test_app.py v2.4 (Refactored for Set Placement MCTS, Arg Check Fix v3)
 """
 Интеграционные тесты для Flask приложения app.py.
 Обновлены для работы с choose_placement и новым API.
 Добавлены тесты для /calculate_score, /update_state, /reset_game_state.
-Исправлена проверка аргументов в test_ai_move_valid_request с использованием assert_called_once_with.
+Исправлена проверка аргументов в test_ai_move_valid_request с использованием assert_called_once_with и именованных аргументов.
 """
 
 import pytest
 import json
-from unittest.mock import patch, MagicMock, ANY # <-- Добавлен ANY
+from unittest.mock import patch, MagicMock, ANY
 
 # Импортируем Flask app и зависимости
 try:
@@ -69,27 +69,29 @@ def test_ai_move_valid_request(MockMCTSAgent, client):
     assert data["move"]["bottom"] == []
     assert data["move"]["discarded"] == "Qs"
 
-    # --- ИСПРАВЛЕНО: Проверка аргументов через assert_called_once_with ---
+    # --- ИСПРАВЛЕНО: Проверка аргументов через assert_called_once_with с именованными аргументами ---
     expected_known = {card_as_int, card_ks_int, card_qs_int, Card.from_str("2c"), Card.from_str("3d")}
     expected_remaining = Deck.FULL_DECK_CARDS - expected_known
     expected_cards_dealt = [card_as_int, card_ks_int, card_qs_int]
 
     # Проверяем, что вызов был один раз с ожидаемыми типами и значениями карт/колоды
-    # Используем ANY для доски, так как сравнение объектов PlayerBoard может быть сложным
+    # Используем ANY для доски и именованные аргументы
     mock_agent_instance.choose_placement.assert_called_once_with(
-        ANY, # initial_board (проверяем тип ниже)
-        expected_cards_dealt, # cards_just_dealt
-        expected_remaining # current_remaining_deck
+        initial_board=ANY, # initial_board (проверяем тип ниже)
+        cards_just_dealt=expected_cards_dealt, # cards_just_dealt
+        current_remaining_deck=expected_remaining # current_remaining_deck
     )
 
     # Дополнительно проверим тип первого аргумента (доски) из последнего вызова
     # (так как assert_called_once_with уже проверил, что вызов был один)
-    call_args = mock_agent_instance.choose_placement.call_args.args
-    assert isinstance(call_args[0], PlayerBoard), f"Arg 0 type mismatch: expected PlayerBoard, got {type(call_args[0])}"
+    # Теперь нужно смотреть в call_args.kwargs, так как аргументы именованные
+    call_args = mock_agent_instance.choose_placement.call_args.args # Должен быть пустым
+    call_kwargs = mock_agent_instance.choose_placement.call_args.kwargs # Аргументы здесь
 
-    # Проверяем, что именованные аргументы не передавались (если метод их не принимает)
-    call_kwargs = mock_agent_instance.choose_placement.call_args.kwargs
-    assert call_kwargs == {}, f"Expected empty kwargs, got {call_kwargs}"
+    assert call_args == (), f"Expected no positional args, got {call_args}"
+    assert isinstance(call_kwargs.get('initial_board'), PlayerBoard), \
+        f"Keyword arg 'initial_board' type mismatch: expected PlayerBoard, got {type(call_kwargs.get('initial_board'))}"
+    # Остальные аргументы уже проверены в assert_called_once_with
 
 
 # Остальные тесты для /ai_move
