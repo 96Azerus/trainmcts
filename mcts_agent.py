@@ -1,7 +1,8 @@
-# mcts_agent.py v2.4 (RAVE + Random Rollout)
+# mcts_agent.py v2.5 (Exception Handling Fix)
 """
 Реализация MCTS-агента для задачи размещения НАБОРА карт OFC Pineapple.
 Использует RAVE и случайные симуляции с трекингом действий из MCTSNode.
+Исправлен SyntaxError в блоке обработки исключений MCTS.
 """
 
 import time
@@ -17,7 +18,6 @@ from collections import Counter
 # Импорты из локальных модулей
 try:
     from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP
-    # Используем MCTSNode с RAVE и run_parallel_rollout (который вызывает случайную симуляцию)
     from mcts_node import MCTSNode, run_parallel_rollout, RAVE_K
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
@@ -58,7 +58,6 @@ class MCTSAgent:
     DEFAULT_EXPLORATION: float = 1.414
     DEFAULT_TIME_LIMIT_MS: int = 5000
     DEFAULT_NUM_WORKERS: int = max(1, multiprocessing.cpu_count() - 1 if multiprocessing.cpu_count() > 1 else 1)
-    # Можно увеличить кол-во роллаутов, т.к. они дешевые
     DEFAULT_ROLLOUTS_PER_LEAF: int = 10
 
     def __init__(self,
@@ -77,7 +76,6 @@ class MCTSAgent:
         logger.info(f"MCTS Agent initialized: TimeLimit={self.time_limit:.2f}s, Exploration={self.exploration}, "
                     f"Workers={self.num_workers}, RolloutsPerLeaf={self.rollouts_per_leaf}, RAVE_K={RAVE_K}")
         try:
-            # ... (настройка multiprocessing без изменений) ...
             current_method = multiprocessing.get_start_method(allow_none=True)
             if current_method != 'spawn':
                 available_methods = multiprocessing.get_all_start_methods()
@@ -95,11 +93,12 @@ class MCTSAgent:
         """
         Выбирает лучшее РАЗМЕЩЕНИЕ для НАБОРА карт с помощью MCTS + RAVE (случайные роллауты).
         """
-        # ... (начало функции без изменений) ...
         start_time_total = time.time()
         if not cards_just_dealt: logger.warning("MCTSAgent: choose_placement called with no cards dealt."); return None
         if initial_board.is_complete(): logger.warning("MCTSAgent: choose_placement called with complete board."); return None
-        num_dealt = len(cards_just_dealt); cards_on_board_start = initial_board.get_total_cards()
+
+        num_dealt = len(cards_just_dealt)
+        cards_on_board_start = initial_board.get_total_cards()
         street = 1 if cards_on_board_start == 0 else (cards_on_board_start // 2) + 2
         logger.info(f"\n--- AI Agent: Choosing placement for {num_dealt} cards (Street ~{street}) ---")
         logger.info(f"Initial Board state:\n{initial_board}")
@@ -138,10 +137,10 @@ class MCTSAgent:
                         leaf_node.untried_next_states = leaf_node._generate_next_states(cards_to_generate_for) if cards_to_generate_for else []
 
                     if leaf_node.untried_next_states:
-                        expanded_node = leaf_node.expand()
+                        expanded_node = leaf_node.expand() # expand теперь учитывает PW
                         if expanded_node: node_to_rollout_from = expanded_node; path.append(expanded_node)
 
-                # 3. Симуляция (Rollout) - вызывает СЛУЧАЙНУЮ симуляцию с трекингом
+                # 3. Симуляция (Rollout)
                 rollout_results: List[Tuple[float, List[Dict[str, Any]]]] = []
                 try:
                     board_to_sim = node_to_rollout_from.board; deck_to_sim = list(node_to_rollout_from.remaining_deck)
@@ -171,13 +170,40 @@ class MCTSAgent:
                          self._backpropagate_standard(path, reward)
                          self._backpropagate_rave(path, actions, reward)
 
-        except KeyboardInterrupt: logger.warning("MCTS execution interrupted by user.")
+        except KeyboardInterrupt:
+             logger.warning("MCTS execution interrupted by user.")
+             # --- ИСПРАВЛЕНО: Корректная обработка pool при KeyboardInterrupt ---
+             if pool:
+                 try:
+                     logger.warning("Terminating pool due to KeyboardInterrupt...")
+                     pool.terminate()
+                     pool.join()
+                     logger.warning("Pool terminated.")
+                 except Exception as e_pool_term:
+                     logger.error(f"Error terminating pool after KeyboardInterrupt: {e_pool_term}")
+             return None # Возвращаем None при прерывании
         except Exception as e_mcts:
             logger.error(f"Critical error during MCTS execution: {e_mcts}", exc_info=True)
-            if pool: try: pool.terminate(); pool.join() except Exception: pass
+            # --- ИСПРАВЛЕНО: Корректная обработка pool при Exception ---
+            if pool:
+                try:
+                    logger.warning("Terminating pool due to MCTS error...")
+                    pool.terminate()
+                    pool.join()
+                    logger.warning("Pool terminated.")
+                except Exception as e_pool_term:
+                    logger.error(f"Error terminating pool after MCTS error: {e_pool_term}")
+            # --- Конец исправления ---
             return None
         finally:
-            if pool: try: pool.close(); pool.join() except Exception: pass
+            # Этот блок finally закроет пул, если он не был завершен принудительно
+            if pool:
+                 try:
+                     pool.close()
+                     pool.join()
+                 except Exception as e_pool_close:
+                     # Логгируем, но не падаем, если закрытие не удалось
+                     logger.error(f"Error closing MCTS pool in finally block: {e_pool_close}")
 
         elapsed_time = time.time() - start_mcts_time
         sims_per_sec = (num_simulations / elapsed_time) if elapsed_time > 0 else 0
@@ -204,13 +230,29 @@ class MCTSAgent:
                         except Exception: pass
                     current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for) if cards_to_generate_for else []
                 return path, current_node
-            if current_node.untried_next_states: return path, current_node
-            if not current_node.children: logger.warning(f"Selection reached non-terminal node {current_node} with no children/untried."); return path, current_node
+            if current_node.untried_next_states:
+                # --- ИЗМЕНЕНИЕ: Проверяем PW перед возвратом для expand ---
+                # Если есть нераскрытые состояния, но PW не позволяет расширять,
+                # то мы должны выбрать существующего ребенка, а не возвращать узел для expand.
+                num_children = len(current_node.children)
+                allowed_children = PW_C * math.pow(current_node.visits + 1, PW_ALPHA)
+                if num_children < allowed_children:
+                    return path, current_node # PW позволяет, возвращаем для expand
+                # Если PW не позволяет, продолжаем выбор существующего ребенка ниже
+                else:
+                     logger.debug(f"PW limit hit during selection for node {current_node}, selecting existing child.")
+                     pass # Переходим к выбору существующего ребенка
+
+            if not current_node.children:
+                # Эта ситуация теперь менее вероятна из-за PW, но возможна, если все untried были плохими
+                logger.warning(f"Selection reached non-terminal node {current_node} with no children and no untried states allowed by PW.")
+                return path, current_node
+
             selected_child = current_node.uct_select_child(self.exploration)
             if selected_child is None:
                 logger.warning(f"UCT selection returned None for node {current_node}.")
                 if current_node.children: selected_child = random.choice(list(current_node.children.values()))
-                if selected_child is None: return path, current_node # Если и случайный выбор не удался
+                if selected_child is None: return path, current_node
             current_node = selected_child; path.append(current_node)
 
 
@@ -230,13 +272,12 @@ class MCTSAgent:
                  try:
                      action_key = tuple(sorted([(int(p[0]), str(p[1]), int(p[2])) for p in placements]))
                      sim_action_keys.add(action_key)
-                 except (TypeError, ValueError, IndexError) as e: logger.warning(f"RAVE Backprop: Could not create valid action key from placements {placements}: {e}")
+                 except Exception as e: logger.warning(f"RAVE Backprop Key Error: {e}")
         if not sim_action_keys: return
         for node in path:
             for child_key, child_node in node.children.items():
                 if child_key in sim_action_keys:
-                    child_node.rave_visits += 1
-                    child_node.rave_reward += reward
+                    child_node.rave_visits += 1; child_node.rave_reward += reward
 
 
     def _select_best_placement(self,
@@ -248,63 +289,4 @@ class MCTSAgent:
         # ... (код функции _select_best_placement без изменений) ...
         if not root_node.children:
             logger.warning("No children found at root node. Cannot select best placement.")
-            if hasattr(root_node, '_generated_states_for_expand') and root_node._generated_states_for_expand:
-                 try:
-                     first_key = next(iter(root_node._generated_states_for_expand))
-                     _, _, placement_info = root_node._generated_states_for_expand[first_key]
-                     logger.warning("Returning first generated placement as fallback.")
-                     return placement_info
-                 except Exception as e_fallback: logger.error(f"Error during fallback placement selection: {e_fallback}"); return None
-            return None
-
-        is_first_street = (root_node.board.get_total_cards() == 0 and len(initial_cards_dealt) == 5)
-        trip_in_hand_rank = -1
-        if is_first_street:
-            ranks = [Card.get_rank_int(c) for c in initial_cards_dealt if c is not None]
-            rank_counts = Counter(ranks)
-            trip_in_hand_rank = next((rank for rank, count in rank_counts.items() if count >= 3), -1)
-            if trip_in_hand_rank != -1: logger.info(f"Rule Check: First street with trip of rank {trip_in_hand_rank} detected.")
-
-        child_stats: List[Tuple[Dict[str, Any], int, float, int, float]] = []
-        items = list(root_node.children.items())
-        logger.info(f"--- Evaluating {len(items)} child nodes (initial placements) ---")
-        for placement_key, child_node in items:
-             avg_reward = child_node.total_reward / child_node.visits if child_node.visits > 0 else -1.0
-             rave_avg_reward = child_node.rave_reward / child_node.rave_visits if child_node.rave_visits > 0 else -1.0
-             p_info = getattr(child_node, 'placement_info', None)
-             if p_info is None: logger.warning(f"Child node {child_node} missing placement_info."); continue
-             child_stats.append((p_info, child_node.visits, avg_reward, child_node.rave_visits, rave_avg_reward))
-             log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in p_info.get('placements', [])])
-             log_discard = f"(D: {Card.to_str(p_info.get('discarded'))})" if p_info.get('discarded') else ""
-             logger.info(f"  Placement: {log_placements:<35} {log_discard:<7} -> V: {child_node.visits:<5} R: {avg_reward:<7.2f} | RV: {child_node.rave_visits:<5} RR: {rave_avg_reward:<7.2f}")
-
-        child_stats.sort(key=lambda x: x[1], reverse=True) # Сортировка по visits
-
-        best_allowed_placement: Optional[Dict[str, Any]] = None
-        best_visits = -1; best_avg_reward = -float('inf')
-
-        for placement_info, visits, avg_reward, rave_visits, rave_avg_reward in child_stats:
-            skip_placement = False
-            if is_first_street and trip_in_hand_rank != -1:
-                placements = placement_info.get('placements', [])
-                for card_int, row_name, index in placements:
-                    current_card_rank = Card.get_rank_int(card_int) if card_int else -1
-                    if current_card_rank == trip_in_hand_rank and row_name == 'top':
-                        log_placements_skip = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in placements])
-                        logger.warning(f"Rule Violation: Skipping placement {log_placements_skip} (Trip rank {trip_in_hand_rank} on Top).")
-                        skip_placement = True; break
-
-            if not skip_placement:
-                best_allowed_placement = placement_info; best_visits = visits; best_avg_reward = avg_reward
-                log_placements_sel = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in best_allowed_placement.get('placements', [])])
-                log_discard_sel = f"(D: {Card.to_str(best_allowed_placement.get('discarded'))})" if best_allowed_placement.get('discarded') else ""
-                logger.info(f"Selected placement (V={best_visits}, R={best_avg_reward:.2f}): {log_placements_sel} {log_discard_sel}")
-                return best_allowed_placement
-
-        if best_allowed_placement is None:
-            logger.warning("All evaluated placements were disallowed by rules or no valid children available.")
-            if child_stats:
-                 logger.warning("Returning the most visited placement despite potential rule violation as fallback.")
-                 return child_stats[0][0]
-            return None
-        return best_allowed_placement # Недостижимо
+            if hasattr(ro
