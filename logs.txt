@@ -1,831 +1,141 @@
-Script started on 2025-05-02 16:45:57+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="81" LINES="33"]
+Script started on 2025-05-02 17:32:09+00:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="81" LINES="14"]
 [0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ pytest -vs
 [1m============================== test session starts ==============================[0m
 platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-utils/venvs/pytest/bin/python
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: cov-6.1.1, anyio-4.9.0
-[1mcollecting ... [0m2025-05-02 16:46:06,505 - app - INFO - [app:53] - --- Flask App Initialization (v2.2) ---
-2025-05-02 16:46:06,505 - app - INFO - [app:57] - Production mode: False
-2025-05-02 16:46:06,505 - app - INFO - [app:137] - Defining Flask routes...
-[1mcollected 41 items / 3 skipped                                                  [0m
-
-tests/test_app.py::test_index_route 2025-05-02 16:46:06,544 - app - INFO - [app:142] - Route / called (GET)
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_valid_request 2025-05-02 16:46:06,557 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,557 - app - INFO - [app:213] - Starting MCTS placement search for 3 cards...
-2025-05-02 16:46:06,557 - app - INFO - [app:223] - AI move request processed in 0.000s. Best placement found.
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-02 16:46:06,559 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,559 - app - WARNING - [app:182] - No valid cards to place provided.
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_invalid_json 2025-05-02 16:46:06,561 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,561 - app - WARNING - [app:158] - Request is not JSON
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_missing_data 2025-05-02 16:46:06,563 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,564 - app - WARNING - [app:170] - Missing or invalid 'selected_cards' or 'board' data
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-05-02 16:46:06,566 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,566 - app - WARNING - [app:192] - Duplicate cards found between hand and board: ['As']
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-05-02 16:46:06,568 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,568 - app - WARNING - [app:195] - Cards to place are already permanently discarded: ['As']
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_agent_returns_none 2025-05-02 16:46:06,572 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,572 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
-2025-05-02 16:46:06,572 - app - WARNING - [app:262] - AI agent did not return a placement after 0.000s.
-[32mPASSED[0m
-tests/test_app.py::test_ai_move_internal_error 2025-05-02 16:46:06,574 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-02 16:46:06,574 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
-2025-05-02 16:46:06,574 - app - ERROR - [app:266] - Unexpected Error during /ai_move: Unexpected MCTS crash
+[1mcollecting ... [0mFATAL ERROR during initial imports: invalid syntax (mcts_agent.py, line 177)
 Traceback (most recent call last):
-  File "/workspaces/trainmcts/app.py", line 215, in get_ai_move
-    best_placement_info: Optional[Dict[str, Any]] = agent.choose_placement(
-                                                    ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1134, in __call__
-    return self._mock_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
-    raise effect
-Exception: Unexpected MCTS crash
-[32mPASSED[0m
-tests/test_app.py::test_calculate_score_valid_board 2025-05-02 16:46:06,590 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-02 16:46:06,590 - app - INFO - [app:293] - Foul check result: False
-2025-05-02 16:46:06,591 - app - INFO - [app:306] - Calculated royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
-2025-05-02 16:46:06,591 - app - INFO - [app:308] - Score calculation request processed in 0.000s.
-[32mPASSED[0m
-tests/test_app.py::test_calculate_score_foul_board 2025-05-02 16:46:06,592 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-02 16:46:06,592 - app - INFO - [app:293] - Foul check result: True
-[32mPASSED[0m
-tests/test_app.py::test_calculate_score_incomplete_board 2025-05-02 16:46:06,593 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-02 16:46:06,594 - app - WARNING - [app:289] - Score calculation requested for incomplete board (3/13).
-[32mPASSED[0m
-tests/test_app.py::test_calculate_score_missing_board 2025-05-02 16:46:06,595 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-02 16:46:06,595 - app - WARNING - [app:282] - Missing 'board' data for score calculation
-[32mPASSED[0m
-tests/test_app.py::test_update_state [32mPASSED[0m
-tests/test_app.py::test_reset_game_state 2025-05-02 16:46:06,598 - app - INFO - [app:334] - Route /reset_game_state called (POST)
-[32mPASSED[0m
-tests/test_mcts_agent.py::test_mcts_agent_init_defaults [32mPASSED[0m
-tests/test_mcts_agent.py::test_mcts_agent_init_custom [32mPASSED[0m
-tests/test_mcts_agent.py::test_choose_placement_basic_run [31mFAILED[0m
-tests/test_mcts_agent.py::test_choose_placement_no_cards [32mPASSED[0m
-tests/test_mcts_agent.py::test_choose_placement_complete_board [32mPASSED[0m
-tests/test_mcts_agent.py::test_choose_placement_mcts_loop_simplified [32mPASSED[0m
-tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule [31mFAILED[0m
-tests/test_ofc_logic.py::test_card_from_str_valid [32mPASSED[0m
-tests/test_ofc_logic.py::test_card_to_str_valid [32mPASSED[0m
-tests/test_ofc_logic.py::test_card_to_str_invalid [32mPASSED[0m
-tests/test_ofc_logic.py::test_card_getters [32mPASSED[0m
-tests/test_ofc_logic.py::test_card_hand_conversion [32mPASSED[0m
-tests/test_ofc_logic.py::test_deck_init_full [32mPASSED[0m
-tests/test_ofc_logic.py::test_deck_init_with_cards [32mPASSED[0m
-tests/test_ofc_logic.py::test_deck_deal [32mPASSED[0m
-tests/test_ofc_logic.py::test_deck_deal_more_than_available [32mPASSED[0m
-tests/test_ofc_logic.py::test_deck_remove [32mPASSED[0m
-tests/test_ofc_logic.py::test_deck_copy [32mPASSED[0m
-tests/test_ofc_logic.py::test_playerboard_init [32mPASSED[0m
-tests/test_ofc_logic.py::test_playerboard_add_card [32mPASSED[0m
-tests/test_ofc_logic.py::test_playerboard_set_full_board [32mPASSED[0m
-tests/test_ofc_logic.py::test_playerboard_get_available_slots [32mPASSED[0m
-tests/test_ofc_logic.py::test_playerboard_get_board_state_tuple [32mPASSED[0m
-tests/test_ofc_logic.py::test_playerboard_copy [32mPASSED[0m
-tests/test_ofc_logic.py::test_check_board_foul_logic [32mPASSED[0m
-tests/test_ofc_logic.py::test_get_row_royalty_logic [32mPASSED[0m
+  File "/workspaces/trainmcts/app.py", line 25, in <module>
+    from mcts_agent import MCTSAgent
+  File "/workspaces/trainmcts/mcts_agent.py", line 177
+    if pool: try: pool.terminate(); pool.join() except Exception: pass
+             ^^^
+SyntaxError: invalid syntax
+[1mcollected 0 items                                                               [0m
+INTERNALERROR> Traceback (most recent call last):
+INTERNALERROR>   File "/workspaces/trainmcts/app.py", line 25, in <module>
+INTERNALERROR>     from mcts_agent import MCTSAgent
+INTERNALERROR>   File "/workspaces/trainmcts/mcts_agent.py", line 177
+INTERNALERROR>     if pool: try: pool.terminate(); pool.join() except Exception: pass
+INTERNALERROR>              ^^^
+INTERNALERROR> SyntaxError: invalid syntax
+INTERNALERROR> 
+INTERNALERROR> During handling of the above exception, another exception occurred:
+INTERNALERROR> 
+INTERNALERROR> Traceback (most recent call last):
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 283, in wrap_session
+INTERNALERROR>     session.exitstatus = doit(config, session) or 0
+INTERNALERROR>                          ^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 336, in _main
+INTERNALERROR>     config.hook.pytest_collection(session=session)
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_hooks.py", line 513, in __call__
+INTERNALERROR>     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+INTERNALERROR>     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+INTERNALERROR>     raise exception.with_traceback(exception.__traceback__)
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
+INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
+INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/logging.py", line 790, in pytest_collection
+INTERNALERROR>     return (yield)
+INTERNALERROR>             ^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
+INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
+INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/warnings.py", line 121, in pytest_collection
+INTERNALERROR>     return (yield)
+INTERNALERROR>             ^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
+INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
+INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1417, in pytest_collection
+INTERNALERROR>     return (yield)
+INTERNALERROR>             ^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 103, in _multicall
+INTERNALERROR>     res = hook_impl.function(*args)
+INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 347, in pytest_collection
+INTERNALERROR>     session.perform_collect()
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 809, in perform_collect
+INTERNALERROR>     self.items.extend(self.genitems(node))
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 975, in genitems
+INTERNALERROR>     yield from self.genitems(subnode)
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 975, in genitems
+INTERNALERROR>     yield from self.genitems(subnode)
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 970, in genitems
+INTERNALERROR>     rep, duplicate = self._collect_one_node(node, handle_dupes)
+INTERNALERROR>                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 835, in _collect_one_node
+INTERNALERROR>     rep = collect_one_node(node)
+INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 567, in collect_one_node
+INTERNALERROR>     rep: CollectReport = ihook.pytest_make_collect_report(collector=collector)
+INTERNALERROR>                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_hooks.py", line 513, in __call__
+INTERNALERROR>     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+INTERNALERROR>     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+INTERNALERROR>     raise exception.with_traceback(exception.__traceback__)
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
+INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
+INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/capture.py", line 878, in pytest_make_collect_report
+INTERNALERROR>     rep = yield
+INTERNALERROR>           ^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 103, in _multicall
+INTERNALERROR>     res = hook_impl.function(*args)
+INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 391, in pytest_make_collect_report
+INTERNALERROR>     call = CallInfo.from_call(
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 341, in from_call
+INTERNALERROR>     result: TResult | None = func()
+INTERNALERROR>                              ^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 389, in collect
+INTERNALERROR>     return list(collector.collect())
+INTERNALERROR>                 ^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 549, in collect
+INTERNALERROR>     self._register_setup_module_fixture()
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 562, in _register_setup_module_fixture
+INTERNALERROR>     self.obj, ("setUpModule", "setup_module")
+INTERNALERROR>     ^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 284, in obj
+INTERNALERROR>     self._obj = obj = self._getobj()
+INTERNALERROR>                       ^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 546, in _getobj
+INTERNALERROR>     return importtestmodule(self.path, self.config)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 493, in importtestmodule
+INTERNALERROR>     mod = import_path(
+INTERNALERROR>           ^^^^^^^^^^^^
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/pathlib.py", line 587, in import_path
+INTERNALERROR>     importlib.import_module(module_name)
+INTERNALERROR>   File "/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py", line 90, in import_module
+INTERNALERROR>     return _bootstrap._gcd_import(name[level:], package, level)
+INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+INTERNALERROR>   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/assertion/rewrite.py", line 185, in exec_module
+INTERNALERROR>     exec(co, module.__dict__)
+INTERNALERROR>   File "/workspaces/trainmcts/tests/test_app.py", line 15, in <module>
+INTERNALERROR>     from app import app as flask_app
+INTERNALERROR>   File "/workspaces/trainmcts/app.py", line 35, in <module>
+INTERNALERROR>     sys.exit(1)
+INTERNALERROR> SystemExit: 1
+mainloop: caught unexpected SystemExit!
 
-=================================== FAILURES ====================================
-[31m[1m________________________ test_choose_placement_basic_run ________________________[0m
-
-MockPool = <MagicMock name='Pool' id='130561590868304'>
-MockMCTSNode = <MagicMock name='MCTSNode' id='130561591039360'>
-
-    [0m[37m@patch[39;49;00m([33m'[39;49;00m[33mmcts_agent.MCTSNode[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
-    [37m@patch[39;49;00m([33m'[39;49;00m[33mmcts_agent.multiprocessing.Pool[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
-    [94mdef[39;49;00m[90m [39;49;00m[92mtest_choose_placement_basic_run[39;49;00m(MockPool, MockMCTSNode):[90m[39;49;00m
-    [90m    [39;49;00m[33m"""Тестирует базовый запуск choose_placement без ошибок."""[39;49;00m[90m[39;49;00m
-        mock_root = MagicMock(spec=MCTSNode)[90m[39;49;00m
-        mock_root.board = PlayerBoard()[90m[39;49;00m
-        mock_root.remaining_deck = Deck.FULL_DECK_CARDS.copy()[90m[39;49;00m
-        mock_root.children = {}[90m[39;49;00m
-        mock_root.visits = [94m0[39;49;00m; mock_root.total_reward = [94m0.0[39;49;00m[90m[39;49;00m
-        mock_root.untried_next_states = [][90m[39;49;00m
-        mock_root._generated_states_for_expand = {}[90m[39;49;00m
-    [90m[39;49;00m
-        card_as = Card.from_str([33m'[39;49;00m[33mAs[39;49;00m[33m'[39;49;00m); card_ks = Card.from_str([33m'[39;49;00m[33mKs[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
-        placement1_info = {[33m'[39;49;00m[33mplacements[39;49;00m[33m'[39;49;00m: [(card_as, [33m'[39;49;00m[33mtop[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m)], [33m'[39;49;00m[33mdiscarded[39;49;00m[33m'[39;49;00m: [94mNone[39;49;00m}[90m[39;49;00m
-        placement2_info = {[33m'[39;49;00m[33mplacements[39;49;00m[33m'[39;49;00m: [(card_ks, [33m'[39;49;00m[33mmiddle[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m)], [33m'[39;49;00m[33mdiscarded[39;49;00m[33m'[39;49;00m: [94mNone[39;49;00m}[90m[39;49;00m
-        mock_child1 = MagicMock(spec=MCTSNode); mock_child1.visits = [94m10[39;49;00m; mock_child1.total_reward = [94m50[39;49;00m; mock_child1.placement_info = placement1_info[90m[39;49;00m
-        mock_child2 = MagicMock(spec=MCTSNode); mock_child2.visits = [94m5[39;49;00m; mock_child2.total_reward = [94m30[39;49;00m; mock_child2.placement_info = placement2_info[90m[39;49;00m
-        key1 = [96mtuple[39;49;00m([96msorted[39;49;00m(placement1_info[[33m'[39;49;00m[33mplacements[39;49;00m[33m'[39;49;00m])); key2 = [96mtuple[39;49;00m([96msorted[39;49;00m(placement2_info[[33m'[39;49;00m[33mplacements[39;49;00m[33m'[39;49;00m]))[90m[39;49;00m
-        mock_root.children = {key1: mock_child1, key2: mock_child2}[90m[39;49;00m
-    [90m[39;49;00m
-        MockMCTSNode.return_value = mock_root[90m[39;49;00m
-    [90m[39;49;00m
-        agent_instance = MCTSAgent(time_limit_ms=[94m100[39;49;00m)[90m[39;49;00m
-        initial_board = PlayerBoard()[90m[39;49;00m
-        cards_dealt = hand_to_int([[33m'[39;49;00m[33mAc[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mKc[39;49;00m[33m'[39;49;00m])[90m[39;49;00m
-        remaining_deck = Deck.FULL_DECK_CARDS - [96mset[39;49;00m(c [94mfor[39;49;00m c [95min[39;49;00m cards_dealt [94mif[39;49;00m c [95mis[39;49;00m [95mnot[39;49;00m [94mNone[39;49;00m)[90m[39;49;00m
-    [90m[39;49;00m
->       placement_result = agent_instance.choose_placement(initial_board, cards_dealt, remaining_deck)[90m[39;49;00m
-
-[1m[31mtests/test_mcts_agent.py[0m:70: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-[1m[31mmcts_agent.py[0m:230: in choose_placement
-    [0mbest_placement_info = [96mself[39;49;00m._select_best_placement(root_node, cards_just_dealt)[90m[39;49;00m
-[1m[31mmcts_agent.py[0m:342: in _select_best_placement
-    [0mrave_avg_reward = child_node.rave_reward / child_node.rave_visits [94mif[39;49;00m child_node.rave_visits > [94m0[39;49;00m [94melse[39;49;00m -[94m1.0[39;49;00m[90m[39;49;00m
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <MagicMock spec='MCTSNode' id='130561594104848'>, name = 'rave_visits'
-
-    [0m[94mdef[39;49;00m[90m [39;49;00m[92m__getattr__[39;49;00m([96mself[39;49;00m, name):[90m[39;49;00m
-        [94mif[39;49;00m name [95min[39;49;00m {[33m'[39;49;00m[33m_mock_methods[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33m_mock_unsafe[39;49;00m[33m'[39;49;00m}:[90m[39;49;00m
-            [94mraise[39;49;00m [96mAttributeError[39;49;00m(name)[90m[39;49;00m
-        [94melif[39;49;00m [96mself[39;49;00m._mock_methods [95mis[39;49;00m [95mnot[39;49;00m [94mNone[39;49;00m:[90m[39;49;00m
-            [94mif[39;49;00m name [95mnot[39;49;00m [95min[39;49;00m [96mself[39;49;00m._mock_methods [95mor[39;49;00m name [95min[39;49;00m _all_magics:[90m[39;49;00m
->               [94mraise[39;49;00m [96mAttributeError[39;49;00m([33m"[39;49;00m[33mMock object has no attribute [39;49;00m[33m%r[39;49;00m[33m"[39;49;00m % name)[90m[39;49;00m
-[1m[31mE               AttributeError: Mock object has no attribute 'rave_visits'[0m
-
-[1m[31m/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py[0m:658: AttributeError
-------------------------------- Captured log call -------------------------------
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[33mWARNING [0m mcts_agent:mcts_agent.py:191 Error getting result from worker: not enough values to unpack (expected 2, got 0)
-[31m[1m___________________ test_choose_placement_no_trip_on_top_rule ___________________[0m
-
-mock_rollout = <MagicMock name='run_parallel_rollout' id='130561583923376'>
-
-    [0m[37m@patch[39;49;00m([33m'[39;49;00m[33mmcts_agent.run_parallel_rollout[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
-    [94mdef[39;49;00m[90m [39;49;00m[92mtest_choose_placement_no_trip_on_top_rule[39;49;00m(mock_rollout):[90m[39;49;00m
-        agent = MCTSAgent(time_limit_ms=[94m200[39;49;00m, num_workers=[94m1[39;49;00m, rollouts_per_leaf=[94m2[39;49;00m)[90m[39;49;00m
-        initial_board = PlayerBoard()[90m[39;49;00m
-        cards_dealt_list = [[33m'[39;49;00m[33m2s[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33m2d[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33m2h[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mAc[39;49;00m[33m'[39;49;00m, [33m'[39;49;00m[33mKc[39;49;00m[33m'[39;49;00m][90m[39;49;00m
-        cards_dealt = hand_to_int(cards_dealt_list)[90m[39;49;00m
-        remaining_deck = Deck.FULL_DECK_CARDS - [96mset[39;49;00m(c [94mfor[39;49;00m c [95min[39;49;00m cards_dealt [94mif[39;49;00m c [95mis[39;49;00m [95mnot[39;49;00m [94mNone[39;49;00m)[90m[39;49;00m
-    [90m[39;49;00m
-        card_2s = Card.from_str([33m'[39;49;00m[33m2s[39;49;00m[33m'[39;49;00m); card_2d = Card.from_str([33m'[39;49;00m[33m2d[39;49;00m[33m'[39;49;00m); card_2h = Card.from_str([33m'[39;49;00m[33m2h[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
-        card_ac = Card.from_str([33m'[39;49;00m[33mAc[39;49;00m[33m'[39;49;00m); card_kc = Card.from_str([33m'[39;49;00m[33mKc[39;49;00m[33m'[39;49;00m)[90m[39;49;00m
-    [90m[39;49;00m
-        bad_placements = [(card_2s, [33m'[39;49;00m[33mtop[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m), (card_2d, [33m'[39;49;00m[33mtop[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m), (card_2h, [33m'[39;49;00m[33mtop[39;49;00m[33m'[39;49;00m, [94m2[39;49;00m), (card_ac, [33m'[39;49;00m[33mmiddle[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m), (card_kc, [33m'[39;49;00m[33mmiddle[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m)][90m[39;49;00m
-        bad_placement_info = {[33m'[39;49;00m[33mplacements[39;49;00m[33m'[39;49;00m: bad_placements, [33m'[39;49;00m[33mdiscarded[39;49;00m[33m'[39;49;00m: [94mNone[39;49;00m}[90m[39;49;00m
-        bad_key = [96mtuple[39;49;00m([96msorted[39;49;00m(bad_placements))[90m[39;49;00m
-        mock_bad_child = MagicMock(spec=MCTSNode); mock_bad_child.visits = [94m100[39;49;00m; mock_bad_child.total_reward = [94m1000[39;49;00m; mock_bad_child.placement_info = bad_placement_info[90m[39;49;00m
-    [90m[39;49;00m
-        good_placements = [(card_2s, [33m'[39;49;00m[33mbottom[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m), (card_2d, [33m'[39;49;00m[33mbottom[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m), (card_2h, [33m'[39;49;00m[33mbottom[39;49;00m[33m'[39;49;00m, [94m2[39;49;00m), (card_ac, [33m'[39;49;00m[33mtop[39;49;00m[33m'[39;49;00m, [94m0[39;49;00m), (card_kc, [33m'[39;49;00m[33mtop[39;49;00m[33m'[39;49;00m, [94m1[39;49;00m)][90m[39;49;00m
-        good_placement_info = {[33m'[39;49;00m[33mplacements[39;49;00m[33m'[39;49;00m: good_placements, [33m'[39;49;00m[33mdiscarded[39;49;00m[33m'[39;49;00m: [94mNone[39;49;00m}[90m[39;49;00m
-        good_key = [96mtuple[39;49;00m([96msorted[39;49;00m(good_placements))[90m[39;49;00m
-        mock_good_child = MagicMock(spec=MCTSNode); mock_good_child.visits = [94m10[39;49;00m; mock_good_child.total_reward = [94m50[39;49;00m; mock_good_child.placement_info = good_placement_info[90m[39;49;00m
-    [90m[39;49;00m
-        mock_root = MagicMock(spec=MCTSNode)[90m[39;49;00m
-        mock_root.board = initial_board[90m[39;49;00m
-        mock_root.children = {bad_key: mock_bad_child, good_key: mock_good_child}[90m[39;49;00m
-        mock_root.visits = [94m110[39;49;00m[90m[39;49;00m
-    [90m[39;49;00m
-        [94mwith[39;49;00m patch([33m'[39;49;00m[33mmcts_agent.MCTSNode[39;49;00m[33m'[39;49;00m, return_value=mock_root):[90m[39;49;00m
-             [94mwith[39;49;00m patch.object(agent, [33m'[39;49;00m[33m_select[39;49;00m[33m'[39;49;00m, return_value=([mock_root], mock_root)):[90m[39;49;00m
->                [94mwith[39;49;00m patch.object(agent, [33m'[39;49;00m[33m_backpropagate[39;49;00m[33m'[39;49;00m):[90m[39;49;00m
-
-[1m[31mtests/test_mcts_agent.py[0m:191: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-[1m[31m/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py[0m:1455: in __enter__
-    [0moriginal, local = [96mself[39;49;00m.get_original()[90m[39;49;00m
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = <unittest.mock._patch object at 0x76bebc999af0>
-
-    [0m[94mdef[39;49;00m[90m [39;49;00m[92mget_original[39;49;00m([96mself[39;49;00m):[90m[39;49;00m
-        target = [96mself[39;49;00m.getter()[90m[39;49;00m
-        name = [96mself[39;49;00m.attribute[90m[39;49;00m
-    [90m[39;49;00m
-        original = DEFAULT[90m[39;49;00m
-        local = [94mFalse[39;49;00m[90m[39;49;00m
-    [90m[39;49;00m
-        [94mtry[39;49;00m:[90m[39;49;00m
-            original = target.[91m__dict__[39;49;00m[name][90m[39;49;00m
-        [94mexcept[39;49;00m ([96mAttributeError[39;49;00m, [96mKeyError[39;49;00m):[90m[39;49;00m
-            original = [96mgetattr[39;49;00m(target, name, DEFAULT)[90m[39;49;00m
-        [94melse[39;49;00m:[90m[39;49;00m
-            local = [94mTrue[39;49;00m[90m[39;49;00m
-    [90m[39;49;00m
-        [94mif[39;49;00m name [95min[39;49;00m _builtins [95mand[39;49;00m [96misinstance[39;49;00m(target, ModuleType):[90m[39;49;00m
-            [96mself[39;49;00m.create = [94mTrue[39;49;00m[90m[39;49;00m
-    [90m[39;49;00m
-        [94mif[39;49;00m [95mnot[39;49;00m [96mself[39;49;00m.create [95mand[39;49;00m original [95mis[39;49;00m DEFAULT:[90m[39;49;00m
->           [94mraise[39;49;00m [96mAttributeError[39;49;00m([90m[39;49;00m
-                [33m"[39;49;00m[33m%s[39;49;00m[33m does not have the attribute [39;49;00m[33m%r[39;49;00m[33m"[39;49;00m % (target, name)[90m[39;49;00m
-            )[90m[39;49;00m
-[1m[31mE           AttributeError: <mcts_agent.MCTSAgent object at 0x76bebd193e30> does not have the attribute '_backpropagate'[0m
-
-[1m[31m/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py[0m:1428: AttributeError
-[36m[1m============================ short test summary info ============================[0m
-[31mFAILED[0m tests/test_mcts_agent.py::[1mtest_choose_placement_basic_run[0m - AttributeError: Mock object has no attribute 'rave_visits'
-[31mFAILED[0m tests/test_mcts_agent.py::[1mtest_choose_placement_no_trip_on_top_rule[0m - AttributeError: <mcts_agent.MCTSAgent object at 0x76bebd193e30> does not hav...
-[31m==================== [31m[1m2 failed[0m, [32m39 passed[0m, [33m3 skipped[0m[31m in 0.72s[0m[31m ====================[0m
+[33m============================= [33mno tests ran[0m[33m in 0.12s[0m[33m =============================[0m
 [0;32m@96Azerus [1;31m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ exit
 exit
 
-Script done on 2025-05-02 16:46:13+00:00 [COMMAND_EXIT_CODE="1"]
+Script done on 2025-05-02 17:32:22+00:00 [COMMAND_EXIT_CODE="3"]
