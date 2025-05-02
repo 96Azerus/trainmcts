@@ -289,4 +289,63 @@ class MCTSAgent:
         # ... (код функции _select_best_placement без изменений) ...
         if not root_node.children:
             logger.warning("No children found at root node. Cannot select best placement.")
-            if hasattr(ro
+            if hasattr(root_node, '_generated_states_for_expand') and root_node._generated_states_for_expand:
+                 try:
+                     first_key = next(iter(root_node._generated_states_for_expand))
+                     _, _, placement_info = root_node._generated_states_for_expand[first_key]
+                     logger.warning("Returning first generated placement as fallback.")
+                     return placement_info
+                 except Exception as e_fallback: logger.error(f"Error during fallback placement selection: {e_fallback}"); return None
+            return None
+
+        is_first_street = (root_node.board.get_total_cards() == 0 and len(initial_cards_dealt) == 5)
+        trip_in_hand_rank = -1
+        if is_first_street:
+            ranks = [Card.get_rank_int(c) for c in initial_cards_dealt if c is not None]
+            rank_counts = Counter(ranks)
+            trip_in_hand_rank = next((rank for rank, count in rank_counts.items() if count >= 3), -1)
+            if trip_in_hand_rank != -1: logger.info(f"Rule Check: First street with trip of rank {trip_in_hand_rank} detected.")
+
+        child_stats: List[Tuple[Dict[str, Any], int, float, int, float]] = []
+        items = list(root_node.children.items())
+        logger.info(f"--- Evaluating {len(items)} child nodes (initial placements) ---")
+        for placement_key, child_node in items:
+             avg_reward = child_node.total_reward / child_node.visits if child_node.visits > 0 else -1.0
+             rave_avg_reward = child_node.rave_reward / child_node.rave_visits if child_node.rave_visits > 0 else -1.0
+             p_info = getattr(child_node, 'placement_info', None)
+             if p_info is None: logger.warning(f"Child node {child_node} missing placement_info."); continue
+             child_stats.append((p_info, child_node.visits, avg_reward, child_node.rave_visits, rave_avg_reward))
+             log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in p_info.get('placements', [])])
+             log_discard = f"(D: {Card.to_str(p_info.get('discarded'))})" if p_info.get('discarded') else ""
+             logger.info(f"  Placement: {log_placements:<35} {log_discard:<7} -> V: {child_node.visits:<5} R: {avg_reward:<7.2f} | RV: {child_node.rave_visits:<5} RR: {rave_avg_reward:<7.2f}")
+
+        child_stats.sort(key=lambda x: x[1], reverse=True) # Сортировка по visits
+
+        best_allowed_placement: Optional[Dict[str, Any]] = None
+        best_visits = -1; best_avg_reward = -float('inf')
+
+        for placement_info, visits, avg_reward, rave_visits, rave_avg_reward in child_stats:
+            skip_placement = False
+            if is_first_street and trip_in_hand_rank != -1:
+                placements = placement_info.get('placements', [])
+                for card_int, row_name, index in placements:
+                    current_card_rank = Card.get_rank_int(card_int) if card_int else -1
+                    if current_card_rank == trip_in_hand_rank and row_name == 'top':
+                        log_placements_skip = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in placements])
+                        logger.warning(f"Rule Violation: Skipping placement {log_placements_skip} (Trip rank {trip_in_hand_rank} on Top).")
+                        skip_placement = True; break
+
+            if not skip_placement:
+                best_allowed_placement = placement_info; best_visits = visits; best_avg_reward = avg_reward
+                log_placements_sel = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in best_allowed_placement.get('placements', [])])
+                log_discard_sel = f"(D: {Card.to_str(best_allowed_placement.get('discarded'))})" if best_allowed_placement.get('discarded') else ""
+                logger.info(f"Selected placement (V={best_visits}, R={best_avg_reward:.2f}): {log_placements_sel} {log_discard_sel}")
+                return best_allowed_placement
+
+        if best_allowed_placement is None:
+            logger.warning("All evaluated placements were disallowed by rules or no valid children available.")
+            if child_stats:
+                 logger.warning("Returning the most visited placement despite potential rule violation as fallback.")
+                 return child_stats[0][0]
+            return None
+        return best_allowed_placement # Недостижимо
