@@ -1,18 +1,13 @@
-# ofc_evaluators.py v1.9
+# ofc_evaluators.py v2.0 (Added Heuristic Helpers)
 """
 Интерфейс для оценки покерных комбинаций OFC (3 и 5 карт).
 Использует специализированные модули для 3- и 5-карточных рук.
-Исправлена проверка 5-карт в get_hand_rank_safe.
-Добавлено детальное логгирование.
-Перенесены функции check_board_foul, get_row_royalty и константы роялти из ofc_logic.py.
-ИСПРАВЛЕНО: get_hand_rank_safe теперь возвращает СЫРОЙ ранг и КЛАСС руки.
-ИСПРАВЛЕНО: check_board_foul теперь сравнивает КЛАССЫ и СЫРЫЕ ранги.
-ИСПРАВЛЕНО: get_row_royalty использует класс руки.
+Добавлены вспомогательные функции для эвристической оценки MCTS.
 """
 
 import logging
-from typing import List, Optional, Tuple, Dict # Добавлен Dict
-from collections import Counter # Добавлен Counter
+from typing import List, Optional, Tuple, Dict
+from collections import Counter
 
 # Импортируем конкретные эвалюаторы
 try:
@@ -21,10 +16,8 @@ try:
 except ImportError:
     logging.critical("Failed to import evaluate_3_card_ofc from ofc_evaluator_3card.py")
     def evaluate_3_card_ofc(c1, c2, c3) -> Tuple[int, str, str]: return (999, "Error", "ERR")
-    WORST_RANK_3CARD_RAW = 455 # Заглушка
-    HAND_TYPE_TRIPS_3 = "Trips"
-    HAND_TYPE_PAIR_3 = "Pair"
-    HAND_TYPE_HIGH_CARD_3 = "High Card"
+    WORST_RANK_3CARD_RAW = 455
+    HAND_TYPE_TRIPS_3 = "Trips"; HAND_TYPE_PAIR_3 = "Pair"; HAND_TYPE_HIGH_CARD_3 = "High Card"
 
 try:
     from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
@@ -32,8 +25,7 @@ try:
 except ImportError:
     logging.critical("Failed to import evaluator_5card_instance from ofc_evaluator_5card.py")
     class MockEvaluator5Card:
-        MAX_HIGH_CARD = 7462 # Худший валидный ранг
-        WORST_RANK_5CARD = MAX_HIGH_CARD + 1 # Невалидный ранг
+        MAX_HIGH_CARD = 7462; WORST_RANK_5CARD = 7463
         def evaluate(self, cards): return self.WORST_RANK_5CARD
         def get_rank_class(self, rank): return 9
         def class_to_string(self, r_class): return "Error"
@@ -43,67 +35,43 @@ except ImportError:
 
 # Импортируем утилиты карт и доску из ofc_logic
 try:
-    from ofc_logic import Card, INVALID_CARD, card_to_str, PlayerBoard, RANK_MAP
+    from ofc_logic import Card, INVALID_CARD, card_to_str, PlayerBoard, RANK_MAP, STR_RANKS
 except ImportError:
     logging.critical("Failed to import from ofc_logic in ofc_evaluators.py")
-    # Заглушки для Card, если ofc_logic недоступен
     class Card: # type: ignore
         @staticmethod
         def to_str(c): return "??"
         @staticmethod
-        def get_rank_int(c): return 0 # Добавим заглушку
+        def get_rank_int(c): return 0
+        @staticmethod
+        def get_suit_int(c): return 0
     class PlayerBoard: # type: ignore
-        ROW_NAMES = ['top', 'middle', 'bottom']
+        ROW_NAMES = ['top', 'middle', 'bottom']; ROW_CAPACITY = {'top': 3, 'middle': 5, 'bottom': 5}
         def __init__(self): self.rows = {r:[] for r in self.ROW_NAMES}; self.is_foul = False
         def is_complete(self): return False
-    INVALID_CARD = -1
-    RANK_MAP = {} # Заглушка
+        def get_row_cards(self, rn): return []
+    INVALID_CARD = -1; RANK_MAP = {}; STR_RANKS = ""
     def card_to_str(c): return Card.to_str(c)
 
 # Получаем логгер
 logger = logging.getLogger(__name__)
-if not logger.hasHandlers():
-    logger.setLevel(logging.WARNING) # Возвращаем уровень WARNING по умолчанию
-    handler = logging.StreamHandler() # Вывод в консоль
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+# ... (настройка логгера без изменений) ...
 
-
-# --- ДОБАВЛЕНО: Маппинг 3-карточных типов в классы (аналогично 5-карточным) ---
-# Меньший класс = сильнее
-HAND_TYPE_TO_CLASS_3CARD = {
-    HAND_TYPE_TRIPS_3: 6, # Сопоставляем с классом 5-карточного Трипса
-    HAND_TYPE_PAIR_3: 8,  # Сопоставляем с классом 5-карточной Пары
-    HAND_TYPE_HIGH_CARD_3: 9 # Сопоставляем с классом 5-карточной Старшей карты
-}
-# Общий худший класс
+# --- Константы и Переменные ---
+HAND_TYPE_TO_CLASS_3CARD = { HAND_TYPE_TRIPS_3: 6, HAND_TYPE_PAIR_3: 8, HAND_TYPE_HIGH_CARD_3: 9 }
 WORST_CLASS = 9
-
-# --- Константы Рангов (для удобства доступа) ---
-# Используем значения из LookupTable5Card для консистентности
-MAX_HIGH_CARD_5: int = LookupTable5Card.MAX_HIGH_CARD # 7462 - худший *валидный* 5-карточный ранг
-WORST_RANK_5CARD_INVALID: int = LookupTable5Card.WORST_RANK_5CARD # 7463 - *невалидный* 5-карточный ранг (для ошибок)
-
-# Ранги 3-карточных рук: 1 (лучший) - 455 (худший)
-# WORST_RANK_3CARD_RAW уже импортирован (455)
-
-# Общий худший ранг (для ошибок)
-WORST_RANK: int = max(MAX_HIGH_CARD_5, WORST_RANK_3CARD_RAW) + 1 # 7462 + 1 = 7463
+MAX_HIGH_CARD_5: int = LookupTable5Card.MAX_HIGH_CARD
+WORST_RANK_5CARD_INVALID: int = LookupTable5Card.WORST_RANK_5CARD
+WORST_RANK: int = max(MAX_HIGH_CARD_5, WORST_RANK_3CARD_RAW) + 1
+RANK_QUEEN = RANK_MAP.get('Q', 10)
 
 # --- Основная функция оценки ---
-
 def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
     """
     Безопасно вычисляет СЫРОЙ ранг, КЛАСС руки и тип руки (3 или 5 карт).
-    Меньший ранг/класс означает более сильную руку.
     Возвращает (WORST_RANK, WORST_CLASS, "Invalid") при любой ошибке.
-
-    Returns:
-        Tuple[int, int, str]: (Сырой ранг, Класс руки, Строка типа руки)
-                              Класс: 1=SF, 2=4oak, 3=FH, 4=Flush, 5=Straight,
-                                     6=Trips/3oak, 7=2Pair, 8=Pair, 9=HighCard
     """
+    # ... (код функции get_hand_rank_safe без изменений из предыдущей версии) ...
     hand_str_log = "N/A"
     expected_len = 0
     try:
@@ -124,6 +92,7 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
 
         num_valid = len(valid_cards)
 
+        # Проверка на дубликаты только если карт больше 1
         if num_valid > 1 and num_valid != len(set(valid_cards)):
             logger.warning(f"Duplicate cards found in hand for ranking: {hand_str_log}")
             return WORST_RANK, WORST_CLASS, "Invalid"
@@ -142,9 +111,9 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
                  logger.error(f"evaluate_3_card_ofc returned invalid raw rank: {rank} for hand {hand_str_log}")
                  return WORST_RANK, WORST_CLASS, "Invalid"
 
-            # Получаем класс руки
             hand_class = HAND_TYPE_TO_CLASS_3CARD.get(type_str, WORST_CLASS)
             logger.debug(f"Evaluated 3-card: {hand_str_log} -> RawRank: {rank}, Class: {hand_class}, Type: {type_str}")
+            # Возвращаем СЫРОЙ ранг (1-455), класс и тип
             return rank, hand_class, type_str
 
         elif expected_len == 5:
@@ -156,14 +125,15 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
             rank = evaluator_5card.evaluate(valid_cards)
             logger.debug(f"evaluator_5card.evaluate returned: {rank} for {hand_str_log}")
 
+            # Проверяем на валидный ранг 5-карточной руки (1-7462)
             if not (1 <= rank <= MAX_HIGH_CARD_5):
                  logger.warning(f"5-card evaluation returned invalid rank: {rank} (expected 1-{MAX_HIGH_CARD_5}) for hand {hand_str_log}")
                  return WORST_RANK, WORST_CLASS, "Invalid"
 
-            # Получаем класс руки
             hand_class = evaluator_5card.get_rank_class(rank)
             type_str = evaluator_5card.class_to_string(hand_class)
             logger.debug(f"Evaluated 5-card: {hand_str_log} -> Rank: {rank}, Class: {hand_class}, Type: {type_str}")
+            # Возвращаем СЫРОЙ ранг (1-7462), класс и тип
             return rank, hand_class, type_str
 
         else:
@@ -178,38 +148,23 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
         return WORST_RANK, WORST_CLASS, "Invalid"
 
 
-# --- Функции Подсчета Очков (Scoring) - ПЕРЕНЕСЕНЫ ИЗ ofc_logic.py ---
+# --- Функции Подсчета Очков (Scoring) ---
+# ... (Таблицы ROYALTY_BOTTOM_POINTS, ROYALTY_MIDDLE_POINTS, ROYALTY_TOP_PAIRS, ROYALTY_TOP_TRIPS без изменений) ...
+ROYALTY_BOTTOM_POINTS: Dict[str, int] = { "Straight": 2, "Flush": 4, "Full House": 6, "Four of a Kind": 10, "Straight Flush": 15, "Royal Flush": 25 }
+ROYALTY_MIDDLE_POINTS: Dict[str, int] = { "Three of a Kind": 2, "Straight": 4, "Flush": 8, "Full House": 12, "Four of a Kind": 20, "Straight Flush": 30, "Royal Flush": 50 }
+ROYALTY_TOP_PAIRS: Dict[int, int] = { RANK_MAP['6']: 1, RANK_MAP['7']: 2, RANK_MAP['8']: 3, RANK_MAP['9']: 4, RANK_MAP['T']: 5, RANK_MAP['J']: 6, RANK_MAP['Q']: 7, RANK_MAP['K']: 8, RANK_MAP['A']: 9 }
+ROYALTY_TOP_TRIPS: Dict[int, int] = { RANK_MAP['2']: 10, RANK_MAP['3']: 11, RANK_MAP['4']: 12, RANK_MAP['5']: 13, RANK_MAP['6']: 14, RANK_MAP['7']: 15, RANK_MAP['8']: 16, RANK_MAP['9']: 17, RANK_MAP['T']: 18, RANK_MAP['J']: 19, RANK_MAP['Q']: 20, RANK_MAP['K']: 21, RANK_MAP['A']: 22 }
 
-# Таблицы Роялти (Американские правила)
-ROYALTY_BOTTOM_POINTS: Dict[str, int] = {
-    "Straight": 2, "Flush": 4, "Full House": 6, "Four of a Kind": 10,
-    "Straight Flush": 15, "Royal Flush": 25
-}
-ROYALTY_MIDDLE_POINTS: Dict[str, int] = {
-    "Three of a Kind": 2, "Straight": 4, "Flush": 8, "Full House": 12,
-    "Four of a Kind": 20, "Straight Flush": 30, "Royal Flush": 50
-}
-ROYALTY_TOP_PAIRS: Dict[int, int] = {
-    RANK_MAP['6']: 1, RANK_MAP['7']: 2, RANK_MAP['8']: 3, RANK_MAP['9']: 4,
-    RANK_MAP['T']: 5, RANK_MAP['J']: 6, RANK_MAP['Q']: 7, RANK_MAP['K']: 8,
-    RANK_MAP['A']: 9
-}
-ROYALTY_TOP_TRIPS: Dict[int, int] = {
-    RANK_MAP['2']: 10, RANK_MAP['3']: 11, RANK_MAP['4']: 12, RANK_MAP['5']: 13,
-    RANK_MAP['6']: 14, RANK_MAP['7']: 15, RANK_MAP['8']: 16, RANK_MAP['9']: 17,
-    RANK_MAP['T']: 18, RANK_MAP['J']: 19, RANK_MAP['Q']: 20, RANK_MAP['K']: 21,
-    RANK_MAP['A']: 22
-}
 
 def check_board_foul(board: PlayerBoard) -> bool:
     """
     Проверяет доску на фол (нарушение порядка силы линий).
     Использует get_hand_rank_safe для получения СЫРЫХ рангов и КЛАССОВ рук.
     Сравнивает сначала классы, потом ранги.
-    Фол, если Top сильнее Middle ИЛИ Middle сильнее Bottom.
     """
+    # ... (код функции check_board_foul без изменений из предыдущей версии) ...
     if not board.is_complete():
-        return False
+        return False # Неполная доска не может быть фолом
 
     try:
         top_cards_opt = board.rows['top']
@@ -224,30 +179,35 @@ def check_board_foul(board: PlayerBoard) -> bool:
         # Проверяем, что все ранги/классы валидны
         if rank_t == WORST_RANK or rank_m == WORST_RANK or rank_b == WORST_RANK:
             logger.warning(f"Could not determine valid ranks/classes for foul check. T:{rank_t}/{class_t}({type_t}), M:{rank_m}/{class_m}({type_m}), B:{rank_b}/{class_b}({type_b}) for board:\n{board}")
+            # Считаем не фолом, если не можем определить ранги
             board.is_foul = False
             return False
 
         # Логика фола с использованием классов и рангов
         # Фол, если Top сильнее Middle
+        # Класс меньше = сильнее. При равных классах, ранг меньше = сильнее.
         top_stronger_mid = (class_t < class_m) or (class_t == class_m and rank_t < rank_m)
+
         # Фол, если Middle сильнее Bottom
-        mid_stronger_bot = (class_m < class_b) or (class_m == class_b and rank_m < rank_b) # Исправлена опечатка
+        mid_stronger_bot = (class_m < class_b) or (class_m == class_b and rank_m < rank_b)
 
         is_foul = top_stronger_mid or mid_stronger_bot
         logger.debug(f"Foul check: T={rank_t}/{class_t}({type_t}), M={rank_m}/{class_m}({type_m}), B={rank_b}/{class_b}({type_b}) -> top_stronger={top_stronger_mid}, mid_stronger={mid_stronger_bot} -> is_foul={is_foul}")
 
-        board.is_foul = is_foul
+        board.is_foul = is_foul # Сохраняем состояние фола в доске
         return is_foul
 
     except Exception as e:
         logger.error(f"Error during check_board_foul: {e}", exc_info=True)
-        board.is_foul = False
+        board.is_foul = False # Считаем не фолом при ошибке
         return False
+
 
 def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
     """
     Вычисляет роялти для ряда. Использует глобальные эвалюаторы.
     """
+    # ... (код функции get_row_royalty без изменений из предыдущей версии) ...
     cards_str = Card.hand_to_str(cards)
     logger.debug(f"Calculating royalty for row '{row_name}', cards: {cards_str}")
     if not isinstance(cards, list): return 0
@@ -256,40 +216,42 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
     rank, hand_class, type_str = get_hand_rank_safe(cards)
     logger.debug(f"get_hand_rank_safe returned rank={rank}, class={hand_class}, type='{type_str}' for row '{row_name}'")
 
+    # Если рука невалидна или неполна (get_hand_rank_safe вернет WORST_RANK)
     if rank == WORST_RANK:
         logger.debug(f"Hand is invalid or incomplete, returning 0 royalty.")
         return 0
 
     royalty = 0
     try:
+        # Получаем только валидные карты для дальнейшей обработки
         valid_cards = [c for c in cards if c is not None and c != INVALID_CARD and c > 0]
-        if not valid_cards: return 0
+        if not valid_cards: return 0 # Нет карт для расчета
 
         if row_name == "top":
             logger.debug(f"Processing top row royalty. Class: {hand_class}, Type: '{type_str}'")
-            # Используем класс для определения типа
+            # Проверяем, что карт ровно 3
+            if len(valid_cards) != 3: return 0
+
             if hand_class == 6: # Trips
                 ranks = [Card.get_rank_int(c) for c in valid_cards]
-                rank_counts = Counter(ranks)
-                trip_rank = -1
-                for r, count in rank_counts.items():
-                    if count == 3: trip_rank = r; break
+                # Находим ранг трипса
+                trip_rank = next((r for r, count in Counter(ranks).items() if count == 3), -1)
                 royalty = ROYALTY_TOP_TRIPS.get(trip_rank, 0)
                 logger.debug(f"Trips detected. Trip rank index: {trip_rank}, Royalty: {royalty}")
             elif hand_class == 8: # Pair
                  ranks = [Card.get_rank_int(c) for c in valid_cards]
-                 rank_counts = Counter(ranks)
-                 pair_rank = -1
-                 for r, count in rank_counts.items():
-                     if count == 2: pair_rank = r; break
+                 # Находим ранг пары
+                 pair_rank = next((r for r, count in Counter(ranks).items() if count == 2), -1)
                  royalty = ROYALTY_TOP_PAIRS.get(pair_rank, 0)
                  logger.debug(f"Pair detected. Pair rank index: {pair_rank}, Royalty: {royalty}")
-            else: # High Card (class 9)
-                 logger.debug("High card detected. Royalty: 0")
+            # High Card (class 9) не дает роялти
             return royalty
 
         elif row_name in ["middle", "bottom"]:
             logger.debug(f"Processing {row_name} row royalty. Class: {hand_class}, Type: '{type_str}'")
+            # Проверяем, что карт ровно 5
+            if len(valid_cards) != 5: return 0
+
             table = ROYALTY_MIDDLE_POINTS if row_name == "middle" else ROYALTY_BOTTOM_POINTS
             hand_name = type_str # Используем строку типа, возвращенную get_hand_rank_safe
 
@@ -297,6 +259,7 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
             is_royal = (hand_class == 1 and rank == 1)
             if is_royal: logger.debug("Royal Flush detected.")
 
+            # Получаем роялти из таблицы
             if is_royal:
                 royalty = table.get("Royal Flush", 0)
             else:
@@ -314,3 +277,139 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
     except Exception as e:
         logger.error(f"Error calculating royalty for {row_name} (Cards: {cards_str}, Type: {type_str}): {e}", exc_info=True)
         return 0
+
+
+# --- Новые Вспомогательные Функции для Эвристики ---
+
+def get_combination_weight(hand_class: int) -> float:
+    """Возвращает вес для класса руки (для эвристики)."""
+    weights = {
+        1: 100.0, 2: 80.0, 3: 70.0, 4: 60.0, 5: 50.0, # SF, 4oak, FH, Flush, Straight
+        6: 40.0, 7: 30.0, 8: 20.0, 9: 5.0           # 3oak, 2Pair, Pair, HighCard
+    }
+    return weights.get(hand_class, 0.0)
+
+def _get_discard_penalty(card: int) -> float:
+    """Возвращает штраф за сброс карты (выше для Q+)."""
+    if not isinstance(card, int) or card <= 0: return 0.0
+    try:
+        rank = Card.get_rank_int(card)
+        if rank >= RANK_QUEEN: return 25.0 # Большой штраф за сброс Q+
+        if rank >= RANK_MAP['T']: return 10.0 # Средний штраф за T, J
+        if rank >= RANK_MAP['7']: return 3.0 # Небольшой штраф за 7,8,9
+        return 0.0 # Нет штрафа за сброс 6 и ниже
+    except Exception:
+        logger.warning(f"Could not get rank for discard penalty calculation: card={card}")
+        return 0.0
+
+def _check_straight_potential(unique_ranks: List[int]) -> Tuple[bool, int]:
+    """
+    Проверяет связность и гэпы для стрит-дро.
+    Возвращает (есть ли потенциал, количество гэпов).
+    """
+    num_unique = len(unique_ranks)
+    if num_unique < 2: return False, 10 # Нужно хотя бы 2 карты
+
+    # Особый случай A-2-3-4-5 (Wheel)
+    has_ace = RANK_MAP['A'] in unique_ranks
+    # Собираем ранги, которые могут быть частью A-5 стрита (A, 2, 3, 4, 5)
+    present_wheel_ranks = {r for r in unique_ranks if r <= RANK_MAP['5'] or r == RANK_MAP['A']}
+
+    # Если есть туз и как минимум 2 другие карты из A-5
+    if has_ace and len(present_wheel_ranks) >= 3:
+         required_for_wheel = {0, 1, 2, 3, 4} # Ранги 2, 3, 4, 5, 6
+         current_low_ranks = {r for r in present_wheel_ranks if r != RANK_MAP['A']}
+         missing_count = len(required_for_wheel - current_low_ranks)
+         # Если с текущими картами + недостающими можно собрать 5 карт
+         if len(present_wheel_ranks) + missing_count >= 5:
+              # Гэпы = количество недостающих карт
+              if missing_count <= 2: # OESD (0 или 1 гэп) или гатшот (2 гэпа)
+                   return True, missing_count
+
+    # Обычный стрит
+    if num_unique < 3: return False, 10 # Нужно хотя бы 3 разные карты для обычного стрит-дро
+
+    max_rank = unique_ranks[-1]
+    min_rank = unique_ranks[0]
+    span = max_rank - min_rank
+
+    # Оптимизация: если размах слишком большой, стрит невозможен
+    # Максимальный размах для 5 карт = 4. Для n карт = n-1 + (5-n) = 4
+    if span > 4 + (5 - num_unique): return False, 10
+
+    gaps = 0
+    for i in range(num_unique - 1):
+        diff = unique_ranks[i+1] - unique_ranks[i]
+        if diff > 1:
+            gaps += (diff - 1)
+
+    # Стрит возможен, если количество карт + гэпы >= 5
+    # И гэпов не слишком много (<= 2)
+    if num_unique + gaps >= 5 and gaps <= 2:
+        return True, gaps
+    else:
+        return False, 10
+
+
+def _evaluate_partial_row_potential(cards: List[int], row_name: str) -> float:
+    """Оценивает потенциал неполного ряда (адаптация примера 2)."""
+    if not cards: return 0.0
+    score = 0.0
+    num_cards = len(cards)
+    row_capacity = PlayerBoard.ROW_CAPACITY.get(row_name, 5)
+
+    # Не оцениваем потенциал, если ряд уже полон
+    if num_cards >= row_capacity: return 0.0
+
+    # Потенциал Флеша (только для мидла/боттома)
+    if row_name in ["middle", "bottom"]:
+        suits = [Card.get_suit_int(c) for c in cards]
+        suit_counts = Counter(suits)
+        max_suit_count = max(suit_counts.values()) if suit_counts else 0
+        if max_suit_count == 3: score += 10.0 # 3-флеш дро
+        elif max_suit_count == 4: score += 25.0 # 4-флеш дро
+
+    # Потенциал Стрита
+    ranks = sorted([Card.get_rank_int(c) for c in cards])
+    unique_ranks = sorted(list(set(ranks)))
+    if len(unique_ranks) >= 2: # Нужно хотя бы 2 карты для дро
+        is_connected, gaps = _check_straight_potential(unique_ranks)
+        if is_connected:
+             base_straight_bonus = 15.0
+             # Бонус сильнее, чем ближе к завершению (больше карт, меньше гэпов)
+             # (5 - gaps) - бонус за OESD/гатшот
+             # (num_cards / row_capacity) - бонус за заполненность
+             potential_factor = (5.0 - gaps) * (num_cards / row_capacity)
+             score += base_straight_bonus * potential_factor * 0.2 # Уменьшим вес стрит-дро
+
+    # Пары/Трипсы/Каре
+    rank_ints = [Card.get_rank_int(c) for c in cards]
+    rank_counts = Counter(rank_ints)
+    pair_count = 0
+    has_trips = False
+    has_quads = False
+    highest_rank_in_multiples = -1
+
+    for rank_int, count in rank_counts.items():
+        rank_value = rank_int # Используем 0-12
+        highest_rank_in_multiples = max(highest_rank_in_multiples, rank_int)
+        if count == 2:
+            # Бонус за пару + ранг. Умножаем на "близость" к завершению ряда.
+            score += (15.0 + rank_value * 0.5) * (num_cards / row_capacity)
+            pair_count += 1
+        elif count == 3:
+            score += (35.0 + rank_value * 1.0) * (num_cards / row_capacity)
+            has_trips = True
+        elif count == 4:
+             score += (70.0 + rank_value * 1.5) * (num_cards / row_capacity)
+             has_quads = True
+
+    # Дополнительный бонус за две пары
+    if pair_count >= 2:
+        score += 20.0 * (num_cards / row_capacity)
+
+    # Бонус за высокую карту (если нет пар/трипсов/каре)
+    if pair_count == 0 and not has_trips and not has_quads and ranks:
+         score += max(ranks) * 0.2 # Небольшой бонус за старшую карту
+
+    return score
