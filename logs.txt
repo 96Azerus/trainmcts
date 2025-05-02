@@ -1,141 +1,245 @@
-Script started on 2025-05-02 17:32:09+00:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="81" LINES="14"]
-[0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ pytest -vs
-[1m============================== test session starts ==============================[0m
-platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-utils/venvs/pytest/bin/python
-cachedir: .pytest_cache
-rootdir: /workspaces/trainmcts
-plugins: cov-6.1.1, anyio-4.9.0
-[1mcollecting ... [0mFATAL ERROR during initial imports: invalid syntax (mcts_agent.py, line 177)
-Traceback (most recent call last):
-  File "/workspaces/trainmcts/app.py", line 25, in <module>
-    from mcts_agent import MCTSAgent
-  File "/workspaces/trainmcts/mcts_agent.py", line 177
-    if pool: try: pool.terminate(); pool.join() except Exception: pass
-             ^^^
-SyntaxError: invalid syntax
-[1mcollected 0 items                                                               [0m
-INTERNALERROR> Traceback (most recent call last):
-INTERNALERROR>   File "/workspaces/trainmcts/app.py", line 25, in <module>
-INTERNALERROR>     from mcts_agent import MCTSAgent
-INTERNALERROR>   File "/workspaces/trainmcts/mcts_agent.py", line 177
-INTERNALERROR>     if pool: try: pool.terminate(); pool.join() except Exception: pass
-INTERNALERROR>              ^^^
-INTERNALERROR> SyntaxError: invalid syntax
-INTERNALERROR> 
-INTERNALERROR> During handling of the above exception, another exception occurred:
-INTERNALERROR> 
-INTERNALERROR> Traceback (most recent call last):
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 283, in wrap_session
-INTERNALERROR>     session.exitstatus = doit(config, session) or 0
-INTERNALERROR>                          ^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 336, in _main
-INTERNALERROR>     config.hook.pytest_collection(session=session)
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_hooks.py", line 513, in __call__
-INTERNALERROR>     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
-INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
-INTERNALERROR>     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
-INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
-INTERNALERROR>     raise exception.with_traceback(exception.__traceback__)
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
-INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
-INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/logging.py", line 790, in pytest_collection
-INTERNALERROR>     return (yield)
-INTERNALERROR>             ^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
-INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
-INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/warnings.py", line 121, in pytest_collection
-INTERNALERROR>     return (yield)
-INTERNALERROR>             ^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
-INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
-INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1417, in pytest_collection
-INTERNALERROR>     return (yield)
-INTERNALERROR>             ^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 103, in _multicall
-INTERNALERROR>     res = hook_impl.function(*args)
-INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 347, in pytest_collection
-INTERNALERROR>     session.perform_collect()
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 809, in perform_collect
-INTERNALERROR>     self.items.extend(self.genitems(node))
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 975, in genitems
-INTERNALERROR>     yield from self.genitems(subnode)
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 975, in genitems
-INTERNALERROR>     yield from self.genitems(subnode)
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 970, in genitems
-INTERNALERROR>     rep, duplicate = self._collect_one_node(node, handle_dupes)
-INTERNALERROR>                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/main.py", line 835, in _collect_one_node
-INTERNALERROR>     rep = collect_one_node(node)
-INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 567, in collect_one_node
-INTERNALERROR>     rep: CollectReport = ihook.pytest_make_collect_report(collector=collector)
-INTERNALERROR>                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_hooks.py", line 513, in __call__
-INTERNALERROR>     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
-INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
-INTERNALERROR>     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
-INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
-INTERNALERROR>     raise exception.with_traceback(exception.__traceback__)
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 122, in _multicall
-INTERNALERROR>     teardown.throw(exception)  # type: ignore[union-attr]
-INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/capture.py", line 878, in pytest_make_collect_report
-INTERNALERROR>     rep = yield
-INTERNALERROR>           ^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/pluggy/_callers.py", line 103, in _multicall
-INTERNALERROR>     res = hook_impl.function(*args)
-INTERNALERROR>           ^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 391, in pytest_make_collect_report
-INTERNALERROR>     call = CallInfo.from_call(
-INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 341, in from_call
-INTERNALERROR>     result: TResult | None = func()
-INTERNALERROR>                              ^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/runner.py", line 389, in collect
-INTERNALERROR>     return list(collector.collect())
-INTERNALERROR>                 ^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 549, in collect
-INTERNALERROR>     self._register_setup_module_fixture()
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 562, in _register_setup_module_fixture
-INTERNALERROR>     self.obj, ("setUpModule", "setup_module")
-INTERNALERROR>     ^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 284, in obj
-INTERNALERROR>     self._obj = obj = self._getobj()
-INTERNALERROR>                       ^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 546, in _getobj
-INTERNALERROR>     return importtestmodule(self.path, self.config)
-INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/python.py", line 493, in importtestmodule
-INTERNALERROR>     mod = import_path(
-INTERNALERROR>           ^^^^^^^^^^^^
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/pathlib.py", line 587, in import_path
-INTERNALERROR>     importlib.import_module(module_name)
-INTERNALERROR>   File "/usr/local/python/3.12.1/lib/python3.12/importlib/__init__.py", line 90, in import_module
-INTERNALERROR>     return _bootstrap._gcd_import(name[level:], package, level)
-INTERNALERROR>            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
-INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-INTERNALERROR>   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-INTERNALERROR>   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-INTERNALERROR>   File "/usr/local/py-utils/venvs/pytest/lib/python3.12/site-packages/_pytest/assertion/rewrite.py", line 185, in exec_module
-INTERNALERROR>     exec(co, module.__dict__)
-INTERNALERROR>   File "/workspaces/trainmcts/tests/test_app.py", line 15, in <module>
-INTERNALERROR>     from app import app as flask_app
-INTERNALERROR>   File "/workspaces/trainmcts/app.py", line 35, in <module>
-INTERNALERROR>     sys.exit(1)
-INTERNALERROR> SystemExit: 1
-mainloop: caught unexpected SystemExit!
-
-[33m============================= [33mno tests ran[0m[33m in 0.12s[0m[33m =============================[0m
-[0;32m@96Azerus [1;31m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ exit
-exit
-
-Script done on 2025-05-02 17:32:22+00:00 [COMMAND_EXIT_CODE="3"]
+Script started on 2025-05-02 17:41:13+00:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="81" LINES="14"]
+[0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ docker run -it --rm -p 8080:10000 -e PORT=10000 -e FLASK_SECRET_KEY='cc18fbc293c2e732bf1bb6af97943642' mypokerapp
+[2025-05-02 17:41:26 +0000] [1] [INFO] Starting gunicorn 20.1.0
+[2025-05-02 17:41:26 +0000] [1] [INFO] Listening at: http://0.0.0.0:10000 (1)
+[2025-05-02 17:41:26 +0000] [1] [INFO] Using worker: sync
+[2025-05-02 17:41:26 +0000] [7] [INFO] Booting worker with pid: 7
+[2025-05-02 17:41:26 +0000] [8] [INFO] Booting worker with pid: 8
+2025-05-02 17:41:27,069 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:76] - Initializing 5-card lookup tables...
+2025-05-02 17:41:27,070 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:135] - Generated RF entry: prime=31367009, rank=1
+2025-05-02 17:41:27,073 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:76] - Initializing 5-card lookup tables...
+2025-05-02 17:41:27,073 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:135] - Generated RF entry: prime=31367009, rank=1
+2025-05-02 17:41:27,074 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:80] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-05-02 17:41:27,074 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:87] - Royal Flush prime product 31367009 found with rank 1.
+2025-05-02 17:41:27,076 - app - INFO - [app:53] - --- Flask App Initialization (v2.2) ---
+2025-05-02 17:41:27,076 - app - INFO - [app:57] - Production mode: False
+2025-05-02 17:41:27,076 - app - INFO - [app:137] - Defining Flask routes...
+2025-05-02 17:41:27,079 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:80] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-05-02 17:41:27,079 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:87] - Royal Flush prime product 31367009 found with rank 1.
+2025-05-02 17:41:27,080 - app - INFO - [app:53] - --- Flask App Initialization (v2.2) ---
+2025-05-02 17:41:27,080 - app - INFO - [app:57] - Production mode: False
+2025-05-02 17:41:27,080 - app - INFO - [app:137] - Defining Flask routes...
+2025-05-02 17:41:37,459 - app - INFO - [app:142] - Route / called (GET)
+2025-05-02 17:41:51,974 - app - INFO - [app:334] - Route /reset_game_state called (POST)
+2025-05-02 17:42:03,455 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-02 17:42:03,455 - app - INFO - [app:213] - Starting MCTS placement search for 5 cards...
+2025-05-02 17:42:08,137 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:76] - Initializing 5-card lookup tables...
+2025-05-02 17:42:08,138 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:135] - Generated RF entry: prime=31367009, rank=1
+2025-05-02 17:42:08,138 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:76] - Initializing 5-card lookup tables...
+2025-05-02 17:42:08,138 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:76] - Initializing 5-card lookup tables...
+2025-05-02 17:42:08,139 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:135] - Generated RF entry: prime=31367009, rank=1
+2025-05-02 17:42:08,139 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:135] - Generated RF entry: prime=31367009, rank=1
+2025-05-02 17:42:08,143 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:80] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-05-02 17:42:08,143 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:87] - Royal Flush prime product 31367009 found with rank 1.
+2025-05-02 17:42:08,144 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['2s', 'Ts', '9c'] (ints: [69634, 16783383, 8423187])
+2025-05-02 17:42:08,144 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 2s -> Rank: 0
+2025-05-02 17:42:08,144 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Ts -> Rank: 8
+2025-05-02 17:42:08,144 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 9c -> Rank: 7
+2025-05-02 17:42:08,144 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (8, 7, 0)
+2025-05-02 17:42:08,144 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (8, 7, 0): (378, 'High Card', 'T92')
+2025-05-02 17:42:08,144 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (378, 'High Card', 'T92')
+2025-05-02 17:42:08,144 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', '6s', 'Kd', 'Qh', 'Jh'] (ints: [268446761, 1053707, 134236965, 67119647, 33564957])
+2025-05-02 17:42:08,144 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 4, 11, 10, 9]
+2025-05-02 17:42:08,144 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', '6s', 'Kd', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,144 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({12: 1, 4: 1, 11: 1, 10: 1, 9: 1})
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 15001613
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 15001613: 6189
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6189
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:80] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:87] - Royal Flush prime product 31367009 found with rank 1.
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:80] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:87] - Royal Flush prime product 31367009 found with rank 1.
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['3d', '7s', '9c'] (ints: [147715, 2102541, 8423187])
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 3d -> Rank: 1
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['5c', 'Qs', 'Qc'] (ints: [557831, 67115551, 67144223])
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 7s -> Rank: 5
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 5c -> Rank: 3
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 9c -> Rank: 7
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Qs -> Rank: 10
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (7, 5, 1)
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (7, 5, 1): (409, 'High Card', '973')
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Qc -> Rank: 10
+2025-05-02 17:42:08,146 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (409, 'High Card', '973')
+2025-05-02 17:42:08,147 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (10, 10, 3)
+2025-05-02 17:42:08,147 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (10, 10, 3): (46, 'Pair', 'QQ5')
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', '8s', '3c', 'Qh', 'Jh'] (ints: [268446761, 4199953, 164099, 67119647, 33564957])
+2025-05-02 17:42:08,147 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (46, 'Pair', 'QQ5')
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 6, 1, 10, 9]
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', '8c', 'Jc', 'Qh', 'Jh'] (ints: [268446761, 4228625, 33589533, 67119647, 33564957])
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', '8s', '3c', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 6, 9, 10, 9]
+2025-05-02 17:42:08,145 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['4s', 'Kc', 'Th', 'Kh', '3s'] (ints: [266757, 134253349, 16787479, 134228773, 135427])
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', '8c', 'Jc', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [2, 11, 8, 11, 1]
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({12: 1, 6: 1, 1: 1, 10: 1, 9: 1})
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['4s', 'Kc', 'Th', 'Kh', '3s'] detected as Unsuited
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 1879809
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({9: 2, 12: 1, 6: 1, 10: 1})
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 1879809: 6369
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({11: 2, 2: 1, 8: 1, 1: 1})
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 18171487
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6369
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 472305
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 18171487: 3998
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 472305: 3707
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 3998
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Qc', 'Jc', 'Th', 'Kh', '4s'] (ints: [67144223, 33589533, 16787479, 134228773, 266757])
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 3707
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [10, 9, 8, 11, 2]
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['6h', 'Tc', 'Th', 'Kh', '2d'] (ints: [1057803, 16812055, 16787479, 134228773, 81922])
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Qc', 'Jc', 'Th', 'Kh', '4s'] detected as Unsuited
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [4, 8, 8, 11, 0]
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['6h', 'Tc', 'Th', 'Kh', '2d'] detected as Unsuited
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({10: 1, 9: 1, 8: 1, 11: 1, 2: 1})
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({8: 2, 4: 1, 11: 1, 0: 1})
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 430606
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 430606: 4299
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 4299
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['5s', '9s', '2d'] (ints: [529159, 8394515, 81922])
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 5s -> Rank: 3
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 9s -> Rank: 7
+2025-05-02 17:42:08,147 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 3825245
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 2d -> Rank: 0
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 3825245: 6683
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['Jc', 'Ac', '3h'] (ints: [33589533, 268471337, 139523])
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Jc -> Rank: 9
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6683
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Ac -> Rank: 12
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (7, 3, 0)
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 3h -> Rank: 1
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (7, 3, 0): (417, 'High Card', '952')
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (12, 9, 1)
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (417, 'High Card', '952')
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (12, 9, 1): (198, 'High Card', 'AJ3')
+2025-05-02 17:42:08,148 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (198, 'High Card', 'AJ3')
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', 'Ts', '3c', 'Qh', 'Jh'] (ints: [268446761, 16783383, 164099, 67119647, 33564957])
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', '6h', '9s', 'Qh', 'Jh'] (ints: [268446761, 1057803, 8394515, 67119647, 33564957])
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 8, 1, 10, 9]
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', 'Ts', '3c', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 4, 7, 10, 9]
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', '6h', '9s', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({12: 1, 8: 1, 1: 1, 10: 1, 9: 1})
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({12: 1, 4: 1, 7: 1, 10: 1, 9: 1})
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 2543271
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 7703531
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 2543271: 6356
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 7703531: 6360
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6356
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6360
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['5h', '3h', 'Th', 'Kh', '4c'] (ints: [533255, 139523, 16787479, 134228773, 295429])
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['5h', 'Ks', 'Th', 'Kh', 'Kc'] (ints: [533255, 134224677, 16787479, 134228773, 134253349])
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [3, 1, 8, 11, 2]
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [3, 11, 8, 11, 11]
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['5h', '3h', 'Th', 'Kh', '4c'] detected as Unsuited
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['5h', 'Ks', 'Th', 'Kh', 'Kc'] detected as Unsuited
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({3: 1, 1: 1, 8: 1, 11: 1, 2: 1})
+2025-05-02 17:42:08,148 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({11: 3, 3: 1, 8: 1})
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 89355
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 8155133
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 89355: 6934
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 8155133: 1710
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6934
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 1710
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['As', 'Ks', '5d'] (ints: [268442665, 134224677, 541447])
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['Td', '6d', 'Qd'] (ints: [16795671, 1065995, 67127839])
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Td -> Rank: 8
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card As -> Rank: 12
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 6d -> Rank: 4
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Ks -> Rank: 11
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 5d -> Rank: 3
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Qd -> Rank: 10
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (10, 8, 4)
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (12, 11, 3)
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (10, 8, 4): (303, 'High Card', 'QT6')
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (12, 11, 3): (177, 'High Card', 'AK5')
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (303, 'High Card', 'QT6')
+2025-05-02 17:42:08,149 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (177, 'High Card', 'AK5')
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', '9s', '4s', 'Qh', 'Jh'] (ints: [268446761, 8394515, 266757, 67119647, 33564957])
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', 'Jc', '9s', 'Qh', 'Jh'] (ints: [268446761, 33589533, 8394515, 67119647, 33564957])
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 9, 7, 10, 9]
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 7, 2, 10, 9]
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', 'Jc', '9s', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,149 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', '9s', '4s', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({12: 1, 7: 1, 2: 1, 10: 1, 9: 1})
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({9: 2, 12: 1, 7: 1, 10: 1})
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 3501605
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 3501605: 6362
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6362
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['3c', '3d', 'Th', 'Kh', '5c'] (ints: [164099, 147715, 16787479, 134228773, 557831])
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [1, 1, 8, 11, 3]
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 20309309
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['3c', '3d', 'Th', 'Kh', '5c'] detected as Unsuited
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 20309309: 3997
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 3997
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['5s', '8s', 'Th', 'Kh', '3s'] (ints: [529159, 4199953, 16787479, 134228773, 135427])
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [3, 6, 8, 11, 1]
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['5s', '8s', 'Th', 'Kh', '3s'] detected as Unsuited
+2025-05-02 17:42:08,150 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['8s', '9h', '6s'] (ints: [4199953, 8398611, 1053707])
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({3: 1, 6: 1, 8: 1, 11: 1, 1: 1})
+2025-05-02 17:42:08,150 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 8s -> Rank: 6
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 303807
+2025-05-02 17:42:08,150 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 9h -> Rank: 7
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 303807: 6913
+2025-05-02 17:42:08,150 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 6s -> Rank: 4
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6913
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (7, 6, 4)
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (7, 6, 4): (401, 'High Card', '986')
+2025-05-02 17:42:08,150 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({1: 2, 8: 1, 11: 1, 3: 1})
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (401, 'High Card', '986')
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 53613
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', '3s', '7s', 'Qh', 'Jh'] (ints: [268446761, 135427, 2102541, 67119647, 33564957])
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 53613: 5822
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 1, 5, 10, 9]
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 5822
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', '3s', '7s', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({12: 1, 1: 1, 5: 1, 10: 1, 9: 1})
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 1437501
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 1437501: 6374
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6374
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['2s', '7d', 'Th', 'Kh', 'Tc'] (ints: [69634, 2114829, 16787479, 134228773, 16812055])
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [0, 5, 8, 11, 8]
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['2s', '7d', 'Th', 'Kh', 'Tc'] detected as Unsuited
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['7c', '4c', 'Qd'] (ints: [2131213, 295429, 67127839])
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 7c -> Rank: 5
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({8: 2, 0: 1, 5: 1, 11: 1})
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 508898
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 4c -> Rank: 2
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 508898: 4295
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card Qd -> Rank: 10
+2025-05-02 17:42:08,151 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 4295
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (10, 5, 2)
+2025-05-02 17:42:08,151 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (10, 5, 2): (323, 'High Card', 'Q74')
+2025-05-02 17:42:08,152 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (323, 'High Card', 'Q74')
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', '5s', '4h', 'Qh', 'Jh'] (ints: [268446761, 529159, 270853, 67119647, 33564957])
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 3, 2, 10, 9]
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', '5s', '4h', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({12: 1, 3: 1, 2: 1, 10: 1, 9: 1})
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 1290065
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 1290065: 6380
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6380
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['6c', '2h', 'Th', 'Kh', 'Qc'] (ints: [1082379, 73730, 16787479, 134228773, 67144223])
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [4, 0, 8, 11, 10]
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['6c', '2h', 'Th', 'Kh', 'Qc'] detected as Unsuited
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({4: 1, 0: 1, 8: 1, 11: 1, 10: 1})
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 580382
+2025-05-02 17:42:08,152 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 580382: 6735
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 6735
+2025-05-02 17:42:08,153 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:301] - Evaluating 3-card hand: ['3d', '8c', '7d'] (ints: [147715, 4228625, 2114829])
+2025-05-02 17:42:08,153 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 3d -> Rank: 1
+2025-05-02 17:42:08,153 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 8c -> Rank: 6
+2025-05-02 17:42:08,153 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:310] -   Card 7d -> Rank: 5
+2025-05-02 17:42:08,153 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:326] - Generated lookup key: (6, 5, 1)
+2025-05-02 17:42:08,153 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:328] - Lookup result for key (6, 5, 1): (424, 'High Card', '873')
+2025-05-02 17:42:08,153 - ofc_evaluator_3card - DEBUG - [ofc_evaluator_3card.py:346] - Returning: (424, 'High Card', '873')
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['Ah', 'Kd', 'Jd', 'Qh', 'Jh'] (ints: [268446761, 134236965, 33573149, 67119647, 33564957])
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [12, 11, 9, 10, 9]
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['Ah', 'Kd', 'Jd', 'Qh', 'Jh'] detected as Unsuited
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({9: 2, 12: 1, 11: 1, 10: 1})
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime product (unsuited): 39549707
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:363] - Lookup result in unsuited_lookup for 39549707: 3986
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:368] - Returning rank (unsuited): 3986
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:291] - Evaluating 5-card hand: ['2c', '8d', 'Th', 'Kh', '8s'] (ints: [98306, 4212241, 16787479, 134228773, 4199953])
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:314] -   Extracted ranks: [0, 6, 8, 11, 6]
+2025-05-02 17:42:08,153 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:347] - Hand ['2c', '8d', 'Th', 'Kh', '8s'] detected as Unsuited
+2025-05-02 17:42:08,154 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:353] - Rank counts: Counter({6: 2, 0: 1, 8: 1, 11: 1})
+2025-05-02 17:42:08,154 - ofc_evaluator_5card - DEBUG - [ofc_evaluator_5card.py:356] - Calculated prime produc
