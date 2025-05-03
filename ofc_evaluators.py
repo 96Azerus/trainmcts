@@ -70,6 +70,8 @@ MAX_HIGH_CARD_5: int = LookupTable5Card.MAX_HIGH_CARD
 WORST_RANK_5CARD_INVALID: int = LookupTable5Card.WORST_RANK_5CARD
 WORST_RANK: int = max(MAX_HIGH_CARD_5, WORST_RANK_3CARD_RAW) + 1
 RANK_QUEEN = RANK_MAP.get('Q', 10)
+RANK_KING: int = RANK_MAP.get('K', 11) # Используем .get для безопасности
+RANK_ACE: int = RANK_MAP.get('A', 12) # Используем .get для безопасности
 
 # --- Основная функция оценки ---
 def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
