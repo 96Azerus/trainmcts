@@ -3,39 +3,39 @@ platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-uti
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: cov-6.1.1, anyio-4.9.0
-collecting ... 2025-05-01 16:11:25,640 - app - INFO - [app:53] - --- Flask App Initialization (v2.2) ---
-2025-05-01 16:11:25,640 - app - INFO - [app:57] - Production mode: False
-2025-05-01 16:11:25,640 - app - INFO - [app:137] - Defining Flask routes...
-collected 41 items / 3 skipped
+collecting ... 2025-05-03 02:40:06,887 - app - INFO - [app:53] - --- Flask App Initialization (v2.2) ---
+2025-05-03 02:40:06,887 - app - INFO - [app:57] - Production mode: False
+2025-05-03 02:40:06,887 - app - INFO - [app:137] - Defining Flask routes...
+collected 41 items / 4 skipped
 
-tests/test_app.py::test_index_route 2025-05-01 16:11:25,671 - app - INFO - [app:142] - Route / called (GET)
+tests/test_app.py::test_index_route 2025-05-03 02:40:06,919 - app - INFO - [app:142] - Route / called (GET)
 PASSED
-tests/test_app.py::test_ai_move_valid_request 2025-05-01 16:11:25,677 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,677 - app - INFO - [app:213] - Starting MCTS placement search for 3 cards...
-2025-05-01 16:11:25,678 - app - INFO - [app:223] - AI move request processed in 0.000s. Best placement found.
+tests/test_app.py::test_ai_move_valid_request 2025-05-03 02:40:06,926 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,927 - app - INFO - [app:213] - Starting MCTS placement search for 3 cards...
+2025-05-03 02:40:06,927 - app - INFO - [app:223] - AI move request processed in 0.000s. Best placement found.
 PASSED
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-01 16:11:25,679 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,679 - app - WARNING - [app:182] - No valid cards to place provided.
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-05-03 02:40:06,928 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,928 - app - WARNING - [app:182] - No valid cards to place provided.
 PASSED
-tests/test_app.py::test_ai_move_invalid_json 2025-05-01 16:11:25,681 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,681 - app - WARNING - [app:158] - Request is not JSON
+tests/test_app.py::test_ai_move_invalid_json 2025-05-03 02:40:06,930 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,930 - app - WARNING - [app:158] - Request is not JSON
 PASSED
-tests/test_app.py::test_ai_move_missing_data 2025-05-01 16:11:25,682 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,682 - app - WARNING - [app:170] - Missing or invalid 'selected_cards' or 'board' data
+tests/test_app.py::test_ai_move_missing_data 2025-05-03 02:40:06,931 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,931 - app - WARNING - [app:170] - Missing or invalid 'selected_cards' or 'board' data
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-05-01 16:11:25,683 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,684 - app - WARNING - [app:192] - Duplicate cards found between hand and board: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-05-03 02:40:06,933 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,933 - app - WARNING - [app:192] - Duplicate cards found between hand and board: ['As']
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-05-01 16:11:25,685 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,685 - app - WARNING - [app:195] - Cards to place are already permanently discarded: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-05-03 02:40:06,934 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,934 - app - WARNING - [app:195] - Cards to place are already permanently discarded: ['As']
 PASSED
-tests/test_app.py::test_ai_move_agent_returns_none 2025-05-01 16:11:25,687 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,687 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
-2025-05-01 16:11:25,687 - app - WARNING - [app:262] - AI agent did not return a placement after 0.000s.
+tests/test_app.py::test_ai_move_agent_returns_none 2025-05-03 02:40:06,937 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,937 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
+2025-05-03 02:40:06,937 - app - WARNING - [app:262] - AI agent did not return a placement after 0.000s.
 PASSED
-tests/test_app.py::test_ai_move_internal_error 2025-05-01 16:11:25,689 - app - INFO - [app:156] - Route /ai_move called (POST)
-2025-05-01 16:11:25,689 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
-2025-05-01 16:11:25,689 - app - ERROR - [app:266] - Unexpected Error during /ai_move: Unexpected MCTS crash
+tests/test_app.py::test_ai_move_internal_error 2025-05-03 02:40:06,939 - app - INFO - [app:156] - Route /ai_move called (POST)
+2025-05-03 02:40:06,939 - app - INFO - [app:213] - Starting MCTS placement search for 1 cards...
+2025-05-03 02:40:06,939 - app - ERROR - [app:266] - Unexpected Error during /ai_move: Unexpected MCTS crash
 Traceback (most recent call last):
   File "/workspaces/trainmcts/app.py", line 215, in get_ai_move
     best_placement_info: Optional[Dict[str, Any]] = agent.choose_placement(
@@ -50,22 +50,22 @@ Traceback (most recent call last):
     raise effect
 Exception: Unexpected MCTS crash
 PASSED
-tests/test_app.py::test_calculate_score_valid_board 2025-05-01 16:11:25,692 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 16:11:25,692 - app - INFO - [app:293] - Foul check result: False
-2025-05-01 16:11:25,692 - app - INFO - [app:306] - Calculated royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
-2025-05-01 16:11:25,692 - app - INFO - [app:308] - Score calculation request processed in 0.001s.
+tests/test_app.py::test_calculate_score_valid_board 2025-05-03 02:40:06,951 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-03 02:40:06,951 - app - INFO - [app:293] - Foul check result: False
+2025-05-03 02:40:06,951 - app - INFO - [app:306] - Calculated royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
+2025-05-03 02:40:06,951 - app - INFO - [app:308] - Score calculation request processed in 0.001s.
 PASSED
-tests/test_app.py::test_calculate_score_foul_board 2025-05-01 16:11:25,693 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 16:11:25,694 - app - INFO - [app:293] - Foul check result: True
+tests/test_app.py::test_calculate_score_foul_board 2025-05-03 02:40:06,953 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-03 02:40:06,953 - app - INFO - [app:293] - Foul check result: True
 PASSED
-tests/test_app.py::test_calculate_score_incomplete_board 2025-05-01 16:11:25,695 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 16:11:25,695 - app - WARNING - [app:289] - Score calculation requested for incomplete board (3/13).
+tests/test_app.py::test_calculate_score_incomplete_board 2025-05-03 02:40:06,954 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-03 02:40:06,954 - app - WARNING - [app:289] - Score calculation requested for incomplete board (3/13).
 PASSED
-tests/test_app.py::test_calculate_score_missing_board 2025-05-01 16:11:25,696 - app - INFO - [app:273] - Route /calculate_score called (POST)
-2025-05-01 16:11:25,696 - app - WARNING - [app:282] - Missing 'board' data for score calculation
+tests/test_app.py::test_calculate_score_missing_board 2025-05-03 02:40:06,956 - app - INFO - [app:273] - Route /calculate_score called (POST)
+2025-05-03 02:40:06,956 - app - WARNING - [app:282] - Missing 'board' data for score calculation
 PASSED
 tests/test_app.py::test_update_state PASSED
-tests/test_app.py::test_reset_game_state 2025-05-01 16:11:25,699 - app - INFO - [app:334] - Route /reset_game_state called (POST)
+tests/test_app.py::test_reset_game_state 2025-05-03 02:40:06,958 - app - INFO - [app:334] - Route /reset_game_state called (POST)
 PASSED
 tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED
 tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED
@@ -94,4 +94,4 @@ tests/test_ofc_logic.py::test_playerboard_copy PASSED
 tests/test_ofc_logic.py::test_check_board_foul_logic PASSED
 tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
 
-======================== 41 passed, 3 skipped in 0.64s =========================
+======================== 41 passed, 4 skipped in 0.61s =========================
