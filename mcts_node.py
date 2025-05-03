@@ -26,7 +26,8 @@ try:
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
         check_board_foul, get_row_royalty,
-        ROYALTY_TOP_PAIRS, MAX_HIGH_CARD_5, RANK_QUEEN, RANK_KING, RANK_ACE # Добавлены RANK_KING, RANK_ACE
+        ROYALTY_TOP_PAIRS, MAX_HIGH_CARD_5,
+        RANK_QUEEN, RANK_KING, RANK_ACE, # Добавлены RANK_KING, RANK_ACE
         evaluate_3_card_ofc, # Нужен для FL эвристики
         evaluator_5card # Нужен для оценки рядов
     )
