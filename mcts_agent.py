@@ -18,7 +18,7 @@ from collections import Counter
 # Импорты из локальных модулей
 try:
     from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP
-    from mcts_node import MCTSNode, run_parallel_rollout, RAVE_K
+    from mcts_node import MCTSNode, run_parallel_rollout, RAVE_K, PW_C, PW_ALPHA
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
         check_board_foul, get_row_royalty,
