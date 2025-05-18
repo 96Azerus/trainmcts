@@ -1,4 +1,6 @@
 # mcts_node.py v2.7 (Advanced Heuristic Rollout v2 - Wheel, FL Safety)
+# ИСПРАВЛЕНО: TypeError в _estimate_row_potential
+# ИСПРАВЛЕНО: Вызов get_hand_rank_safe с неверным числом карт в _score_placement_v2
 """
 Представление узла дерева MCTS для задачи размещения НАБОРА карт OFC Pineapple.
 Использует ПРОДВИНУТУЮ ЭВРИСТИЧЕСКУЮ симуляцию v2:
@@ -10,7 +12,7 @@
 import math
 import time
 import random
-import multiprocessing
+import multiprocessing # Оставил, т.к. run_parallel_rollout его использует
 import traceback
 import sys
 import logging
@@ -21,7 +23,7 @@ from collections import Counter
 # Импорты из локальных модулей
 try:
     # Убедимся, что импортируем все необходимое из ofc_logic
-    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS, INT_RANKS, PRIMES 
+    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS, INT_RANKS, PRIMES
     # Импортируем все необходимое из ofc_evaluators
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
@@ -454,15 +456,20 @@ class MCTSNode:
         return outs
 
     @staticmethod
-    def _estimate_row_potential(row_cards: List[int], board_cards_after: Set[int], remaining_deck: Set[int]) -> float:
+    def _estimate_row_potential(row_name: str, row_cards: List[int], board_cards_after: Set[int], remaining_deck: Set[int]) -> float: # ИЗМЕНЕНА СИГНАТУРА
         """
         (НОВЫЙ ХЕЛПЕР v2.7) Оценивает потенциал *незавершенного* ряда.
         Используется для проверки безопасности Fantasyland.
         """
         potential_score = 0.0
         num_cards_in_row = len(row_cards)
-        # Определяем вместимость ряда (3 для топа, 5 для мид/бот)
-        row_capacity = 3 if num_cards_in_row <= 3 and any(c in PlayerBoard.ROW_CAPACITY['top'] for c in row_cards) else 5 # Упрощенное определение
+
+        # --- ИСПРАВЛЕНО: Определение row_capacity ---
+        if row_name not in PlayerBoard.ROW_CAPACITY:
+            logger.error(f"Invalid row_name '{row_name}' in _estimate_row_potential.")
+            return 0.0
+        row_capacity = PlayerBoard.ROW_CAPACITY[row_name]
+        # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
 
         if num_cards_in_row == 0: return 0.0
         if num_cards_in_row == row_capacity:
@@ -528,24 +535,47 @@ class MCTSNode:
 
         # 2. Проверка на фол
         is_foul = False
-        if temp_board.is_complete():
+        if temp_board.is_complete(): # Если доска полная, используем стандартную проверку
             is_foul = check_board_foul(temp_board)
         else:
-            # Упрощенная проверка для неполных досок
+            # --- ИСПРАВЛЕНО: Логика проверки фола для неполных досок ---
             try:
-                top_row = temp_board.get_row_cards("top")
-                mid_row = temp_board.get_row_cards("middle")
-                bot_row = temp_board.get_row_cards("bottom")
-                rank_t, class_t, _ = get_hand_rank_safe(top_row)
-                rank_m, class_m, _ = get_hand_rank_safe(mid_row)
-                rank_b, class_b, _ = get_hand_rank_safe(bot_row)
+                top_cards = temp_board.get_row_cards("top")
+                mid_cards = temp_board.get_row_cards("middle")
+                bot_cards = temp_board.get_row_cards("bottom")
 
-                if len(top_row) == 3 and len(mid_row) == 5:
-                    if rank_t != WORST_RANK and rank_m != WORST_RANK and ((class_t < class_m) or (class_t == class_m and rank_t < rank_m)): is_foul = True
-                if not is_foul and len(mid_row) == 5 and len(bot_row) == 5:
-                     if rank_m != WORST_RANK and rank_b != WORST_RANK and ((class_m < class_b) or (class_m == class_b and rank_m < rank_b)): is_foul = True
-            except Exception: is_foul = True # Ошибка оценки = считаем фолом
+                rank_t, class_t = (WORST_RANK, WORST_CLASS)
+                if len(top_cards) == PlayerBoard.ROW_CAPACITY['top']:
+                    rank_t, class_t, _ = get_hand_rank_safe(top_cards)
+
+                rank_m, class_m = (WORST_RANK, WORST_CLASS)
+                if len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle']:
+                    rank_m, class_m, _ = get_hand_rank_safe(mid_cards)
+
+                rank_b, class_b = (WORST_RANK, WORST_CLASS)
+                if len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']:
+                    rank_b, class_b, _ = get_hand_rank_safe(bot_cards)
+                
+                # Проверка фола между топ и мид, ТОЛЬКО ЕСЛИ ОБА ЗАПОЛНЕНЫ
+                if len(top_cards) == PlayerBoard.ROW_CAPACITY['top'] and \
+                   len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle']:
+                    if rank_t != WORST_RANK and rank_m != WORST_RANK:
+                        if (class_t < class_m) or (class_t == class_m and rank_t < rank_m):
+                            is_foul = True
+                
+                # Проверка фола между мид и бот, ТОЛЬКО ЕСЛИ ОБА ЗАПОЛНЕНЫ
+                if not is_foul and \
+                   len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle'] and \
+                   len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']:
+                     if rank_m != WORST_RANK and rank_b != WORST_RANK:
+                        if (class_m < class_b) or (class_m == class_b and rank_m < rank_b):
+                            is_foul = True
+            except Exception as e_foul_check:
+                logger.warning(f"Exception during partial foul check: {e_foul_check}")
+                is_foul = True 
+            # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
         if is_foul: return HEURISTIC_FOUL_PENALTY
+
 
         # 3. Оценка каждого ряда
         board_cards_after = temp_board.get_all_cards()
@@ -574,20 +604,22 @@ class MCTSNode:
 
                     if row_name == "top":
                         is_fl_qualify = False
-                        if hand_class == 6: is_fl_qualify = True
-                        elif hand_class == 8:
-                            ranks = [Card.get_rank_int(c) for c in row_cards]
-                            pair_rank = next((r for r, count in Counter(ranks).items() if count == 2), -1)
-                            if pair_rank >= RANK_QUEEN: is_fl_qualify = True
+                        if hand_class == 6: is_fl_qualify = True # Trips
+                        elif hand_class == 8: # Pair
+                            ranks_in_top = [Card.get_rank_int(c) for c in row_cards]
+                            pair_rank_val = next((r for r, count in Counter(ranks_in_top).items() if count == 2), -1)
+                            if pair_rank_val >= RANK_QUEEN: is_fl_qualify = True
                         if is_fl_qualify:
                             is_fl_qualify_hand_placed = True
                             fl_top_strength_score = row_strength_score
                             current_row_score += HEURISTIC_FL_QUALIFY_BONUS
-                    elif row_name == "bottom" and hand_class <= 2:
+                    elif row_name == "bottom" and hand_class <= 2: # Каре и выше на боттоме
                          current_row_score += HEURISTIC_FL_REPEAT_BONUS
             # Оценка незавершенного ряда
             else:
-                potential_score = MCTSNode._estimate_row_potential(row_cards, board_cards_after, remaining_deck)
+                # --- ИСПРАВЛЕНО: Передаем row_name ---
+                potential_score = MCTSNode._estimate_row_potential(row_name, row_cards, board_cards_after, remaining_deck)
+                # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
                 current_row_score += potential_score
                 row_strength_score = potential_score # Используем потенциал как меру силы
 
@@ -601,13 +633,10 @@ class MCTSNode:
             risk_penalty = 0.0
 
             # Штрафуем, если потенциал миддла опасно близок/выше силы топа
-            # Порог сравнения (например, 0.8) нужно тюнить
             if potential_middle >= fl_top_strength_score * 0.8:
-                # Штраф пропорционален превышению порога
                 risk_penalty += (potential_middle - fl_top_strength_score * 0.8) * HEURISTIC_FL_RISK_PENALTY_FACTOR
 
             # Штрафуем, если потенциал боттома опасно близок/выше потенциала миддла
-            # Порог сравнения (например, 1.0) нужно тюнить
             if potential_bottom >= potential_middle * 1.0:
                  risk_penalty += (potential_bottom - potential_middle * 1.0) * HEURISTIC_FL_RISK_PENALTY_FACTOR
 
@@ -627,14 +656,13 @@ class MCTSNode:
         (Продвинутая Эвристика v2.7) Выбирает лучшее размещение,
         перебирая все варианты и оценивая их с помощью _score_placement_v2.
         """
-        # ... (Логика перебора вариантов размещения без изменений) ...
         num_on_board = board.get_total_cards()
         num_to_place = 5 if num_on_board == 0 else 2
         num_to_discard = 0 if num_on_board == 0 else 1
         available_slots = board.get_available_slots()
         if len(available_slots) < num_to_place: return None
         best_placement_info: Optional[Dict[str, Any]] = None
-        best_score = -float('inf') - 1.0 # Инициализируем очень маленьким числом
+        best_score = -float('inf') - 1.0 
         cards_to_place_options: List[Tuple[List[int], Optional[int]]] = []
         if num_to_discard == 0:
             if len(cards_dealt) == num_to_place: cards_to_place_options.append((cards_dealt, None))
@@ -648,20 +676,19 @@ class MCTSNode:
 
         generated_count = 0
         evaluated_count = 0
-        # Ограничения для производительности (можно настроить или убрать)
-        MAX_PERMUTATIONS = 24 # Для 5 карт = 120, для 2 карт = 2. 24 - разумный компромисс?
-        MAX_SLOT_COMBINATIONS = 100 # Ограничение на комбинации слотов
+        MAX_PERMUTATIONS = 24 
+        MAX_SLOT_COMBINATIONS = 100 
 
         for cards_to_place, discarded_card in cards_to_place_options:
             perm_count = 0
             for card_permutation in permutations(cards_to_place):
                 perm_count += 1
-                if perm_count > MAX_PERMUTATIONS: break # Ограничение перестановок
+                if perm_count > MAX_PERMUTATIONS: break 
 
                 slot_combo_count = 0
                 for slot_combination in combinations(available_slots, num_to_place):
                     slot_combo_count += 1
-                    if slot_combo_count > MAX_SLOT_COMBINATIONS: break # Ограничение комбинаций слотов
+                    if slot_combo_count > MAX_SLOT_COMBINATIONS: break 
 
                     generated_count += 1
                     current_placements: List[Tuple[int, str, int]] = []
@@ -669,24 +696,17 @@ class MCTSNode:
                         current_placements.append((card_permutation[i], slot_combination[i][0], slot_combination[i][1]))
 
                     placement_info = {'placements': current_placements, 'discarded': discarded_card}
-                    # --- Используем новую функцию оценки ---
                     score = MCTSNode._score_placement_v2(board, placement_info, remaining_deck)
                     evaluated_count += 1
-                    # --- Конец изменения ---
-
-                    # Используем >= чтобы предпочесть более поздние варианты при равном счете (небольшая рандомизация)
+                    
                     if score >= best_score:
-                        # Дополнительная проверка на НЕ фол (на всякий случай)
-                        if score > HEURISTIC_FOUL_PENALTY + 1: # Убедимся, что это не просто штраф за фол
+                        if score > HEURISTIC_FOUL_PENALTY + 1: 
                             best_score = score
                             best_placement_info = placement_info
-
-        # Логгирование статистики эвристики (можно закомментировать для скорости)
-        # logger.debug(f"Heuristic v2.7 evaluated {evaluated_count}/{generated_count} placements. Best score: {best_score:.2f}")
-
+        
         if best_placement_info is None and evaluated_count > 0:
              logger.warning(f"Heuristic v2.7: No valid (non-foul) placement found after evaluating {evaluated_count} options. Returning None.")
-             return None # Не нашли ни одного не-фол хода
+             return None 
 
         return best_placement_info
 
@@ -698,7 +718,6 @@ class MCTSNode:
         """
         Статический метод для выполнения ПРОДВИНУТОЙ ЭВРИСТИЧЕСКОЙ симуляции (v2.7).
         """
-        # ... (Логика симуляции без изменений, вызывает _choose_best_heuristic_placement_v2) ...
         actions_history: List[Dict[str, Any]] = []
         try:
             current_board = initial_board.copy()
@@ -709,24 +728,18 @@ class MCTSNode:
                 num_cards_on_board = current_board.get_total_cards()
                 num_to_deal = 3 if num_cards_on_board > 0 else 5
                 if len(deck_sim_list) < num_to_deal:
-                    # logger.debug("Heuristic rollout v2.7: Not enough cards in deck.")
-                    return 0.0, actions_history # Не хватило карт
+                    return 0.0, actions_history 
 
                 dealt_cards = [deck_sim_list.pop() for _ in range(num_to_deal)]
                 deck_sim_set.difference_update(dealt_cards)
 
-                # --- Выбираем лучшее размещение эвристически (v2.7) ---
                 best_action = MCTSNode._choose_best_heuristic_placement_v2(
                     current_board, dealt_cards, deck_sim_set
                 )
-                # --- Конец выбора ---
-
+                
                 if best_action is None:
-                    # logger.warning("Heuristic rollout v2.7: Could not find a valid placement.")
-                    # Если эвристика не нашла ход (все ведут к фолу), завершаем с 0
                     return 0.0, actions_history
 
-                # Применяем лучший найденный ход
                 placements = best_action.get('placements', [])
                 valid_placement = True
                 for card, row, idx in placements:
@@ -734,11 +747,10 @@ class MCTSNode:
                         logger.error(f"Heuristic rollout v2.7: Failed to apply chosen placement {Card.to_str(card)}@{row}[{idx}]")
                         valid_placement = False; break
                 if not valid_placement:
-                    return 0.0, actions_history # Ошибка применения
+                    return 0.0, actions_history 
 
                 actions_history.append(best_action)
 
-            # --- Подсчет итогового счета (без изменений) ---
             is_foul = check_board_foul(current_board)
             if is_foul: return 0.0, actions_history
 
@@ -749,11 +761,11 @@ class MCTSNode:
                  rank_t, class_t, type_t = get_hand_rank_safe(top_row_cards)
                  if rank_t != WORST_RANK:
                      is_fantasy_hand = False
-                     if class_t == 6: is_fantasy_hand = True
-                     elif class_t == 8:
-                         ranks = [Card.get_rank_int(c) for c in top_row_cards]
-                         pair_rank = next((r for r, count in Counter(ranks).items() if count == 2), -1)
-                         if pair_rank >= RANK_QUEEN: is_fantasy_hand = True
+                     if class_t == 6: is_fantasy_hand = True # Trips
+                     elif class_t == 8: # Pair
+                         ranks_in_top = [Card.get_rank_int(c) for c in top_row_cards]
+                         pair_rank_val = next((r for r, count in Counter(ranks_in_top).items() if count == 2), -1)
+                         if pair_rank_val >= RANK_QUEEN: is_fantasy_hand = True
                      if is_fantasy_hand: final_fantasy_bonus = FANTASY_BONUS
 
             final_score = total_royalty + final_fantasy_bonus
@@ -769,17 +781,12 @@ class MCTSNode:
         best_score = -float('inf'); best_child = None
         parent_visits = self.visits
 
-        # Если родитель не посещался, или нет детей, выбираем случайно (если есть)
-        # Добавим +1 к parent_visits для логарифма, чтобы избежать log(0)
         if parent_visits == 0 or not self.children:
             return random.choice(list(self.children.values())) if self.children else None
 
-        parent_visits_log = math.log(parent_visits + 1e-6) # Добавляем малое число для стабильности log
+        parent_visits_log = math.log(parent_visits + 1e-6) 
 
-        # Перемешиваем детей для случайности при равных очках
         items = list(self.children.items()); random.shuffle(items)
-
-        # Параметр Beta для баланса между MCTS и RAVE
         beta = math.sqrt(RAVE_K / (3 * parent_visits + RAVE_K))
 
         for placement_key, child in items:
@@ -787,30 +794,22 @@ class MCTSNode:
             score = 0.0
 
             if child_visits == 0:
-                # Если узел не посещался, используем RAVE или большое значение разведки
                 if child.rave_visits > 0:
                     rave_score = child.rave_reward / child.rave_visits
-                    # Используем только RAVE + exploration bonus
-                    score = beta * rave_score + exploration_constant * math.sqrt(parent_visits_log / (child_visits + 1e-6)) # Добавляем exploration
+                    score = beta * rave_score + exploration_constant * math.sqrt(parent_visits_log / (child_visits + 1e-6)) 
                 else:
-                    # Если нет ни MCTS, ни RAVE визитов, даем очень высокий приоритет разведки
-                    score = 1e6 + random.random() # Большое число + случайность
+                    score = 1e6 + random.random() 
             else:
-                # Стандартная формула UCB1 + RAVE
-                node_score = child.total_reward / child_visits # MCTS Q-value
-                # Используем MCTS Q-value если RAVE недоступен
+                node_score = child.total_reward / child_visits 
                 rave_score = child.rave_reward / child.rave_visits if child.rave_visits > 0 else node_score
-                # Комбинированный счет
                 combined_score = (1.0 - beta) * node_score + beta * rave_score
-                # Терм разведки UCB1
                 explore_term = exploration_constant * math.sqrt(parent_visits_log / child_visits)
                 score = combined_score + explore_term
 
             if score > best_score:
                 best_score = score
                 best_child = child
-
-        # На случай, если что-то пошло не так (не должно)
+        
         if best_child is None and items:
              logger.warning(f"UCT selection resulted in None for node {self}. Choosing random child.")
              best_child = random.choice([c for _, c in items])
@@ -829,34 +828,26 @@ class MCTSNode:
     def backpropagate_rave(self, simulation_actions: List[Dict[str, Any]], reward: float):
         """
         Обновляет RAVE статистику (rave_visits, rave_reward) узлов вдоль пути (AMAF).
-        Увеличивает счетчики для дочерних узлов родителя, если действие из симуляции
-        совпадает с действием, ведущим к этому дочернему узлу.
         """
-        # Собираем ключи всех действий, совершенных в этой симуляции
         sim_action_keys: Set[Tuple[Tuple[int, str, int], ...]] = set()
         for action in simulation_actions:
             placements = action.get('placements')
             if placements:
                  try:
-                     # Создаем ключ так же, как при создании дочерних узлов
                      action_key = tuple(sorted([(int(p[0]), str(p[1]), int(p[2])) for p in placements]))
                      sim_action_keys.add(action_key)
                  except Exception as e:
                      logger.warning(f"RAVE Backprop Key Error creating key from action {action}: {e}")
 
-        if not sim_action_keys: return # Нет действий для обновления RAVE
+        if not sim_action_keys: return 
 
-        # Проходим по пути от листа к корню
         node: Optional[MCTSNode] = self
         while node is not None:
-            # Для каждого узла на пути проверяем его дочерние узлы
             for child_key, child_node in node.children.items():
-                # Если действие, ведущее к дочернему узлу, было совершено в симуляции
                 if child_key in sim_action_keys:
-                    # Обновляем RAVE статистику этого дочернего узла
                     child_node.rave_visits += 1
                     child_node.rave_reward += reward
-            node = node.parent # Переходим к родителю
+            node = node.parent 
 
     def __repr__(self):
         """Строковое представление узла для отладки."""
@@ -868,8 +859,7 @@ class MCTSNode:
              action_str = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in p_list])
              if self.placement_info.get('discarded'):
                  action_str += f" (D: {Card.to_str(self.placement_info['discarded'])})"
-
-        # Добавляем информацию о количестве неиспробованных состояний
+        
         untried_count = len(self.untried_next_states) if self.untried_next_states is not None else 'N/A'
 
         return (f"[Node V={self.visits} R={q_val:.2f} RV={self.rave_visits} RR={rave_q_val:.2f} "
