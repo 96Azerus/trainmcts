@@ -81,14 +81,14 @@ if not logger.hasHandlers():
 
 
 # --- Константы ---
-FANTASY_BONUS = 40.0 # Итоговый бонус за попадание в FL
+FANTASY_BONUS = 70.0 # Итоговый бонус за попадание в FL
 RAVE_K = 500.0       # Параметр для RAVE (AMAF)
 PW_C = 2.0           # Параметр Progressive Widening C
 PW_ALPHA = 0.5       # Параметр Progressive Widening Alpha
 
 # --- Константы для Эвристики v2.7 ---
 HEURISTIC_FOUL_PENALTY = -10000.0 # Очень большой штраф за фол в симуляции
-HEURISTIC_FL_QUALIFY_BONUS = 15.0 # Эвристический бонус за квалификацию на FL (QQ+ или Trips на топе)
+HEURISTIC_FL_QUALIFY_BONUS = 25.0 # Эвристический бонус за квалификацию на FL (QQ+ или Trips на топе)
 HEURISTIC_FL_REPEAT_BONUS = 10.0  # Эвристический доп. бонус за потенциальный репит (Trips top / 4oak+ bot)
 HEURISTIC_FL_RISK_PENALTY_FACTOR = -2.0 # Множитель штрафа за риск фола при попытке собрать FL
 
