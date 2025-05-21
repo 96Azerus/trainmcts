@@ -1,4 +1,5 @@
-# mcts_agent.py v2.5.1 (Logging for Best Placement Selection)
+# mcts_agent.py v2.5.2 (SyntaxError Fix, Logging for Best Placement Selection)
+# ИСПРАВЛЕНО: SyntaxError при обработке multiprocessing.Pool.
 # ИСПРАВЛЕНО: Логика num_cards_to_deal_next в _select (Проблема №1)
 # ИСПРАВЛЕНО: Критерий выбора лучшего хода в _select_best_placement (Проблема №2)
 # ИЗМЕНЕНО: Добавлено логирование топ-N вариантов в _select_best_placement.
@@ -89,7 +90,6 @@ class MCTSAgent:
                          initial_board: PlayerBoard,
                          cards_just_dealt: List[int],
                          current_remaining_deck: Set[int]) -> Optional[Dict[str, Any]]:
-        # ... (без изменений) ...
         start_time_total = time.time()
         if not cards_just_dealt: logger.warning("MCTSAgent: choose_placement called with no cards dealt."); return None
         if initial_board.is_complete(): logger.warning("MCTSAgent: choose_placement called with complete board."); return None
@@ -103,7 +103,7 @@ class MCTSAgent:
         try:
             root_node = MCTSNode(board=initial_board, remaining_deck=current_remaining_deck, parent=None, placement_info=None)
         except Exception as e_root: logger.error(f"Failed to create MCTS root node: {e_root}", exc_info=True); return None
-        start_mcts_time = time.time(); num_simulations = 0; pool = None
+        start_mcts_time = time.time(); num_simulations = 0; pool: Optional[multiprocessing.Pool] = None
         try:
             if self.num_workers > 1:
                  try: pool = multiprocessing.Pool(processes=self.num_workers); logger.debug(f"Created MP pool with {self.num_workers} workers.")
@@ -113,8 +113,8 @@ class MCTSAgent:
                 if leaf_node is None: logger.warning("Selection phase returned None leaf node."); break
                 node_to_rollout_from = leaf_node
                 if not leaf_node.is_terminal():
-                    if leaf_node.untried_next_states:
-                        expanded_node = leaf_node.expand() 
+                    if leaf_node.untried_next_states: # Should be None if not expanded yet, or list
+                        expanded_node = leaf_node.expand()
                         if expanded_node: node_to_rollout_from = expanded_node; path.append(expanded_node)
                 rollout_results: List[Tuple[float, List[Dict[str, Any]]]] = []
                 try:
@@ -142,15 +142,31 @@ class MCTSAgent:
                          self._backpropagate_standard(path, reward)
                          self._backpropagate_rave(path, actions, reward)
         except KeyboardInterrupt:
-             logger.warning("MCTS execution interrupted by user.");
-             if pool: try: pool.terminate(); pool.join() catch Exception: pass
-             return None 
+             logger.warning("MCTS execution interrupted by user.")
+             if pool:
+                 try:
+                     pool.terminate()
+                     pool.join()
+                 except Exception:
+                     pass # Ignore errors during cleanup on interrupt
+             return None
         except Exception as e_mcts:
             logger.error(f"Critical error during MCTS execution: {e_mcts}", exc_info=True)
-            if pool: try: pool.terminate(); pool.join() catch Exception: pass
+            if pool:
+                try:
+                    pool.terminate()
+                    pool.join()
+                except Exception:
+                    pass # Ignore errors during cleanup on critical error
             return None
         finally:
-            if pool: try: pool.close(); pool.join() catch Exception as e_pool_close: logger.error(f"Error closing MCTS pool: {e_pool_close}")
+            if pool:
+                try:
+                    pool.close()
+                    pool.join()
+                except Exception as e_pool_close:
+                    logger.error(f"Error closing MCTS pool: {e_pool_close}")
+
         elapsed_time = time.time() - start_mcts_time
         sims_per_sec = (num_simulations / elapsed_time) if elapsed_time > 0 else 0
         logger.info(f"MCTS finished: Ran {num_simulations} simulations in {elapsed_time:.3f}s ({sims_per_sec:.1f} sims/s). Root visits: {root_node.visits}")
@@ -160,7 +176,6 @@ class MCTSAgent:
         return best_placement_info
 
     def _select(self, root_node: MCTSNode, initial_cards_for_root: List[int]) -> Tuple[List[MCTSNode], Optional[MCTSNode]]:
-        # ... (без изменений, с исправленной логикой num_cards_to_deal_next) ...
         path = [root_node]; current_node = root_node
         while True:
             if current_node.is_terminal(): return path, current_node
@@ -169,41 +184,47 @@ class MCTSAgent:
                 if current_node is root_node: cards_to_generate_for = initial_cards_for_root
                 else:
                     cards_on_board = current_node.board.get_total_cards()
-                    if cards_on_board >= PlayerBoard.TOTAL_CAPACITY: num_cards_to_deal_next = 0
-                    else: num_cards_to_deal_next = 3
+                    # ИСПРАВЛЕНО: Логика num_cards_to_deal_next
+                    if cards_on_board >= PlayerBoard.TOTAL_CAPACITY - 2 : # Если осталось 0, 1 или 2 карты до конца
+                        num_cards_to_deal_next = 0 # Больше не раздаем, если почти конец
+                    elif cards_on_board == 0: # Первая улица
+                        num_cards_to_deal_next = 5 # Это не должно происходить здесь, т.к. initial_cards_for_root для корня
+                    else: # Остальные улицы
+                        num_cards_to_deal_next = 3
+
                     cards_to_generate_for = []
                     if num_cards_to_deal_next > 0:
                         if len(current_node.remaining_deck) >= num_cards_to_deal_next:
                             try: cards_to_generate_for = random.sample(list(current_node.remaining_deck), num_cards_to_deal_next)
                             except ValueError: logger.warning(f"Not enough cards in deck for node {current_node}"); cards_to_generate_for = []
                             except Exception as e_sample: logger.error(f"Error sampling cards: {e_sample}"); cards_to_generate_for = []
-                        else: cards_to_generate_for = []
+                        else: cards_to_generate_for = [] # Недостаточно карт в колоде
                 current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for) if cards_to_generate_for else []
-                if not current_node.untried_next_states and not current_node.children: return path, current_node
-            if current_node.untried_next_states:
+                if not current_node.untried_next_states and not current_node.children: return path, current_node # Лист, нет ходов
+            if current_node.untried_next_states: # Если есть неиспробованные состояния
                 num_children = len(current_node.children)
                 allowed_children = PW_C * math.pow(current_node.visits + 1, PW_ALPHA)
-                if num_children < allowed_children: return path, current_node
-                else: pass
-            if not current_node.children: return path, current_node
+                if num_children < allowed_children: # Прогрессивное расширение
+                    return path, current_node # Возвращаем узел для расширения
+                else: pass # Продолжаем выбор по UCT, если PW не разрешает расширение
+            if not current_node.children: return path, current_node # Лист, если нет детей после PW проверки
             selected_child = current_node.uct_select_child(self.exploration)
             if selected_child is None:
-                if current_node.children: selected_child = random.choice(list(current_node.children.values()))
-                if selected_child is None: return path, current_node
+                if current_node.children: selected_child = random.choice(list(current_node.children.values())) # Fallback
+                if selected_child is None: return path, current_node # Не удалось выбрать ребенка
             current_node = selected_child; path.append(current_node)
 
     def _backpropagate_standard(self, path: List[MCTSNode], reward: float):
-        # ... (без изменений) ...
         if not path: return
         for node in reversed(path): node.visits += 1; node.total_reward += reward
 
     def _backpropagate_rave(self, path: List[MCTSNode], simulation_actions: List[Dict[str, Any]], reward: float):
-        # ... (без изменений) ...
         sim_action_keys = set()
         for action in simulation_actions:
             placements = action.get('placements')
             if placements:
                  try:
+                     # Ключ должен быть кортежем из кортежей (карта, ряд, индекс), отсортированных
                      action_key = tuple(sorted([(int(p[0]), str(p[1]), int(p[2])) for p in placements]))
                      sim_action_keys.add(action_key)
                  except Exception as e: logger.warning(f"RAVE Backprop Key Error: {e}")
@@ -218,6 +239,7 @@ class MCTSAgent:
                                initial_cards_dealt: List[int]) -> Optional[Dict[str, Any]]:
         if not root_node.children:
             logger.warning("No children found at root node. Cannot select best placement.")
+            # Попытка вернуть первое сгенерированное состояние, если дети не были исследованы
             if hasattr(root_node, '_generated_states_for_expand') and root_node._generated_states_for_expand:
                  try:
                      first_key = next(iter(root_node._generated_states_for_expand))
@@ -238,7 +260,6 @@ class MCTSAgent:
         child_stats: List[Tuple[Dict[str, Any], int, float, int, float]] = []
         items = list(root_node.children.items())
         
-        # --- ИЗМЕНЕНО: Логирование статистики дочерних узлов ---
         logger.info(f"--- Evaluating {len(items)} child nodes for final placement ---")
         for placement_key, child_node in items:
              avg_reward = child_node.total_reward / child_node.visits if child_node.visits > 0 else -float('inf')
@@ -247,16 +268,15 @@ class MCTSAgent:
              if p_info is None: logger.warning(f"Child node {child_node} missing placement_info."); continue
              child_stats.append((p_info, child_node.visits, avg_reward, child_node.rave_visits, rave_avg_reward))
         
-        child_stats.sort(key=lambda x: (x[2], x[1]), reverse=True) # Сортировка по avg_reward, затем visits
+        # ИСПРАВЛЕНО: Сортировка по avg_reward, затем visits (как в комментарии)
+        child_stats.sort(key=lambda x: (x[2], x[1]), reverse=True)
 
-        # Логируем топ-N вариантов
         LOG_TOP_N_OPTIONS = 5
         logger.info(f"Top {min(LOG_TOP_N_OPTIONS, len(child_stats))} placement options considered by AI:")
         for i, (p_info, visits, avg_r, rave_v, rave_r) in enumerate(child_stats[:LOG_TOP_N_OPTIONS]):
             log_placements = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in p_info.get('placements', [])])
             log_discard = f"(D: {Card.to_str(p_info.get('discarded'))})" if p_info.get('discarded') else ""
             logger.info(f"  #{i+1}: V={visits:<5} AvgR={avg_r:<7.2f} | RV={rave_v:<5} RaveR={rave_r:<7.2f} -> {log_placements:<35} {log_discard:<7}")
-        # --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
         best_allowed_placement: Optional[Dict[str, Any]] = None
         for placement_info, visits, avg_reward, rave_visits, rave_avg_reward in child_stats:
@@ -276,11 +296,12 @@ class MCTSAgent:
                 logger.info(f"==> AI Selected Placement (V={visits}, AvgR={avg_reward:.2f}): {log_placements_sel} {log_discard_sel}")
                 return best_allowed_placement
 
-        if best_allowed_placement is None:
+        if best_allowed_placement is None: # Если все варианты были отфильтрованы правилом
             logger.warning("All evaluated placements were disallowed by rules or no valid children available.")
-            if child_stats:
+            if child_stats: # Если были какие-то варианты, но все нарушили правило
                  logger.warning("Returning the most promising (highest avg_reward) placement despite potential rule violation as fallback.")
-                 return child_stats[0][0]
+                 return child_stats[0][0] # Возвращаем самый первый (лучший по награде) из отсортированных
             logger.error("No children stats available to select a fallback placement.")
             return None
-        return best_allowed_placement # Should not be reached if logic above is correct
+        # Эта строка не должна достигаться, если логика выше верна, но для безопасности:
+        return best_allowed_placement
