@@ -1,5 +1,6 @@
-# ofc_evaluator_3card.py v2.2
+# ofc_evaluator_3card.py v2.3
 # ИЗМЕНЕНО: Уровень логгера по умолчанию на INFO
+# ИСПРАВЛЕНО: Ключ для 66A и ранги для 532/432 в lookup table.
 """
 Оценка 3-карточной руки OFC (верхний бокс) + таблица поиска.
 """
@@ -26,20 +27,19 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logger.setLevel(logging.INFO) # ИЗМЕНЕНО НА INFO
+    logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-# ... (остальной код файла ofc_evaluator_3card.py без изменений) ...
 HAND_TYPE_TRIPS_3 = "Trips"
 HAND_TYPE_PAIR_3 = "Pair"
 HAND_TYPE_HIGH_CARD_3 = "High Card"
 TRIPS_BASE_RANK = 1
-PAIR_BASE_RANK = 13 + 1 
-HIGH_CARD_BASE_RANK = 169 + 1 
-WORST_RANK_3CARD = 455 
+PAIR_BASE_RANK = 13 + 1
+HIGH_CARD_BASE_RANK = 169 + 1
+WORST_RANK_3CARD = 455
 three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (12, 12, 12): (1, 'Trips', 'AAA'), (11, 11, 11): (2, 'Trips', 'KKK'),
     (10, 10, 10): (3, 'Trips', 'QQQ'), (9, 9, 9): (4, 'Trips', 'JJJ'),
@@ -96,7 +96,7 @@ three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (5, 5, 4): (105, 'Pair', '776'), (5, 5, 3): (106, 'Pair', '775'),
     (5, 5, 2): (107, 'Pair', '774'), (5, 5, 1): (108, 'Pair', '773'),
     (5, 5, 0): (109, 'Pair', '772'),
-    (4, 4, 12): (110, 'Pair', '66A'), # Исправленный ключ (был 12,4,4)
+    (12, 4, 4): (110, 'Pair', '66A'), # ИСПРАВЛЕНО: Ключ (был 4,4,12)
     (4, 4, 11): (111, 'Pair', '66K'), (4, 4, 10): (112, 'Pair', '66Q'),
     (4, 4, 9): (113, 'Pair', '66J'), (4, 4, 8): (114, 'Pair', '66T'),
     (4, 4, 7): (115, 'Pair', '669'), (4, 4, 6): (116, 'Pair', '668'),
@@ -268,8 +268,9 @@ three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (4, 3, 1): (447, 'High Card', '653'), (4, 3, 0): (448, 'High Card', '652'),
     (4, 2, 1): (449, 'High Card', '643'), (4, 2, 0): (450, 'High Card', '642'),
     (4, 1, 0): (451, 'High Card', '632'), (3, 2, 1): (452, 'High Card', '543'),
-    (3, 2, 0): (453, 'High Card', '542'), (3, 1, 0): (455, 'High Card', '532'), # Было 454, стало 455
-    (2, 1, 0): (454, 'High Card', '432')  # Было 455, стало 454
+    (3, 2, 0): (453, 'High Card', '542'),
+    (3, 1, 0): (454, 'High Card', '532'), # ИСПРАВЛЕНО: Ранг 454 (был 455)
+    (2, 1, 0): (455, 'High Card', '432')  # ИСПРАВЛЕНО: Ранг 455 (был 454)
 }
 def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, str]:
     ranks: List[int] = []
