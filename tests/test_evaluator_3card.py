@@ -1,7 +1,8 @@
-# tests/test_evaluator_3card.py v1.3
+# tests/test_evaluator_3card.py v1.4
 """
 Unit-тесты для модуля ofc_evaluator_3card.py.
 Добавлены проверки type_str и rank_str_out.
+Исправлены ожидаемые значения для 66A, 532, 432.
 """
 
 import pytest
@@ -15,7 +16,7 @@ except ImportError:
 
 # Импорты из ofc_logic для создания карт
 try:
-    from ofc_logic import Card, INVALID_CARD, hand_to_int as logic_hand_to_int # Используем хелпер из logic
+    from ofc_logic import Card, INVALID_CARD, hand_to_int as logic_hand_to_int
 except ImportError:
     pytest.skip("Skipping 3-card evaluator tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -40,7 +41,7 @@ def hand_to_int(card_strs: list) -> tuple:
     (['Ah', 'Ad', '2s'], 25, 'Pair', 'AA2'),
     (['Qh', 'Qs', 'Jd'], 40, 'Pair', 'QQJ'),
     (['Qh', 'Qs', '2d'], 49, 'Pair', 'QQ2'),
-    (['6h', '6d', 'Ac'], 110, 'Pair', '66A'),
+    (['6h', '6d', 'Ac'], 110, 'Pair', '66A'), # Ключ (12,4,4)
     (['6h', '6d', '5c'], 118, 'Pair', '665'),
     (['2h', '2d', 'Ac'], 158, 'Pair', '22A'),
     (['2h', '2d', '3c'], 169, 'Pair', '223'),
@@ -49,14 +50,14 @@ def hand_to_int(card_strs: list) -> tuple:
     (['Ah', 'Kh', '2d'], 180, 'High Card', 'AK2'),
     (['Kh', 'Qh', 'Jd'], 236, 'High Card', 'KQJ'),
     (['Kh', 'Qh', '2d'], 245, 'High Card', 'KQ2'),
-    # Используем константу WORST_RANK_3CARD
-    (['5h', '3d', '2c'], WORST_RANK_3CARD, 'High Card', '532'), # Worst High Card
+    # ИСПРАВЛЕНО: Ранги для 532 и 432
+    (['5h', '3d', '2c'], 454, 'High Card', '532'), # 532 (ключ (3,1,0)) - ранг 454
+    (['4h', '3d', '2c'], 455, 'High Card', '432'), # 432 (ключ (2,1,0)) - ранг 455 (худший)
 ])
 def test_evaluate_3_card_valid(hand_str, expected_rank, expected_type, expected_rank_str):
     """Тестирует оценку различных валидных 3-карточных рук."""
     card_ints = hand_to_int(hand_str)
     rank, type_str, rank_str_out = evaluate_3_card_ofc(card_ints[0], card_ints[1], card_ints[2])
-    # FIX 19: Добавлены проверки типа и строки ранга
     assert rank == expected_rank, f"Hand: {hand_str}, Expected Rank: {expected_rank}, Got: {rank}"
     assert type_str == expected_type, f"Hand: {hand_str}, Expected Type: {expected_type}, Got: {type_str}"
     assert rank_str_out == expected_rank_str, f"Hand: {hand_str}, Expected Str: {expected_rank_str}, Got: {rank_str_out}"
@@ -77,13 +78,11 @@ def test_evaluate_3_card_invalid_input():
 
 def test_lookup_table_completeness():
     """Проверяет, что все 455 комбинаций рангов присутствуют в таблице."""
-    # C(13, 3) + C(13, 2)*11 + C(13, 1) = 286 + 78*11 + 13 = 286 + 858 + 13 = 1157? Нет.
-    # Trips: 13
-    # Pairs: C(13, 1) * C(12, 1) = 13 * 12 = 156
-    # High Card: C(13, 3) = (13 * 12 * 11) / (3 * 2 * 1) = 13 * 2 * 11 = 286
-    # Total = 13 + 156 + 286 = 455
     assert len(three_card_lookup) == WORST_RANK_3CARD, f"Lookup table size mismatch: expected {WORST_RANK_3CARD}, got {len(three_card_lookup)}"
     # Проверяем наличие ключей для лучших и худших рук
     assert (12, 12, 12) in three_card_lookup # AAA
+    # ИСПРАВЛЕНО: Проверяем ключи для исправленных рук
     assert (3, 1, 0) in three_card_lookup # 532
     assert (2, 1, 0) in three_card_lookup # 432
+    # Проверяем ключ для 66A
+    assert (12, 4, 4) in three_card_lookup # 66A
