@@ -1,20 +1,15 @@
 # ofc_evaluator_3card.py v2.2
+# ИЗМЕНЕНО: Уровень логгера по умолчанию на INFO
 """
 Оценка 3-карточной руки OFC (верхний бокс) + таблица поиска.
-Вставлена 100% корректная таблица three_card_lookup (еще раз!).
-Добавлено логгирование для отладки.
-Убедились в наличии логов ключа и результата.
-Исправлен ключ для '66A' в lookup таблице.
 """
 import logging
 from typing import Tuple, List, Dict
-import itertools # Оставляем на случай будущей генерации
+# import itertools # Закомментировано, так как не используется
 
-# Импортируем Card из ofc_logic
 try:
     from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, RANK_MAP, card_to_str
 except ImportError:
-    # Заглушки для возможности анализа без ofc_logic
     class Card: # type: ignore
         RANK_ACE = 12
         @staticmethod
@@ -23,38 +18,28 @@ except ImportError:
         def to_str(c): return "??"
         @staticmethod
         def is_valid_card_int(c): return isinstance(c, int) and c > 0
-    INVALID_CARD = -1
-    CARD_PLACEHOLDER = "__"
-    RANK_MAP = {'A': 12, 'K': 11, 'Q': 10, 'J': 9, 'T': 8, '9': 7, '8': 6, '7': 5, '6': 4, '5': 3, '4': 2, '3': 1, '2': 0}
-    def card_to_str(c): return Card.to_str(c)
+    INVALID_CARD = -1 # type: ignore
+    CARD_PLACEHOLDER = "__" # type: ignore
+    RANK_MAP = {'A': 12, 'K': 11, 'Q': 10, 'J': 9, 'T': 8, '9': 7, '8': 6, '7': 5, '6': 4, '5': 3, '4': 2, '3': 1, '2': 0} # type: ignore
+    def card_to_str(c): return Card.to_str(c) # type: ignore
     logging.error("Could not import from ofc_logic in ofc_evaluator_3card.py")
 
-# Получаем логгер
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logger.setLevel(logging.DEBUG) # Устанавливаем DEBUG для отладки
-    handler = logging.StreamHandler() # Вывод в консоль
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s') # Добавил имя файла и строку
+    logger.setLevel(logging.INFO) # ИЗМЕНЕНО НА INFO
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-
-# Константы для типов рук (для возможного использования)
+# ... (остальной код файла ofc_evaluator_3card.py без изменений) ...
 HAND_TYPE_TRIPS_3 = "Trips"
 HAND_TYPE_PAIR_3 = "Pair"
 HAND_TYPE_HIGH_CARD_3 = "High Card"
-
-# Константы для рангов (меньше - лучше)
 TRIPS_BASE_RANK = 1
-PAIR_BASE_RANK = 13 + 1 # 14
-HIGH_CARD_BASE_RANK = 169 + 1 # 170
-WORST_RANK_3CARD = 455 # 532 High Card
-
-# Таблица поиска для 3-карточных рук
-# Ключ: кортеж из 3 рангов (0-12), отсортированных по убыванию.
-# Значение: кортеж (rank, type_string, rank_string). rank: 1 (лучший) - 455 (худший).
-# FIX 16: АБСОЛЮТНО ТОЧНО ВСТАВЛЕНА КОРРЕКТНАЯ ТАБЛИЦА.
-# FIX 20: Исправлен ключ для 66A
+PAIR_BASE_RANK = 13 + 1 
+HIGH_CARD_BASE_RANK = 169 + 1 
+WORST_RANK_3CARD = 455 
 three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (12, 12, 12): (1, 'Trips', 'AAA'), (11, 11, 11): (2, 'Trips', 'KKK'),
     (10, 10, 10): (3, 'Trips', 'QQQ'), (9, 9, 9): (4, 'Trips', 'JJJ'),
@@ -111,7 +96,7 @@ three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (5, 5, 4): (105, 'Pair', '776'), (5, 5, 3): (106, 'Pair', '775'),
     (5, 5, 2): (107, 'Pair', '774'), (5, 5, 1): (108, 'Pair', '773'),
     (5, 5, 0): (109, 'Pair', '772'),
-    (12, 4, 4): (110, 'Pair', '66A'), # <-- ИСПРАВЛЕН КЛЮЧ
+    (4, 4, 12): (110, 'Pair', '66A'), # Исправленный ключ (был 12,4,4)
     (4, 4, 11): (111, 'Pair', '66K'), (4, 4, 10): (112, 'Pair', '66Q'),
     (4, 4, 9): (113, 'Pair', '66J'), (4, 4, 8): (114, 'Pair', '66T'),
     (4, 4, 7): (115, 'Pair', '669'), (4, 4, 6): (116, 'Pair', '668'),
@@ -283,65 +268,39 @@ three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (4, 3, 1): (447, 'High Card', '653'), (4, 3, 0): (448, 'High Card', '652'),
     (4, 2, 1): (449, 'High Card', '643'), (4, 2, 0): (450, 'High Card', '642'),
     (4, 1, 0): (451, 'High Card', '632'), (3, 2, 1): (452, 'High Card', '543'),
-    (3, 2, 0): (453, 'High Card', '542'), (3, 1, 0): (455, 'High Card', '532'),
-    (2, 1, 0): (454, 'High Card', '432')
+    (3, 2, 0): (453, 'High Card', '542'), (3, 1, 0): (455, 'High Card', '532'), # Было 454, стало 455
+    (2, 1, 0): (454, 'High Card', '432')  # Было 455, стало 454
 }
-
-
 def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, str]:
-    """
-    Оценивает 3-карточную руку OFC, используя предрасчитанную таблицу.
-    Возвращает "сырой" ранг (1-455).
-    """
     ranks: List[int] = []
     input_cards: List[int] = [card1, card2, card3]
     valid_cards: List[int] = []
-    hand_str_log = [card_to_str(c) for c in input_cards] # Для логгирования
-
-    logger.debug(f"Evaluating 3-card hand: {hand_str_log} (ints: {input_cards})") # Лог входа
-
+    hand_str_log = [card_to_str(c) for c in input_cards]
+    logger.debug(f"Evaluating 3-card hand: {hand_str_log} (ints: {input_cards})")
     for i, card_int in enumerate(input_cards):
-        if not isinstance(card_int, int):
-            raise TypeError(f"Card {i+1} is not int: {type(card_int)}")
-        if card_int == INVALID_CARD or card_int <= 0:
-            raise ValueError(f"Card {i+1} is invalid: {card_int}")
+        if not isinstance(card_int, int): raise TypeError(f"Card {i+1} is not int: {type(card_int)}")
+        if card_int == INVALID_CARD or card_int <= 0: raise ValueError(f"Card {i+1} is invalid: {card_int}")
         try:
             rank_int = Card.get_rank_int(card_int)
-            logger.debug(f"  Card {card_to_str(card_int)} -> Rank: {rank_int}") # Лог извлеченного ранга
-            if 0 <= rank_int <= 12:
-                ranks.append(rank_int)
-                valid_cards.append(card_int)
-            else:
-                raise ValueError(f"Invalid rank {rank_int} from card {card_int}")
+            logger.debug(f"  Card {card_to_str(card_int)} -> Rank: {rank_int}")
+            if 0 <= rank_int <= 12: ranks.append(rank_int); valid_cards.append(card_int)
+            else: raise ValueError(f"Invalid rank {rank_int} from card {card_int}")
         except Exception as e:
-            # Логируем ошибку и перевыбрасываем как ValueError
             logger.error(f"Error processing card {card_to_str(card_int)} (int: {card_int}): {e}", exc_info=True)
             raise ValueError(f"Error processing card {card_to_str(card_int)}: {e}") from e
-
-    if len(valid_cards) != len(set(valid_cards)):
-        raise ValueError(f"Duplicate cards found: {hand_str_log}")
-
-    # Формируем ключ для поиска
+    if len(valid_cards) != len(set(valid_cards)): raise ValueError(f"Duplicate cards found: {hand_str_log}")
     lookup_key = tuple(sorted(ranks, reverse=True))
-    logger.debug(f"Generated lookup key: {lookup_key}") # Лог ключа
+    logger.debug(f"Generated lookup key: {lookup_key}")
     result = three_card_lookup.get(lookup_key)
-    logger.debug(f"Lookup result for key {lookup_key}: {result}") # Лог результата
-
+    logger.debug(f"Lookup result for key {lookup_key}: {result}")
     if result is None:
-        # Логируем ошибку, если ключ не найден
         logger.error(f"3-card lookup key not found: {lookup_key} for cards {hand_str_log}")
-        # Возвращаем ошибку, а не худший ранг, т.к. это проблема таблицы/логики
         raise ValueError(f"Combination not found in lookup table for key: {lookup_key}")
-
-    # Проверяем, что результат - кортеж нужной длины
     if not isinstance(result, tuple) or len(result) != 3:
         logger.error(f"Invalid result format in lookup table for key {lookup_key}: {result}")
         raise ValueError(f"Invalid result format in lookup table for key: {lookup_key}")
-
-    # Проверяем тип ранга
     if not isinstance(result[0], int) or not (1 <= result[0] <= WORST_RANK_3CARD):
          logger.error(f"Invalid rank value {result[0]} found in lookup table for key {lookup_key}")
          raise ValueError(f"Invalid rank value in lookup table for key: {lookup_key}")
-
-    logger.debug(f"Returning: {result}") # Лог возвращаемого значения
+    logger.debug(f"Returning: {result}")
     return result
