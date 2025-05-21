@@ -155,7 +155,7 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
 # --- Функции Подсчета Очков (Scoring) ---
 ROYALTY_BOTTOM_POINTS: Dict[str, int] = { "Straight": 2, "Flush": 4, "Full House": 6, "Four of a Kind": 10, "Straight Flush": 15, "Royal Flush": 25 }
 ROYALTY_MIDDLE_POINTS: Dict[str, int] = { "Three of a Kind": 2, "Straight": 4, "Flush": 8, "Full House": 12, "Four of a Kind": 20, "Straight Flush": 30, "Royal Flush": 50 }
-ROYALTY_TOP_PAIRS: Dict[int, int] = { RANK_MAP['6']: 1, RANK_MAP['7']: 2, RANK_MAP['8']: 3, RANK_MAP['9']: 4, RANK_MAP['T']: 5, RANK_MAP['J']: 6, RANK_MAP['Q']: 7, RANK_MAP['K']: 8, RANK_MAP['A']: 9 }
+ROYALTY_TOP_PAIRS: Dict[int, int] = { RANK_MAP['6']: 1, RANK_MAP['7']: 2, RANK_MAP['8']: 3, RANK_MAP['9']: 4, RANK_MAP['T']: 5, RANK_MAP['J']: 6, RANK_MAP['Q']: 10, RANK_MAP['K']: 11, RANK_MAP['A']: 12 }
 ROYALTY_TOP_TRIPS: Dict[int, int] = { RANK_MAP['2']: 10, RANK_MAP['3']: 11, RANK_MAP['4']: 12, RANK_MAP['5']: 13, RANK_MAP['6']: 14, RANK_MAP['7']: 15, RANK_MAP['8']: 16, RANK_MAP['9']: 17, RANK_MAP['T']: 18, RANK_MAP['J']: 19, RANK_MAP['Q']: 20, RANK_MAP['K']: 21, RANK_MAP['A']: 22 }
 
 def check_board_foul(board: PlayerBoard) -> bool:
