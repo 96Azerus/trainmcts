@@ -36,6 +36,7 @@ INT_RANK_TO_CHAR: Dict[int, str] = {i: rank for i, rank in enumerate(STR_RANKS)}
 INT_SUIT_TO_CHAR: Dict[int, str] = {1: 's', 2: 'h', 4: 'd', 8: 'c'}
 
 RANK_MAP: Dict[str, int] = RANK_CHAR_TO_INT # Алиас
+SUIT_MAP: Dict[str, int] = SUIT_CHAR_TO_INT # Алиас
 
 INVALID_CARD: int = -1
 CARD_PLACEHOLDER: str = "__"
@@ -49,14 +50,18 @@ class Card:
     """
     @staticmethod
     def from_str(card_str: str) -> int:
-        """Преобразует строку карты (e.g., 'As') в int."""
+        """Преобразует строку карты (e.g., 'As', '10s') в int."""
         if not isinstance(card_str, str):
              raise TypeError(f"Input must be str, got {type(card_str)}")
-        if len(card_str) != 2:
-            raise ValueError(f"Invalid card string format: '{card_str}'")
 
-        rank_char = card_str[0].upper()
-        suit_char = card_str[1].lower()
+        if len(card_str) == 3 and card_str.startswith("10"):
+            rank_char = 'T'
+            suit_char = card_str[2].lower()
+        elif len(card_str) == 2:
+            rank_char = card_str[0].upper()
+            suit_char = card_str[1].lower()
+        else:
+            raise ValueError(f"Invalid card string format: '{card_str}'")
 
         rank_int = RANK_CHAR_TO_INT.get(rank_char)
         suit_int = SUIT_CHAR_TO_INT.get(suit_char)

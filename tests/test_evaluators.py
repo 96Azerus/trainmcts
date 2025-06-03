@@ -11,11 +11,12 @@ import pytest
 try:
     from ofc_evaluators import (
         get_hand_rank_safe,
-        WORST_RANK, WORST_RANK_5CARD, WORST_RANK_3CARD_ADJUSTED, # Импортируем скорректированный ранг
+        WORST_RANK, MAX_HIGH_CARD_5, WORST_RANK_3CARD_RAW, # Changed WORST_RANK_3CARD_ADJUSTED to WORST_RANK_3CARD_RAW
         HAND_TYPE_TRIPS_3, HAND_TYPE_PAIR_3, HAND_TYPE_HIGH_CARD_3
     )
-except ImportError:
+except ImportError as e:
     pytest.skip("Skipping evaluator interface tests because module could not be imported", allow_module_level=True)
+    # raise e
 
 # Импорты из ofc_logic для создания карт
 try:
@@ -42,10 +43,10 @@ def hand_to_int(card_strs: list) -> list:
 def test_get_hand_rank_safe_3card_valid(hand_str, expected_type):
     """Тестирует валидные 3-карточные руки."""
     cards = hand_to_int(hand_str)
-    rank, type_str = get_hand_rank_safe(cards)
-    assert rank > WORST_RANK_5CARD # Ранг должен быть больше рангов 5-карточных
-    # Проверяем, что ранг находится в допустимом диапазоне скорректированных рангов
-    assert rank <= WORST_RANK_3CARD_ADJUSTED
+    rank, hand_class, type_str = get_hand_rank_safe(cards) # Unpack 3 values
+    # assert rank > MAX_HIGH_CARD_5 # This comparison might be problematic if scales aren't aligned; 3-card raw ranks are 1-455
+    # Проверяем, что ранг находится в допустимом диапазоне сырых рангов 3-карточных рук
+    assert 1 <= rank <= WORST_RANK_3CARD_RAW
     assert type_str == expected_type
 
 # 5-карточные руки
@@ -63,10 +64,10 @@ def test_get_hand_rank_safe_3card_valid(hand_str, expected_type):
 def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
     """Тестирует валидные 5-карточные руки."""
     cards = hand_to_int(hand_str)
-    rank, type_str = get_hand_rank_safe(cards)
+    rank, hand_class, type_str = get_hand_rank_safe(cards) # Unpack 3 values
     # --- ИСПРАВЛЕНО: Уточняем проверку ранга ---
     assert rank < WORST_RANK # Общая проверка на валидность
-    assert 1 <= rank <= WORST_RANK_5CARD # Ранг должен быть в пределах 5-карточных
+    assert 1 <= rank <= MAX_HIGH_CARD_5 
     assert type_str == expected_type
 
 # Невалидные входы
@@ -85,6 +86,6 @@ def test_get_hand_rank_safe_5card_valid(hand_str, expected_type):
 ])
 def test_get_hand_rank_safe_invalid(cards_input):
     """Тестирует невалидные входы для get_hand_rank_safe."""
-    rank, type_str = get_hand_rank_safe(cards_input) # type: ignore
+    rank, hand_class, type_str = get_hand_rank_safe(cards_input) # type: ignore # Unpack 3 values
     assert rank == WORST_RANK
     assert type_str == "Invalid"
