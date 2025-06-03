@@ -1,5 +1,4 @@
-# mcts_node.py v2.8.8 (Add @staticmethod to heuristic helpers)
-# ... (все импорты и начало класса MCTSNode остаются как в v2.8.7) ...
+# mcts_node.py v2.8.9 (SyntaxError in mock Card fix)
 # ИСПРАВЛЕНО: Добавлены определения для MAX_PERMUTATIONS_STREET_1 и MAX_PERMUTATIONS_STREET_N
 # ИЗМЕНЕНО: Уровень логгера по умолчанию на INFO
 # ИСПРАВЛЕНО: Обращение к CARD_PLACEHOLDER
@@ -7,6 +6,7 @@
 # ИЗМЕНЕНО: Логика в _choose_best_heuristic_placement_v2 и _calculate_heuristic_score_v2
 # ИСПРАВЛЕНО: SyntaxError в заглушке PlayerBoard в блоке except ImportError
 # ИСПРАВЛЕНО: Добавлен @staticmethod к _calculate_heuristic_score_v2, _estimate_draw_potential, _choose_best_heuristic_placement_v2
+# ИСПРАВЛЕНО: SyntaxError в заглушке Card в блоке except ImportError
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
 """
@@ -29,38 +29,67 @@ try:
     from ofc_evaluator_3card import evaluate_3_card_ofc, WORST_RANK_3CARD
 except ImportError:
     logging.critical("Failed to import modules in mcts_node.py")
+    
     class PlayerBoard: # type: ignore
-        TOTAL_CAPACITY = 13; ROW_NAMES = ['top', 'middle', 'bottom']
-        def __init__(self, rows=None, cards_placed=0): self.rows = rows or {name: [] for name in self.ROW_NAMES}; self._cards_placed = cards_placed
-        def copy(self): new_board = PlayerBoard(); new_board.rows = {r: list(c) for r, c in self.rows.items()}; new_board._cards_placed = self._cards_placed; return new_board
+        TOTAL_CAPACITY = 13
+        ROW_NAMES = ['top', 'middle', 'bottom']
+        def __init__(self, rows=None, cards_placed=0): 
+            self.rows = rows or {name: [] for name in self.ROW_NAMES}
+            self._cards_placed = cards_placed
+        def copy(self): 
+            new_board = PlayerBoard()
+            new_board.rows = {r: list(c) for r, c in self.rows.items()}
+            new_board._cards_placed = self._cards_placed
+            return new_board
         def add_card(self, card, row, index): pass
         def get_total_cards(self): return self._cards_placed
         def is_complete(self): return self._cards_placed == self.TOTAL_CAPACITY
         def get_available_slots(self) -> List[Tuple[str, int]]: return []
         def get_row_cards(self, row_name: str) -> List[int]: return []
         def __str__(self): return "MockBoard"
-        def get_board_state_tuple(self) -> Tuple[Tuple[Optional[int], ...], ...]: return tuple(tuple(self.rows.get(r, [])) for r in self.ROW_NAMES)
+        def get_board_state_tuple(self) -> Tuple[Tuple[Optional[int], ...], ...]: 
+            return tuple(tuple(self.rows.get(r, [])) for r in self.ROW_NAMES)
+
     class Card: # type: ignore
-        @staticmethod def from_str(s): return 0
-        @staticmethod def to_str(c): return "??"
-        @staticmethod def get_rank_int(c): return 0
-        @staticmethod def get_suit_int(c): return 0
+        @staticmethod 
+        def from_str(s): return 0
+        @staticmethod 
+        def to_str(c): return "??"
+        @staticmethod 
+        def get_rank_int(c): return 0
+        @staticmethod 
+        def get_suit_int(c): return 0
+    
     class Deck: # type: ignore
         FULL_DECK_CARDS = set(range(1,53))
-        def __init__(self, cards: Optional[Set[int]] = None): self.cards = cards if cards is not None else set()
+        def __init__(self, cards: Optional[Set[int]] = None): 
+            self.cards = cards if cards is not None else set()
         def deal(self, num): return []
         def get_remaining_cards(self): return list(self.cards)
         def __len__(self): return len(self.cards)
-    CARD_PLACEHOLDER = "__"; STR_RANKS = "23456789TJQKA"
+    
+    CARD_PLACEHOLDER = "__"
+    STR_RANKS = "23456789TJQKA"
+
     def get_hand_rank_safe(*args): return (9999, 9, "Invalid")
     WORST_RANK = 9999; WORST_CLASS = 9
-    def check_board_foul(*args): return False; def get_row_royalty(*args): return 0; def calculate_total_royalty_for_board(*args): return 0
-    RANK_MAP = {rank: i for i, rank in enumerate(STR_RANKS)}; ROYALTY_TOP_PAIRS = {}
+    def check_board_foul(*args): return False
+    def get_row_royalty(*args): return 0
+    def calculate_total_royalty_for_board(*args): return 0
+    RANK_MAP = {rank: i for i, rank in enumerate(STR_RANKS)}
+    ROYALTY_TOP_PAIRS = {}
     HAND_TYPE_PAIR_3 = "Pair"; HAND_TYPE_TRIPS_3 = "Trips"
-    def card_to_str(c): return Card.to_str(c); def hand_to_str(h): return [Card.to_str(c) for c in h]
-    class MockEvaluator5Card: evaluate = lambda s, c: 9999; get_rank_class = lambda s, r: 9; class_to_string = lambda s, rc: "Error"
+    def card_to_str(c): return Card.to_str(c)
+    def hand_to_str(h): return [Card.to_str(c) for c in h]
+    
+    class MockEvaluator5Card: 
+        evaluate = lambda s, c: 9999
+        get_rank_class = lambda s, r: 9
+        class_to_string = lambda s, rc: "Error"
     evaluator_5card = MockEvaluator5Card()
-    def evaluate_3_card_ofc(*args): return (9999, "Invalid", "XXX"); WORST_RANK_3CARD = 999
+    
+    def evaluate_3_card_ofc(*args): return (9999, "Invalid", "XXX")
+    WORST_RANK_3CARD = 999
 
 
 logger = logging.getLogger(__name__)
@@ -187,7 +216,6 @@ class MCTSNode:
             elif score == best_score: best_children.append(child)
         return random.choice(best_children) if best_children else None
 
-    # ИСПРАВЛЕНО: Добавлен @staticmethod
     @staticmethod
     def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False) -> float:
         if check_board_foul(board): return HEURISTIC_FOUL_PENALTY
@@ -218,7 +246,6 @@ class MCTSNode:
                     if Card.get_rank_int(card_int) > RANK_MAP['9']: score -= 1.0
         return score
 
-    # ИСПРАВЛЕНО: Добавлен @staticmethod
     @staticmethod
     def _estimate_draw_potential(current_cards: List[int], deck: Set[int]) -> float:
         potential = 0.0
@@ -233,7 +260,6 @@ class MCTSNode:
                 if outs >=2 : potential += 1.0
         return potential
 
-    # ИСПРАВЛЕНО: Добавлен @staticmethod
     @staticmethod
     def _choose_best_heuristic_placement_v2(
         current_board: PlayerBoard, cards_to_act_on: List[int], current_deck: Set[int], num_to_place_on_board: int
@@ -300,9 +326,13 @@ class MCTSNode:
                         
                         heuristic_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street)
                         if actual_discard_for_info and num_dealt == 3 and num_to_place_on_board == 2:
-                            discard_rank = Card.get_rank_int(cast(int, actual_discard_for_info))
-                            placed_ranks = [Card.get_rank_int(p[0]) for p in placements_list]
-                            if all(discard_rank < pr for pr in placed_ranks): heuristic_score += HEURISTIC_DISCARD_LOW_CARD_BONUS
+                            # Убедимся, что actual_discard_for_info это int перед вызовом Card.get_rank_int
+                            if isinstance(actual_discard_for_info, int):
+                                discard_rank = Card.get_rank_int(actual_discard_for_info)
+                                placed_ranks = [Card.get_rank_int(p[0]) for p in placements_list]
+                                if all(discard_rank < pr for pr in placed_ranks): heuristic_score += HEURISTIC_DISCARD_LOW_CARD_BONUS
+                            else: # Если actual_discard_for_info это кортеж (2 сброшенные карты), эта логика не применяется
+                                pass
                         
                         candidate_actions.append({'score': heuristic_score, 'placements': placements_list, 'discarded': actual_discard_for_info})
                     except ValueError: continue
