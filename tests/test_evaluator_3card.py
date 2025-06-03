@@ -13,10 +13,11 @@ try:
     from ofc_evaluator_3card import evaluate_3_card_ofc, three_card_lookup, WORST_RANK_3CARD
 except ImportError:
     pytest.skip("Skipping 3-card evaluator tests because module could not be imported", allow_module_level=True)
+    # raise e
 
 # Импорты из ofc_logic для создания карт
 try:
-    from ofc_logic import Card, INVALID_CARD, hand_to_int as logic_hand_to_int
+    from ofc_logic import Card, INVALID_CARD # Removed hand_to_int as logic_hand_to_int
 except ImportError:
     pytest.skip("Skipping 3-card evaluator tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -24,7 +25,7 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> tuple:
     """Конвертирует список строк в кортеж int карт."""
-    ints_optional = logic_hand_to_int(card_strs)
+    ints_optional = Card.hand_to_int(card_strs) # Use Card.hand_to_int directly
     ints = [c for c in ints_optional if c is not None]
     if len(ints) != 3: raise ValueError("Hand must contain 3 valid cards for this test")
     if len(ints) != len(set(ints)): raise ValueError("Duplicate cards not allowed")

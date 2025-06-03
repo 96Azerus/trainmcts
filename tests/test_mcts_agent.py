@@ -7,18 +7,20 @@ Unit-тесты для mcts_agent.py.
 import pytest
 from unittest.mock import MagicMock, patch, ANY
 import time
+from collections import Counter # Added Counter import
 
 try:
     from mcts_agent import MCTSAgent
     from mcts_node import MCTSNode, run_parallel_rollout # Добавили run_parallel_rollout для мока
-    from ofc_logic import PlayerBoard, Card, Deck, hand_to_int as logic_hand_to_int, RANK_MAP
+    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS # Added STR_RANKS
 except ImportError:
     pytest.skip("Skipping MCTS agent tests due to missing core imports", allow_module_level=True)
+    # raise e
 
 
 def hand_to_int(card_strs: list) -> list:
     """Конвертирует список строк в список int карт, пропуская None."""
-    return [c for c in logic_hand_to_int(card_strs) if c is not None]
+    return [c for c in Card.hand_to_int(card_strs) if c is not None] # Use Card.hand_to_int
 
 
 @pytest.fixture

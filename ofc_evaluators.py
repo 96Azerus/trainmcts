@@ -259,5 +259,29 @@ def get_row_royalty(cards: List[Optional[int]], row_name: str) -> int:
         logger.error(f"Error calculating royalty for {row_name} (Cards: {cards_str}, Type: {type_str}): {e}", exc_info=True)
         return 0
 
+def calculate_total_royalty_for_board(board: PlayerBoard) -> int:
+    """
+    Calculates the total royalty points for a given completed board.
+    Returns 0 if the board is fouled.
+    """
+    if not isinstance(board, PlayerBoard):
+        logger.warning("calculate_total_royalty_for_board received non-PlayerBoard input.")
+        return 0
+
+    if check_board_foul(board): # check_board_foul also sets board.is_foul
+        logger.debug(f"Board is fouled. Total royalty is 0. Board state:\n{board}")
+        return 0 # No royalties for a fouled board
+
+    total_royalty = 0
+    try:
+        total_royalty += get_row_royalty(board.rows.get('top', []), 'top')
+        total_royalty += get_row_royalty(board.rows.get('middle', []), 'middle')
+        total_royalty += get_row_royalty(board.rows.get('bottom', []), 'bottom')
+        logger.debug(f"Calculated total royalty: {total_royalty} for board:\n{board}")
+    except Exception as e:
+        logger.error(f"Error calculating total royalty: {e}", exc_info=True)
+        return 0 # Return 0 in case of any error during royalty calculation
+    return total_royalty
+
 # --- УБРАНЫ вспомогательные функции для эвристики ---
 # get_combination_weight, _get_discard_penalty, _check_straight_potential, _evaluate_partial_row_potential

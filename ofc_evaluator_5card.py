@@ -177,7 +177,7 @@ class Evaluator5Card:
             if len(valid_cards) != len(set(valid_cards)): raise ValueError(f"Duplicate cards found: {hand_str_log}")
         except ValueError as e:
             logger.warning(f"Invalid input for 5-card evaluation: {e}")
-            return self.table.WORST_RANK_5CARD
+            raise e # Re-raise the ValueError
         ranks_extracted = [Card.get_rank_int(card_int) for card_int in valid_cards]
         logger.debug(f"  Extracted ranks: {ranks_extracted}")
         suit_mask = valid_cards[0] & valid_cards[1] & valid_cards[2] & valid_cards[3] & valid_cards[4] & 0xF000

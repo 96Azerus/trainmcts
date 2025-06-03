@@ -14,10 +14,11 @@ try:
     from ofc_evaluator_5card import Evaluator5Card, LookupTable5Card
 except ImportError:
     pytest.skip("Skipping 5-card evaluator tests because module could not be imported", allow_module_level=True)
+    # raise e
 
 # Импорты из ofc_logic для создания карт и констант
 try:
-    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, PRIMES, hand_to_int as logic_hand_to_int # Импортируем PRIMES и хелпер
+    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, PRIMES # Removed hand_to_int as logic_hand_to_int
 except ImportError:
     pytest.skip("Skipping 5-card evaluator tests because ofc_logic could not be imported", allow_module_level=True)
 
@@ -25,8 +26,8 @@ except ImportError:
 # --- Хелперы ---
 def hand_to_int(card_strs: list) -> list:
     """Конвертирует список строк в список int карт."""
-    # Используем хелпер из ofc_logic
-    ints_optional = logic_hand_to_int(card_strs)
+    # Используем Card.hand_to_int напрямую
+    ints_optional = Card.hand_to_int(card_strs)
     ints = [c for c in ints_optional if c is not None]
     if len(ints) != 5: raise ValueError("Hand must contain 5 valid cards for this test")
     if len(ints) != len(set(ints)): raise ValueError("Duplicate cards not allowed")

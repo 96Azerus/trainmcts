@@ -12,7 +12,7 @@ from collections import Counter, defaultdict
 # import itertools # Закомментировано, так как не используется напрямую в этом файле
 
 try:
-    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, card_to_str, hand_to_str
+    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, card_to_str
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
         check_board_foul, get_row_royalty,
@@ -493,7 +493,7 @@ class MCTSNode:
             'placements': candidate_actions[0]['placements'],
             'discarded': candidate_actions[0]['discarded']
         }
-        # logger.debug(f"Heuristic choice: Score={candidate_actions[0]['score']:.2f}, Placed: {hand_to_str([p[0] for p in best_placement_info['placements']])}, Discarded: {card_to_str(best_placement_info['discarded']) if best_placement_info['discarded'] else 'None'}")
+        # logger.debug(f"Heuristic choice: Score={candidate_actions[0]['score']:.2f}, Placed: {Card.hand_to_str([p[0] for p in best_placement_info['placements']])}, Discarded: {card_to_str(best_placement_info['discarded']) if best_placement_info['discarded'] else 'None'}")
         return best_placement_info
 
 
