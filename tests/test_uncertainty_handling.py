@@ -91,32 +91,39 @@ class TestUncertaintyHandling:
     def test_estimate_row_potential_uncertainty(self):
         cards_placed_for_dw = 8 # For _get_dynamic_weights call, represents cards on ENTIRE board
 
-        current_row_cards = hand_to_int(['As', 'Ks', 'Qs', 'Js']) # 4 spades in row
+        # 4-card hand: 4 spades (As, Ks, Qs, 2s). This is a made flush, but also draws to SF with Js or Ts.
+        current_row_cards = hand_to_int(['As', 'Ks', 'Qs', '2s'])
 
-        # deck_node_remaining is the set of cards NOT on the board and NOT in current_row_cards,
-        # but notionally includes all cards that *could* be drawn.
-        # For this test, it's the conceptual remaining deck for the MCTSNode.
-        deck_node_remaining = {Card.from_str('Ts')} # The spade out for flush
-        for i in range(20): # Add 20 non-spade cards
-            suit = SUIT_HEARTS if i % 2 == 0 else SUIT_CLUBS
-            rank_char = INT_RANK_TO_CHAR.get(i % 13, '2') # Cycle through ranks - CORRECTED ACCESS
-            if rank_char == 'A' and suit == SUIT_SPADES: continue # Avoid duplicate As
-            deck_node_remaining.add(Card.from_str(f"{rank_char}{INT_SUIT_TO_CHAR[suit]}")) # CORRECTED ACCESS & USAGE
+        # Deck contains outs for straight flush (Js for A-K-Q-J-T SF, or Ts for A-K-Q-J-T SF)
+        # and other cards.
+        deck_node_remaining = {
+            Card.from_str('Js'), Card.from_str('Ts'), # Spade outs for SF
+            Card.from_str('Ad'), Card.from_str('Kd'), # Pair outs for A, K
+            Card.from_str('2h'), # Pair out for 2
+            # Add some more non-heart, non-spade, non-relevant cards
+            Card.from_str('3c'), Card.from_str('4d'), Card.from_str('5c'), Card.from_str('6d'), Card.from_str('8c'),
+            Card.from_str('9d')
+        }
+        # Ensure no cards from current_row_cards are in deck_node_remaining
+        for card_in_hand in current_row_cards:
+            deck_node_remaining.discard(card_in_hand)
 
-        original_deck_size_in_node = len(deck_node_remaining)
+        original_deck_size_in_node = len(deck_node_remaining) # This is the size of the "known" part of the deck for the node
 
-        # Low uncertainty
+        # Low uncertainty (0 unknown cards removed from the original full deck concept)
         weights_low_unk = MCTSNode._get_dynamic_weights(cards_placed_for_dw, 0)
         potential_low_unk = MCTSNode._estimate_row_potential(current_row_cards, deck_node_remaining, 0, original_deck_size_in_node, weights_low_unk)
 
-        # High uncertainty
-        num_high_unknowns = 10
+        # High uncertainty (e.g., 5 unknown cards have been removed from original_deck_size_in_node)
+        # This means actual outs in deck_node_remaining are less likely to be truly available.
+        num_high_unknowns = min(5, original_deck_size_in_node -1 if original_deck_size_in_node > 0 else 0)
+
         weights_high_unk = MCTSNode._get_dynamic_weights(cards_placed_for_dw, num_high_unknowns)
-        # The 'deck_node_remaining' passed to _estimate_row_potential is the full conceptual remaining deck.
-        # The num_high_unknowns will be used by _count_specific_outs to discount probabilities.
         potential_high_unk = MCTSNode._estimate_row_potential(current_row_cards, deck_node_remaining, num_high_unknowns, original_deck_size_in_node, weights_high_unk)
 
-        assert potential_high_unk < potential_low_unk, "Potential with high uncertainty should be lower"
+        print(f"Uncertainty Test - Potential Low Unk: {potential_low_unk}, Potential High Unk: {potential_high_unk}, Num high unknowns: {num_high_unknowns}, Orig deck size: {original_deck_size_in_node}")
+        assert potential_high_unk < potential_low_unk, \
+            f"Potential with high uncertainty ({potential_high_unk}) should be lower than with low uncertainty ({potential_low_unk})"
         assert potential_low_unk > 0, "Potential with low uncertainty should be greater than 0 for a draw"
 
     def test_calculate_heuristic_score_uncertainty(self):

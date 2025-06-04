@@ -97,7 +97,7 @@ def test_choose_placement_basic_run(MockPool, MockMCTSNode):
 
                     placement_result = agent_instance.choose_placement(initial_board, cards_dealt, remaining_deck)
 
-    MockMCTSNode.assert_called_once_with(board=initial_board, remaining_deck=remaining_deck, parent=None, placement_info=None)
+    MockMCTSNode.assert_called_once_with(board=initial_board, remaining_deck=remaining_deck, parent=None, placement_info=None, num_unknown_removed_cards=0)
     # ИСПРАВЛЕНО: Ожидаем placement2_info, так как у него выше avg_reward (6.0 vs 5.0)
     assert placement_result == placement2_info, \
         f"Expected {placement2_info} (avg_reward 6.0) but got {placement_result}"
@@ -133,6 +133,7 @@ def test_choose_placement_mcts_loop_simplified(MockMCTSNode, mock_rollout_func):
     mock_root.board = initial_board; mock_root.remaining_deck = deck
     mock_root.children = {}; mock_root.visits = 0; mock_root.total_reward = 0.0
     mock_root.rave_visits = 0; mock_root.rave_reward = 0.0
+    mock_root.num_unknown_removed_cards = 0 # Added attribute
     mock_root.is_terminal.return_value = False
     
     # Информация для первого расширения
@@ -157,6 +158,7 @@ def test_choose_placement_mcts_loop_simplified(MockMCTSNode, mock_rollout_func):
     mock_child1.board = mock_next_board1; mock_child1.remaining_deck = deck - {Card.from_str('Ac'), Card.from_str('Kc'), mock_discard1}
     mock_child1.visits = 0; mock_child1.total_reward = 0.0
     mock_child1.rave_visits = 0; mock_child1.rave_reward = 0.0
+    mock_child1.num_unknown_removed_cards = 0 # Added attribute
     mock_child1.is_terminal.return_value = False
     mock_child1.untried_next_states = None # Для простоты, этот ребенок не будет дальше генерировать
     mock_child1.placement_info = mock_placement_info1

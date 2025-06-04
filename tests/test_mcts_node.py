@@ -526,7 +526,7 @@ class TestEstimateRowPotential(unittest.TestCase):
         # Gutshot outs for K (rank10): 4. score += 4 * 1.0 = 4.0
         ranks, _, _, _ = MCTSNode._get_card_props(cards)
         straight_score_comp = MCTSNode._calculate_straight_potential_for_row(ranks, 4, deck)
-        self.assertAlmostEqual(straight_score_comp, 4.0, delta=0.1, "4-card Gutshot (TJQA->K) score mismatch.")
+        self.assertAlmostEqual(straight_score_comp, 4.0, delta=0.1, msg="4-card Gutshot (TJQA->K) score mismatch.")
         self.assertTrue(score >= 4.0)
 
     # --- Edge Cases ---
@@ -550,12 +550,12 @@ class TestEstimateRowPotential(unittest.TestCase):
         deck = set()
         score = MCTSNode._estimate_row_potential(cards, deck)
         # Expected: THREE_OF_A_KIND_MADE_SCORE (40) + outs_to_quads (0) + outs_to_FH (0)
-        self.assertAlmostEqual(score, 40.0, delta=0.1, "Score with empty deck for Trips A incorrect.")
+        self.assertAlmostEqual(score, 40.0, delta=0.1, msg="Score with empty deck for Trips A incorrect.")
 
         cards_draw = [s_to_c("Ah"), s_to_c("Kh"), s_to_c("Qh")] # 3 to flush
         score_draw_empty_deck = MCTSNode._estimate_row_potential(cards_draw, deck)
         # N-kind part: (3+3+3)*0.25 = 2.25. Flush part: 0 (no outs). Straight part: 0 (no outs).
-        self.assertAlmostEqual(score_draw_empty_deck, 2.25, delta=0.1, "Score for flush draw with empty deck incorrect.")
+        self.assertAlmostEqual(score_draw_empty_deck, 2.25, delta=0.1, msg="Score for flush draw with empty deck incorrect.")
 
 # --- Тесты _score_placement_v2 ---
 # Требуют мокирования зависимостей
