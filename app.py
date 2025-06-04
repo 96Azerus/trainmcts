@@ -197,14 +197,31 @@ def get_ai_move():
     if duplicates_discard_board:
          app.logger.warning(f"Cards on board are also permanently discarded: {[Card.to_str(c) for c in duplicates_discard_board]}")
 
-    all_known_cards = known_on_board_or_hand.union(permanently_discarded_ints)
-    remaining_deck_set = Deck.FULL_DECK_CARDS - all_known_cards
-    actual_total = len(all_known_cards) + len(remaining_deck_set)
-    if actual_total != 52:
-        app.logger.error(f"Card accounting error: Known({len(all_known_cards)}) + Remaining({len(remaining_deck_set)}) = {actual_total} != 52. "
-                         f"Board({len(board_cards_set)}), Hand({len(hand_cards_set)}), Discarded({len(permanently_discarded_ints)}).")
-        remaining_deck_set = Deck.FULL_DECK_CARDS - all_known_cards
-        app.logger.warning(f"Re-calculated remaining deck size: {len(remaining_deck_set)}")
+    # Calculate num_unknown_removed
+    num_unknown_removed = len(permanently_discarded_ints)
+
+    # For accounting and validation, ensure all cards are unique and sum to 52
+    # all_known_cards includes permanently_discarded_ints for this check
+    all_cards_for_validation = board_cards_set.union(hand_cards_set).union(permanently_discarded_ints)
+    if len(all_cards_for_validation) != len(board_cards_set) + len(hand_cards_set) + len(permanently_discarded_ints):
+        # This implies overlap between board/hand/discarded, which should be caught by earlier checks
+        app.logger.warning("Overlap detected between board, hand, and permanently discarded cards during validation set creation.")
+
+    # Deck for the AI: cards on board and in hand are out. Permanently discarded cards are not removed from this set,
+    # but their count is passed to the agent.
+    remaining_deck_for_ai = Deck.FULL_DECK_CARDS - board_cards_set - hand_cards_set
+
+    app.logger.info(f"Deck for AI calculation: Full deck ({len(Deck.FULL_DECK_CARDS)}) - Board cards ({len(board_cards_set)}) - Hand cards ({len(hand_cards_set)}) = {len(remaining_deck_for_ai)} cards.")
+    app.logger.info(f"Number of unknown cards removed (permanently discarded): {num_unknown_removed}")
+
+    # Validation check using all_cards_for_validation
+    actual_total_for_validation = len(all_cards_for_validation) + len(Deck.FULL_DECK_CARDS - all_cards_for_validation)
+    if actual_total_for_validation != 52:
+        app.logger.error(f"Card accounting error for validation: All known ({len(all_cards_for_validation)}) + Remaining based on validation set ({len(Deck.FULL_DECK_CARDS - all_cards_for_validation)}) = {actual_total_for_validation} != 52. "
+                         f"Board({len(board_cards_set)}), Hand({len(hand_cards_set)}), Permanently Discarded({len(permanently_discarded_ints)}).")
+    # The old check for `remaining_deck_set` might need adjustment or removal if it's redundant or confusing.
+    # For now, let's ensure the original logic's intent for validation is preserved.
+    # The crucial part is that `remaining_deck_for_ai` is what's passed to the agent.
 
     try:
         mcts_time_limit = int(ai_settings.get('aiTime', 5)) * 1000
@@ -215,7 +232,8 @@ def get_ai_move():
         best_placement_info: Optional[Dict[str, Any]] = agent.choose_placement(
             initial_board=board,
             cards_just_dealt=cards_to_place_ints,
-            current_remaining_deck=remaining_deck_set
+            current_remaining_deck=remaining_deck_for_ai, # Use this modified deck
+            num_unknown_removed_cards=num_unknown_removed # New argument
         )
         request_duration = time.time() - start_request_time
 

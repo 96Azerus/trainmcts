@@ -72,6 +72,10 @@ class MCTSAgent:
         self.num_workers: int = max(1, min(requested_workers, max_cpus, 8)) # Ограничим 8 воркерами максимум
         self.rollouts_per_leaf: int = rollouts_per_leaf if rollouts_per_leaf is not None else self.DEFAULT_ROLLOUTS_PER_LEAF
 
+        self.transposition_table = {}
+        self.cache_hits = 0
+        self.cache_misses = 0
+
         logger.info(f"MCTS Agent initialized: TimeLimit={self.time_limit:.2f}s, Exploration={self.exploration}, "
                     f"Workers={self.num_workers}, RolloutsPerLeaf={self.rollouts_per_leaf}, RAVE_K={RAVE_K}")
         try:
@@ -89,8 +93,11 @@ class MCTSAgent:
     def choose_placement(self,
                          initial_board: PlayerBoard,
                          cards_just_dealt: List[int],
-                         current_remaining_deck: Set[int]) -> Optional[Dict[str, Any]]:
+                         current_remaining_deck: Set[int],
+                         num_unknown_removed_cards: int = 0) -> Optional[Dict[str, Any]]:
         start_time_total = time.time()
+        self.cache_hits = 0
+        self.cache_misses = 0
         if not cards_just_dealt: logger.warning("MCTSAgent: choose_placement called with no cards dealt."); return None
         if initial_board.is_complete(): logger.warning("MCTSAgent: choose_placement called with complete board."); return None
         num_dealt = len(cards_just_dealt)
@@ -99,9 +106,16 @@ class MCTSAgent:
         logger.info(f"\n--- AI Agent: Choosing placement for {num_dealt} cards (Street ~{street}) ---")
         logger.info(f"Initial Board state:\n{initial_board}")
         logger.info(f"Cards Dealt: {[Card.to_str(c) for c in cards_just_dealt]}")
-        logger.info(f"Remaining deck size: {len(current_remaining_deck)}")
+        logger.info(f"Remaining deck size (for AI): {len(current_remaining_deck)}")
+        logger.info(f"Number of unknown cards removed (permanently discarded): {num_unknown_removed_cards}")
         try:
-            root_node = MCTSNode(board=initial_board, remaining_deck=current_remaining_deck, parent=None, placement_info=None)
+            root_node = MCTSNode(
+                board=initial_board,
+                remaining_deck=current_remaining_deck, # This deck still notionally includes unknown_removed
+                parent=None,
+                placement_info=None,
+                num_unknown_removed_cards=num_unknown_removed_cards # New argument
+            )
         except Exception as e_root: logger.error(f"Failed to create MCTS root node: {e_root}", exc_info=True); return None
         start_mcts_time = time.time(); num_simulations = 0; pool: Optional[multiprocessing.Pool] = None
         try:
@@ -118,24 +132,32 @@ class MCTSAgent:
                         if expanded_node: node_to_rollout_from = expanded_node; path.append(expanded_node)
                 rollout_results: List[Tuple[float, List[Dict[str, Any]]]] = []
                 try:
-                    board_to_sim = node_to_rollout_from.board; deck_to_sim = list(node_to_rollout_from.remaining_deck)
+                    board_to_sim = node_to_rollout_from.board
+                    deck_to_sim = list(node_to_rollout_from.remaining_deck)
+                    num_unknown_for_rollout = node_to_rollout_from.num_unknown_removed_cards
                     board_dict = {'rows': {r: Card.hand_to_str(cards) for r, cards in board_to_sim.rows.items()}, '_cards_placed': board_to_sim.get_total_cards()}
-                    rollout_tasks = [(board_dict, deck_to_sim)] * self.rollouts_per_leaf
+
+                    # Task now includes num_unknown_removed_cards
+                    rollout_task_item = (board_dict, deck_to_sim, num_unknown_for_rollout)
+
                     if pool and self.num_workers > 1:
-                         async_results = [pool.apply_async(run_parallel_rollout, task) for task in rollout_tasks]
+                         # Each task for apply_async should be a tuple of args for run_parallel_rollout
+                         async_results = [pool.apply_async(run_parallel_rollout, rollout_task_item) for _ in range(self.rollouts_per_leaf)]
                          for res in async_results:
                               try:
-                                   timeout_get = max(0.5, self.time_limit * 0.1)
+                                   timeout_get = max(0.5, self.time_limit * 0.1) # Timeout for getting result
                                    reward, actions = res.get(timeout=timeout_get)
                                    rollout_results.append((reward, actions)); num_simulations += 1
                               except multiprocessing.TimeoutError: logger.warning("Rollout worker timed out.")
                               except Exception as e_get: logger.warning(f"Error getting result from worker: {e_get}")
                     else:
-                         for task in rollout_tasks:
+                         # Sequential execution
+                         for _ in range(self.rollouts_per_leaf):
                               try:
-                                   reward, actions = run_parallel_rollout(*task)
+                                   # Directly use the components of rollout_task_item
+                                   reward, actions = run_parallel_rollout(board_dict, deck_to_sim, num_unknown_for_rollout)
                                    rollout_results.append((reward, actions)); num_simulations += 1
-                              except Exception as e_seq: logger.warning(f"Error during sequential rollout: {e_seq}")
+                              except Exception as e_seq: logger.warning(f"Error during sequential rollout: {e_seq}", exc_info=True)
                 except Exception as e_roll: logger.error(f"Error preparing/running rollout phase: {e_roll}", exc_info=True)
                 if rollout_results:
                     for reward, actions in rollout_results:
@@ -170,6 +192,7 @@ class MCTSAgent:
         elapsed_time = time.time() - start_mcts_time
         sims_per_sec = (num_simulations / elapsed_time) if elapsed_time > 0 else 0
         logger.info(f"MCTS finished: Ran {num_simulations} simulations in {elapsed_time:.3f}s ({sims_per_sec:.1f} sims/s). Root visits: {root_node.visits}")
+        logger.info(f"Transposition Table: Hits={self.cache_hits}, Misses={self.cache_misses}")
         best_placement_info = self._select_best_placement(root_node, cards_just_dealt)
         total_time = time.time() - start_time_total
         logger.info(f"--- AI Agent: Placement chosen in {total_time:.3f}s ---")
@@ -178,8 +201,21 @@ class MCTSAgent:
     def _select(self, root_node: MCTSNode, initial_cards_for_root: List[int]) -> Tuple[List[MCTSNode], Optional[MCTSNode]]:
         path = [root_node]; current_node = root_node
         while True:
+            # Transposition Table lookup
+            cache_key = (current_node.board.get_board_state_tuple(), frozenset(current_node.remaining_deck), current_node.num_unknown_removed_cards)
+            if cache_key in self.transposition_table:
+                self.cache_hits += 1
+                if current_node.visits == 0: # Only load if the node object is "new" for this path
+                    cached_data = self.transposition_table[cache_key]
+                    current_node.visits = cached_data['visits']
+                    current_node.total_reward = cached_data['total_reward']
+                    current_node.rave_visits = cached_data['rave_visits']
+                    current_node.rave_reward = cached_data['rave_reward']
+            else:
+                self.cache_misses += 1
+
             if current_node.is_terminal(): return path, current_node
-            if current_node.untried_next_states is None:
+            if current_node.untried_next_states is None: # Node has not been expanded before in this specific path/object
                 cards_to_generate_for: List[int]
                 if current_node is root_node: cards_to_generate_for = initial_cards_for_root
                 else:
@@ -216,7 +252,17 @@ class MCTSAgent:
 
     def _backpropagate_standard(self, path: List[MCTSNode], reward: float):
         if not path: return
-        for node in reversed(path): node.visits += 1; node.total_reward += reward
+        for node in reversed(path):
+            node.visits += 1
+            node.total_reward += reward
+            # Store/Update node info in transposition table
+            cache_key = (node.board.get_board_state_tuple(), frozenset(node.remaining_deck), node.num_unknown_removed_cards)
+            self.transposition_table[cache_key] = {
+                'visits': node.visits,
+                'total_reward': node.total_reward,
+                'rave_visits': node.rave_visits,
+                'rave_reward': node.rave_reward
+            }
 
     def _backpropagate_rave(self, path: List[MCTSNode], simulation_actions: List[Dict[str, Any]], reward: float):
         sim_action_keys = set()
