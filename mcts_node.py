@@ -107,19 +107,92 @@ MAX_PERMUTATIONS_STREET_1: int = 120
 MAX_PERMUTATIONS_SLOTS_STREET_1: int = 20
 MAX_PERMUTATIONS_STREET_N: int = 30
 
-HEURISTIC_STRONG_HAND_ON_BOTTOM_BONUS = 50.0
-HEURISTIC_FANTASY_QUALIFY_BONUS = 25.0
-HEURISTIC_DISCARD_LOW_CARD_BONUS = 5.0
-HEURISTIC_FOUL_PENALTY = -1000.0
+# HEURISTIC_STRONG_HAND_ON_BOTTOM_BONUS = 50.0 # Replaced by dynamic_weights
+# HEURISTIC_FANTASY_QUALIFY_BONUS = 25.0 # Replaced by dynamic_weights
+# HEURISTIC_DISCARD_LOW_CARD_BONUS = 5.0 # Replaced by dynamic_weights
+# HEURISTIC_FOUL_PENALTY = -1000.0 # Replaced by dynamic_weights
+
+# Placeholder for individual scoring constants that will be moved into dynamic_weights
+# MADE_FLUSH_SCORE = 80.0 # Replaced by dynamic_weights
+# FLUSH_DRAW_SCORE_PER_OUT = 2.5 # Replaced by dynamic_weights
+# ... other similar constants for straight, n-of-a-kind if they exist globally
 
 class MCTSNode:
+    @staticmethod
+    def _get_dynamic_weights(cards_placed_on_board: int, num_unknown_removed: int) -> Dict[str, float]:
+        weights = {
+            'fantasy_potential_bonus': 25.0, # Default from HEURISTIC_FANTASY_QUALIFY_BONUS
+            'strong_hand_on_bottom_bonus': 50.0, # Default from HEURISTIC_STRONG_HAND_ON_BOTTOM_BONUS
+            'discard_low_card_bonus': 5.0, # Default from HEURISTIC_DISCARD_LOW_CARD_BONUS
+            'draw_potential_multiplier': 1.0,
+            'foul_penalty': -1000.0, # Default from HEURISTIC_FOUL_PENALTY
+
+            # Scores from _calculate_flush_potential_for_row
+            'made_flush_score': 80.0,
+            'flush_draw_score_per_out': 2.5,
+            'three_to_flush_score_per_out': 1.0, # Was implicit, adding for clarity
+            'sf_bonus_over_flush': 100.0, # Bonus for SF over normal flush
+
+            # Scores from _calculate_straight_potential_for_row
+            'made_straight_score': 70.0,
+            'open_ended_draw_score_per_out': 2.0,
+            'gutshot_draw_score_per_out': 1.0,
+            'three_to_open_ended_score_per_out': 0.8,
+            'three_to_gutshot_score_per_out': 0.4,
+
+            # Scores from _calculate_n_of_a_kind_potential
+            'four_of_a_kind_score': 150.0,
+            'three_of_a_kind_made_score': 40.0,
+            'two_pair_made_score': 20.0,
+            'pair_made_score': 5.0, # for 3 cards
+            'pair_made_score_4cards': 2.5, # for 4 cards (was PAIR_MADE_SCORE * 0.5)
+
+            'out_to_quads_score': 10.0,
+            'out_to_trips_score': 3.0,
+            'out_to_full_house_from_trips_score': 1.5,
+            'out_to_full_house_from_two_pair_score': 2.0,
+            'out_to_pair_score': 0.5,
+            'out_to_pair_score_needing_two': 0.25, # was OUT_TO_PAIR_SCORE * 0.5
+        }
+
+        progress = cards_placed_on_board / PlayerBoard.TOTAL_CAPACITY if PlayerBoard.TOTAL_CAPACITY > 0 else 0
+
+        if progress < 0.4:  # Early game (0-5 cards placed approx, as TOTAL_CAPACITY is 13)
+            weights['fantasy_potential_bonus'] = 35.0
+            weights['strong_hand_on_bottom_bonus'] = 60.0
+            weights['draw_potential_multiplier'] = 1.2
+            weights['made_flush_score'] = 85.0
+            weights['sf_bonus_over_flush'] = 110.0
+        elif progress < 0.7: # Mid game (6-9 cards placed approx)
+            weights['fantasy_potential_bonus'] = 20.0
+            weights['draw_potential_multiplier'] = 1.0
+            weights['discard_low_card_bonus'] = 7.0
+        else:  # Late game (10+ cards placed approx)
+            weights['fantasy_potential_bonus'] = 10.0
+            weights['draw_potential_multiplier'] = 0.7
+            weights['discard_low_card_bonus'] = 10.0
+            weights['made_flush_score'] = 75.0
+            weights['sf_bonus_over_flush'] = 90.0
+
+        if num_unknown_removed > 2:
+            weights['draw_potential_multiplier'] *= 0.85
+            # Could also adjust specific draw scores if needed
+            weights['flush_draw_score_per_out'] *= 0.9
+            weights['open_ended_draw_score_per_out'] *= 0.9
+            weights['gutshot_draw_score_per_out'] *= 0.85
+
+
+        return weights
+
     def __init__(self, board: PlayerBoard, remaining_deck: Set[int],
                  parent: Optional['MCTSNode'] = None,
-                 placement_info: Optional[Dict[str, Any]] = None):
+                 placement_info: Optional[Dict[str, Any]] = None,
+                 num_unknown_removed_cards: int = 0): # New argument
         self.board: PlayerBoard = board
         self.remaining_deck: Set[int] = remaining_deck
         self.parent: Optional['MCTSNode'] = parent
         self.placement_info: Optional[Dict[str, Any]] = placement_info
+        self.num_unknown_removed_cards: int = num_unknown_removed_cards # Store it
         self.children: Dict[Tuple, MCTSNode] = {}
         self.visits: int = 0
         self.total_reward: float = 0.0
@@ -153,13 +226,24 @@ class MCTSNode:
             else: return []
         else: return []
 
+        # Logging added as per request
+        logger.info(
+            f"Generate states: Board has {num_cards_on_board} cards, {num_dealt} cards dealt. "
+            f"Determined num_to_place_on_board = {num_to_place_on_board}."
+        )
+        if num_cards_on_board == 11 and num_dealt == 3: # Corresponds to PlayerBoard.TOTAL_CAPACITY - 2
+            logger.info(
+                f"BUGFIX_TRACE: Handling 11 cards on board (PlayerBoard.TOTAL_CAPACITY - 2), 3 dealt. "
+                f"num_to_place_on_board set to: {num_to_place_on_board}"
+            )
+
         available_slots_list = self.board.get_available_slots()
         if len(available_slots_list) < num_to_place_on_board:
             logger.warning(f"Not enough available slots ({len(available_slots_list)}) to place {num_to_place_on_board} cards.")
             return []
 
         possible_placements_infos = MCTSNode._choose_best_heuristic_placement_v2(
-            self.board, cards_just_dealt, self.remaining_deck, num_to_place_on_board
+            self.board, cards_just_dealt, self.remaining_deck, num_to_place_on_board, self.num_unknown_removed_cards
         )
         
         for p_info_dict in possible_placements_infos:
@@ -197,7 +281,13 @@ class MCTSNode:
                 if isinstance(placement_info_for_child['discarded'], tuple):
                     for dc_card in placement_info_for_child['discarded']: new_deck.discard(dc_card)
                 else: new_deck.discard(placement_info_for_child['discarded'])
-        child_node = MCTSNode(board_state, new_deck, parent=self, placement_info=placement_info_for_child)
+        child_node = MCTSNode(
+            board_state,
+            new_deck, # Deck after parent placed cards and discarded one
+            parent=self,
+            placement_info=placement_info_for_child,
+            num_unknown_removed_cards=self.num_unknown_removed_cards # Propagate
+        )
         self.children[next_action_key_to_expand] = child_node
         if self.untried_next_states:
             self.untried_next_states = [(b, d) for (b, d) in self.untried_next_states if not (b.get_board_state_tuple() == board_state.get_board_state_tuple() and d == discarded_card)]
@@ -217,25 +307,40 @@ class MCTSNode:
         return random.choice(best_children) if best_children else None
 
     @staticmethod
-    def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False) -> float:
-        if check_board_foul(board): return HEURISTIC_FOUL_PENALTY
-        score = 0.0; total_royalty = calculate_total_royalty_for_board(board); score += total_royalty * 2.0
+    def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
+        weights = MCTSNode._get_dynamic_weights(board.get_total_cards(), num_unknown_removed)
+
+        if check_board_foul(board): return weights['foul_penalty']
+        score = 0.0; total_royalty = calculate_total_royalty_for_board(board); score += total_royalty * 2.0 # Base royalty score
+
         top_cards = board.get_row_cards('top'); mid_cards = board.get_row_cards('middle'); bot_cards = board.get_row_cards('bottom')
+
         if len(top_cards) == 3:
             try:
                 _, _, type_t = evaluate_3_card_ofc(top_cards[0], top_cards[1], top_cards[2])
                 if type_t == HAND_TYPE_PAIR_3:
                     ranks_top = Counter(Card.get_rank_int(c) for c in top_cards)
                     pair_rank_top = next((r for r, count in ranks_top.items() if count == 2), -1)
-                    if pair_rank_top >= RANK_MAP['Q']: score += HEURISTIC_FANTASY_QUALIFY_BONUS
-                elif type_t == HAND_TYPE_TRIPS_3: score += HEURISTIC_FANTASY_QUALIFY_BONUS + 10
+                    if pair_rank_top >= RANK_MAP['Q']: score += weights['fantasy_potential_bonus']
+                elif type_t == HAND_TYPE_TRIPS_3: score += weights['fantasy_potential_bonus'] + 10 # Extra for trips
             except ValueError: pass
+
         if is_first_street and len(bot_cards) == 5:
             rank_b, class_b, type_b = get_hand_rank_safe(bot_cards)
-            if class_b <= 5: score += HEURISTIC_STRONG_HAND_ON_BOTTOM_BONUS
-        if 3 <= len(mid_cards) < 5 : score += MCTSNode._estimate_row_potential(mid_cards, deck_snapshot) * 0.5
-        if 3 <= len(bot_cards) < 5 : score += MCTSNode._estimate_row_potential(bot_cards, deck_snapshot)
-        if len(top_cards) == 3:
+            if class_b <= 5: score += weights['strong_hand_on_bottom_bonus'] # e.g. flush or better
+
+        # Estimate potential for rows that are not yet full
+        row_potential_mid = 0.0
+        if 3 <= len(mid_cards) < 5:
+            row_potential_mid = MCTSNode._estimate_row_potential(mid_cards, deck_snapshot, num_unknown_removed, original_deck_size_for_snapshot, weights)
+        score += row_potential_mid * weights['draw_potential_multiplier'] * 0.5 # Middle row potential is often less impactful than bottom
+
+        row_potential_bot = 0.0
+        if 3 <= len(bot_cards) < 5:
+            row_potential_bot = MCTSNode._estimate_row_potential(bot_cards, deck_snapshot, num_unknown_removed, original_deck_size_for_snapshot, weights)
+        score += row_potential_bot * weights['draw_potential_multiplier']
+
+        if len(top_cards) == 3: # Penalty for non-scoring top hand if complete
             is_pair_or_trips_top = False
             try:
                 _, _, type_t_str = evaluate_3_card_ofc(top_cards[0], top_cards[1], top_cards[2])
@@ -269,40 +374,42 @@ class MCTSNode:
         return ranks, suits, rank_counts, suit_counts
 
     @staticmethod
-    def _count_specific_outs(deck: Set[int], check_func) -> int:
-        return sum(1 for card_in_deck in deck if check_func(card_in_deck))
+    def _count_specific_outs(deck: Set[int], check_func, num_unknown_removed: int, original_deck_size: int) -> float:
+        visible_outs = sum(1 for card_in_deck in deck if check_func(card_in_deck))
+        if original_deck_size <= 0 or original_deck_size <= num_unknown_removed:
+            return 0.0 # Avoid division by zero or negative probability
+
+        # Probability that an out is *not* one of the unknown removed cards
+        # (i.e., it's still in the conceptual 'knowable' part of the deck)
+        prob_out_is_available = (float(original_deck_size) - num_unknown_removed) / float(original_deck_size)
+
+        effective_outs = visible_outs * prob_out_is_available
+        return max(0.0, effective_outs)
 
     @staticmethod
     def _calculate_flush_potential_for_row(
-        ranks: List[int], suits: List[int], suit_counts: Counter, num_cards: int, deck: Set[int]
+        ranks: List[int], suits: List[int], suit_counts: Counter, num_cards: int, deck: Set[int], num_unknown_removed: int, original_deck_size: int, weights: Dict[str, float]
     ) -> float:
         score = 0.0
-        MADE_FLUSH_SCORE = 80.0
-        FLUSH_DRAW_SCORE_PER_OUT = 2.5
-        THREE_TO_FLUSH_SCORE_PER_OUT = 1.0 # Needs 2 cards
+        # Constants are now sourced from the weights dictionary
 
         for suit, count in suit_counts.items():
             if num_cards == 4:
                 if count == 4: # Made Flush
-                    # Check for straight flush potential as well
-                    # For simplicity, a made flush is a high score. SF would be even higher.
                     is_sf, _ = MCTSNode._is_straight_flush_possible(ranks, suits, suit)
                     if is_sf:
-                         # This score will be part of straight flush calculation, avoid double counting significantly
-                        score += MADE_FLUSH_SCORE + 100 # Extra for SF
+                        score += weights['made_flush_score'] + weights['sf_bonus_over_flush']
                     else:
-                        score += MADE_FLUSH_SCORE
+                        score += weights['made_flush_score']
                     break
             elif num_cards == 3:
                 if count == 3: # 3 to a flush
                     def is_suit_out(card_in_deck):
                         return Card.get_suit_int(card_in_deck) == suit
 
-                    outs = MCTSNode._count_specific_outs(deck, is_suit_out)
-                    # This is for needing 2 cards. Probability is (outs/remaining) * ((outs-1)/(remaining-1))
-                    # Heuristic:
-                    if outs >= 2: # Need at least 2 outs to make it in 2 cards
-                        score += outs * FLUSH_DRAW_SCORE_PER_OUT * 0.5 # Reduced for needing 2 cards
+                    outs = MCTSNode._count_specific_outs(deck, is_suit_out, num_unknown_removed, original_deck_size)
+                    if outs >= 2:
+                        score += outs * weights['three_to_flush_score_per_out'] * 0.5 # Reduced for needing 2 cards
                     break
 
             # Common for 3 or 4 cards if not made flush yet (e.g. 4 cards, 3 of a suit)
@@ -316,8 +423,8 @@ class MCTSNode:
             if num_cards == 4 and count == 3: # 3 of a suit in a 4 card hand (e.g. H H H D)
                 def is_suit_out(card_in_deck):
                     return Card.get_suit_int(card_in_deck) == suit
-                outs = MCTSNode._count_specific_outs(deck, is_suit_out)
-                score += outs * FLUSH_DRAW_SCORE_PER_OUT
+                outs = MCTSNode._count_specific_outs(deck, is_suit_out, num_unknown_removed, original_deck_size)
+                score += outs * weights['flush_draw_score_per_out']
 
         return score
 
@@ -366,16 +473,17 @@ class MCTSNode:
 
     @staticmethod
     def _calculate_straight_potential_for_row(
-        ranks: List[int], num_cards: int, deck: Set[int]
+        ranks: List[int], num_cards: int, deck: Set[int], num_unknown_removed: int, original_deck_size: int, weights: Dict[str, float]
     ) -> float:
         score = 0.0
         unique_ranks = sorted(list(set(ranks)))
 
-        MADE_STRAIGHT_SCORE = 70.0
-        OPEN_ENDED_DRAW_SCORE_PER_OUT = 2.0
-        GUTSHOT_DRAW_SCORE_PER_OUT = 1.0
-        THREE_TO_OPEN_ENDED_SCORE_PER_OUT = 0.8 # Needs 2 cards
-        THREE_TO_GUTSHOT_SCORE_PER_OUT = 0.4  # Needs 2 cards
+        # Using weights from dictionary
+        # MADE_STRAIGHT_SCORE = weights['made_straight_score'] # Not directly used for scoring made straights here, only draws
+        # OPEN_ENDED_DRAW_SCORE_PER_OUT = weights['open_ended_draw_score_per_out']
+        # GUTSHOT_DRAW_SCORE_PER_OUT = weights['gutshot_draw_score_per_out']
+        # THREE_TO_OPEN_ENDED_SCORE_PER_OUT = weights['three_to_open_ended_score_per_out']
+        # THREE_TO_GUTSHOT_SCORE_PER_OUT = weights['three_to_gutshot_score_per_out']
 
         if num_cards == 4:
             # Check for made straight (4 unique ranks, can be part of 5-card straight)
@@ -395,18 +503,18 @@ class MCTSNode:
                     high_rank = unique_ranks[3]
                     if low_rank > RANK_MAP['A']: # Ace is 0 for this map
                          def is_low_out(card_in_deck): return Card.get_rank_int(card_in_deck) == low_rank -1
-                         outs += MCTSNode._count_specific_outs(deck, is_low_out)
+                         outs += MCTSNode._count_specific_outs(deck, is_low_out, num_unknown_removed, original_deck_size)
                     if high_rank < RANK_MAP['A']:
                          def is_high_out(card_in_deck): return Card.get_rank_int(card_in_deck) == high_rank + 1
-                         outs += MCTSNode._count_specific_outs(deck, is_high_out)
+                         outs += MCTSNode._count_specific_outs(deck, is_high_out, num_unknown_removed, original_deck_size)
                 # Check for A-K-Q-J (needs T) or A-2-3-4 (needs 5)
                 elif set(unique_ranks) == {RANK_MAP['A'], RANK_MAP['K'], RANK_MAP['Q'], RANK_MAP['J']}:
                     def is_ten_out(card_in_deck): return Card.get_rank_int(card_in_deck) == RANK_MAP['T']
-                    outs += MCTSNode._count_specific_outs(deck, is_ten_out)
+                    outs += MCTSNode._count_specific_outs(deck, is_ten_out, num_unknown_removed, original_deck_size)
                 elif set(unique_ranks) == {RANK_MAP['A'], RANK_MAP['2'], RANK_MAP['3'], RANK_MAP['4']}: # Ace low
                     def is_five_out(card_in_deck): return Card.get_rank_int(card_in_deck) == RANK_MAP['5']
-                    outs += MCTSNode._count_specific_outs(deck, is_five_out)
-                score += outs * OPEN_ENDED_DRAW_SCORE_PER_OUT
+                    outs += MCTSNode._count_specific_outs(deck, is_five_out, num_unknown_removed, original_deck_size)
+                score += outs * weights['open_ended_draw_score_per_out']
 
             # 4 to a gutshot (e.g., 5-6-8-9 needs 7)
             # Iterate through all combinations of 3 ranks from the 4 unique_ranks
@@ -416,11 +524,11 @@ class MCTSNode:
                     # Check for gutshot: e.g., 5,6,8 needs 7. Difference of 2 and 1, or 1 and 2.
                     if (sorted_combo[1] - sorted_combo[0] == 1 and sorted_combo[2] - sorted_combo[1] == 2): # 5-6-8 needs 7
                         def is_gut_out(card_in_deck): return Card.get_rank_int(card_in_deck) == sorted_combo[1] + 1
-                        outs += MCTSNode._count_specific_outs(deck, is_gut_out)
+                        outs += MCTSNode._count_specific_outs(deck, is_gut_out, num_unknown_removed, original_deck_size)
                     elif (sorted_combo[1] - sorted_combo[0] == 2 and sorted_combo[2] - sorted_combo[1] == 1): # 5-7-8 needs 6
                         def is_gut_out(card_in_deck): return Card.get_rank_int(card_in_deck) == sorted_combo[0] + 1
-                        outs += MCTSNode._count_specific_outs(deck, is_gut_out)
-                score += outs * GUTSHOT_DRAW_SCORE_PER_OUT
+                        outs += MCTSNode._count_specific_outs(deck, is_gut_out, num_unknown_removed, original_deck_size)
+                score += outs * weights['gutshot_draw_score_per_out']
 
 
         elif num_cards == 3:
@@ -439,44 +547,44 @@ class MCTSNode:
                     outs = 0
                     # Card1: rank_low_1 (e.g., 4 for 5-6-7)
                     def check_r_low1(c): return Card.get_rank_int(c) == unique_ranks[0]-1
-                    outs_r_low1 = MCTSNode._count_specific_outs(deck, check_r_low1)
+                    outs_r_low1 = MCTSNode._count_specific_outs(deck, check_r_low1, num_unknown_removed, original_deck_size)
                     # Card1: rank_high_1 (e.g., 8 for 5-6-7)
                     def check_r_high1(c): return Card.get_rank_int(c) == unique_ranks[2]+1
-                    outs_r_high1 = MCTSNode._count_specific_outs(deck, check_r_high1)
+                    outs_r_high1 = MCTSNode._count_specific_outs(deck, check_r_high1, num_unknown_removed, original_deck_size)
 
                     # Simplified: count total cards that could help form a straight
                     # This is approximate as it doesn't do conditional probability for 2 cards
-                    score += (outs_r_low1 + outs_r_high1) * THREE_TO_OPEN_ENDED_SCORE_PER_OUT
+                    score += (outs_r_low1 + outs_r_high1) * weights['three_to_open_ended_score_per_out']
 
                 # 3 to gutshot (e.g. 5-6-8 needs 7, then one more card)
                 # Or 5-7-8 needs 6
                 elif (unique_ranks[1] - unique_ranks[0] == 1 and unique_ranks[2] - unique_ranks[1] == 2): # 5-6-8 needs 7
                     def check_gut(c): return Card.get_rank_int(c) == unique_ranks[1]+1
-                    outs_gut = MCTSNode._count_specific_outs(deck, check_gut)
-                    score += outs_gut * THREE_TO_GUTSHOT_SCORE_PER_OUT
+                    outs_gut = MCTSNode._count_specific_outs(deck, check_gut, num_unknown_removed, original_deck_size)
+                    score += outs_gut * weights['three_to_gutshot_score_per_out']
                 elif (unique_ranks[1] - unique_ranks[0] == 2 and unique_ranks[2] - unique_ranks[1] == 1): # 5-7-8 needs 6
                     def check_gut(c): return Card.get_rank_int(c) == unique_ranks[0]+1
-                    outs_gut = MCTSNode._count_specific_outs(deck, check_gut)
-                    score += outs_gut * THREE_TO_GUTSHOT_SCORE_PER_OUT
+                    outs_gut = MCTSNode._count_specific_outs(deck, check_gut, num_unknown_removed, original_deck_size)
+                    score += outs_gut * weights['three_to_gutshot_score_per_out']
                 # Special case A23 for wheel
                 elif set(unique_ranks) == {RANK_MAP['A'], RANK_MAP['2'], RANK_MAP['3']}:
                     def check_4(c): return Card.get_rank_int(c) == RANK_MAP['4']
                     def check_5(c): return Card.get_rank_int(c) == RANK_MAP['5']
-                    outs_4 = MCTSNode._count_specific_outs(deck, check_4)
-                    outs_5 = MCTSNode._count_specific_outs(deck, check_5)
-                    score += (outs_4 + outs_5) * THREE_TO_OPEN_ENDED_SCORE_PER_OUT # Approx
+                    outs_4 = MCTSNode._count_specific_outs(deck, check_4, num_unknown_removed, original_deck_size)
+                    outs_5 = MCTSNode._count_specific_outs(deck, check_5, num_unknown_removed, original_deck_size)
+                    score += (outs_4 + outs_5) * weights['three_to_open_ended_score_per_out'] # Approx
                 # Special case AKQ for broadway
                 elif set(unique_ranks) == {RANK_MAP['A'], RANK_MAP['K'], RANK_MAP['Q']}:
                     def check_J(c): return Card.get_rank_int(c) == RANK_MAP['J']
                     def check_T(c): return Card.get_rank_int(c) == RANK_MAP['T']
-                    outs_J = MCTSNode._count_specific_outs(deck, check_J)
-                    outs_T = MCTSNode._count_specific_outs(deck, check_T)
-                    score += (outs_J + outs_T) * THREE_TO_OPEN_ENDED_SCORE_PER_OUT # Approx
+                    outs_J = MCTSNode._count_specific_outs(deck, check_J, num_unknown_removed, original_deck_size)
+                    outs_T = MCTSNode._count_specific_outs(deck, check_T, num_unknown_removed, original_deck_size)
+                    score += (outs_J + outs_T) * weights['three_to_open_ended_score_per_out'] # Approx
         return score
 
     @staticmethod
     def _calculate_n_of_a_kind_potential(
-        ranks: List[int], rank_counts: Counter, num_cards: int, deck: Set[int]
+        ranks: List[int], rank_counts: Counter, num_cards: int, deck: Set[int], num_unknown_removed: int, original_deck_size: int
     ) -> float:
         score = 0.0
         FOUR_OF_A_KIND_SCORE = 150.0
@@ -497,14 +605,14 @@ class MCTSNode:
                     score += THREE_OF_A_KIND_MADE_SCORE
                     # Outs to Quads
                     def is_quad_out(card_in_deck): return Card.get_rank_int(card_in_deck) == rank
-                    outs_to_quads = MCTSNode._count_specific_outs(deck, is_quad_out)
+                    outs_to_quads = MCTSNode._count_specific_outs(deck, is_quad_out, num_unknown_removed, original_deck_size)
                     score += outs_to_quads * OUT_TO_QUADS_SCORE
 
                     # Outs to Full House (pairing the 4th card)
                     other_card_rank = next((r for r in ranks if r != rank), None)
                     if other_card_rank is not None:
                         def is_fh_out(card_in_deck): return Card.get_rank_int(card_in_deck) == other_card_rank
-                        outs_to_fh = MCTSNode._count_specific_outs(deck, is_fh_out)
+                        outs_to_fh = MCTSNode._count_specific_outs(deck, is_fh_out, num_unknown_removed, original_deck_size)
                         score += outs_to_fh * OUT_TO_FULL_HOUSE_FROM_TRIPS_SCORE
                     break
             # Check for two pair if not quads or trips
@@ -514,7 +622,7 @@ class MCTSNode:
                 outs_to_fh = 0
                 for r_val in rank_counts.keys():
                     def is_fh_out(card_in_deck): return Card.get_rank_int(card_in_deck) == r_val
-                    outs_to_fh += MCTSNode._count_specific_outs(deck, is_fh_out)
+                    outs_to_fh += MCTSNode._count_specific_outs(deck, is_fh_out, num_unknown_removed, original_deck_size)
                 score += outs_to_fh * OUT_TO_FULL_HOUSE_FROM_TWO_PAIR_SCORE
 
             # Check for one pair if nothing else (e.g. AAKQ)
@@ -524,13 +632,13 @@ class MCTSNode:
                     score += PAIR_MADE_SCORE * 0.5 # Less than 3-card pair
                     # Outs to trips or two pair
                     def is_trips_out(card_in_deck): return Card.get_rank_int(card_in_deck) == pair_rank
-                    outs_to_trips = MCTSNode._count_specific_outs(deck, is_trips_out)
+                    outs_to_trips = MCTSNode._count_specific_outs(deck, is_trips_out, num_unknown_removed, original_deck_size)
                     score += outs_to_trips * OUT_TO_TRIPS_SCORE
 
                     other_ranks = [r for r in rank_counts.keys() if r != pair_rank]
                     for orank in other_ranks:
                         def is_two_pair_out(card_in_deck): return Card.get_rank_int(card_in_deck) == orank
-                        score += MCTSNode._count_specific_outs(deck, is_two_pair_out) * OUT_TO_PAIR_SCORE
+                        score += MCTSNode._count_specific_outs(deck, is_two_pair_out, num_unknown_removed, original_deck_size) * OUT_TO_PAIR_SCORE
 
 
         elif num_cards == 3:
@@ -540,7 +648,7 @@ class MCTSNode:
                     score += PAIR_MADE_SCORE
                     # Outs to trips
                     def is_trips_out(card_in_deck): return Card.get_rank_int(card_in_deck) == rank
-                    outs_to_trips = MCTSNode._count_specific_outs(deck, is_trips_out)
+                    outs_to_trips = MCTSNode._count_specific_outs(deck, is_trips_out, num_unknown_removed, original_deck_size)
                     score += outs_to_trips * OUT_TO_TRIPS_SCORE # For one more card
                     # Consider needing 2 cards for FH from this pair: Pair + X + Y -> Need X or Y
                     # This is complex, simplified for now.
@@ -550,23 +658,23 @@ class MCTSNode:
                 outs_to_any_pair = 0
                 for r_val in ranks: # Ranks are unique here
                     def is_pair_out(card_in_deck): return Card.get_rank_int(card_in_deck) == r_val
-                    outs_to_any_pair += MCTSNode._count_specific_outs(deck, is_pair_out)
+                    outs_to_any_pair += MCTSNode._count_specific_outs(deck, is_pair_out, num_unknown_removed, original_deck_size)
                 score += outs_to_any_pair * OUT_TO_PAIR_SCORE * 0.5 # Reduced for needing 2 cards for pair
 
         return score
 
     @staticmethod
-    def _estimate_row_potential(current_cards: List[int], deck: Set[int]) -> float:
+    def _estimate_row_potential(current_cards: List[int], deck: Set[int], num_unknown_removed: int, original_deck_size: int) -> float:
         num_cards = len(current_cards)
         if not (3 <= num_cards <= 4):
-            return 0.0
+            return 0.0 # Already correct
 
         ranks, suits, rank_counts, suit_counts = MCTSNode._get_card_props(current_cards)
 
         total_potential = 0.0
 
         # N of a kind potential (Pairs, Trips, Quads, Full Houses)
-        total_potential += MCTSNode._calculate_n_of_a_kind_potential(ranks, rank_counts, num_cards, deck)
+        total_potential += MCTSNode._calculate_n_of_a_kind_potential(ranks, rank_counts, num_cards, deck, num_unknown_removed, original_deck_size) # Already correct
 
         # Flush potential
         # Note: _calculate_flush_potential already gives high score for made flush.
@@ -574,10 +682,10 @@ class MCTSNode:
         # The _is_straight_flush_possible is a simple check.
         # A more robust way would be to evaluate the hand using a 5-card evaluator if we assume 1/2 more cards.
 
-        flush_potential = MCTSNode._calculate_flush_potential_for_row(ranks, suits, suit_counts, num_cards, deck)
+        flush_potential = MCTSNode._calculate_flush_potential_for_row(ranks, suits, suit_counts, num_cards, deck, num_unknown_removed, original_deck_size) # Already correct
 
         # Straight potential
-        straight_potential = MCTSNode._calculate_straight_potential_for_row(ranks, num_cards, deck)
+        straight_potential = MCTSNode._calculate_straight_potential_for_row(ranks, num_cards, deck, num_unknown_removed, original_deck_size) # Already correct
 
         # Straight Flush Potential Check
         # This is tricky to combine. If a made flush was detected, and it was part of SF,
@@ -614,10 +722,16 @@ class MCTSNode:
 
     @staticmethod
     def _choose_best_heuristic_placement_v2(
-        current_board: PlayerBoard, cards_to_act_on: List[int], current_deck: Set[int], num_to_place_on_board: int
+        current_board: PlayerBoard, cards_to_act_on: List[int], current_deck: Set[int], num_to_place_on_board: int, num_unknown_removed_cards: int
     ) -> List[Dict[str, Any]]:
         candidate_actions = []
         num_on_board = current_board.get_total_cards(); num_dealt = len(cards_to_act_on)
+
+        # Get dynamic weights for discard_low_card_bonus
+        # _calculate_heuristic_score_v2 will fetch its own more comprehensive set of weights internally.
+        # This call is specifically for the bonus applied directly in this function.
+        dynamic_weights_for_discard = MCTSNode._get_dynamic_weights(num_on_board, num_unknown_removed_cards)
+
         available_slots = current_board.get_available_slots()
         is_first_street = (num_on_board == 0 and num_to_place_on_board == 5)
         cards_to_place_options: List[List[int]] = []
@@ -676,13 +790,14 @@ class MCTSNode:
                             for dc in current_discard_info: deck_after_action.discard(dc)
                             actual_discard_for_info = current_discard_info
                         
-                        heuristic_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street)
+                        heuristic_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street, num_unknown_removed_cards, len(current_deck))
                         if actual_discard_for_info and num_dealt == 3 and num_to_place_on_board == 2:
-                            # Убедимся, что actual_discard_for_info это int перед вызовом Card.get_rank_int
+                            # dynamic_weights_for_discard is already fetched at the start of the function
                             if isinstance(actual_discard_for_info, int):
                                 discard_rank = Card.get_rank_int(actual_discard_for_info)
                                 placed_ranks = [Card.get_rank_int(p[0]) for p in placements_list]
-                                if all(discard_rank < pr for pr in placed_ranks): heuristic_score += HEURISTIC_DISCARD_LOW_CARD_BONUS
+                                # dynamic_weights_for_discard is fetched at the start of this function
+                                if all(discard_rank < pr for pr in placed_ranks): heuristic_score += dynamic_weights_for_discard['discard_low_card_bonus']
                             else: # Если actual_discard_for_info это кортеж (2 сброшенные карты), эта логика не применяется
                                 pass
                         
@@ -694,15 +809,28 @@ class MCTSNode:
         limit_generated_options = 10 if not is_first_street else 5
         return candidate_actions[:limit_generated_options]
 
-def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list: List[int]) -> Tuple[float, List[Dict[str, Any]]]:
+def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list: List[int], num_unknown_removed_cards: int) -> Tuple[float, List[Dict[str, Any]]]:
     current_board = PlayerBoard()
     for r, cards_str_list in board_dict.get('rows', {}).items():
         for i, card_str_val in enumerate(cards_str_list):
             if card_str_val and card_str_val != CARD_PLACEHOLDER:
                 try: current_board.add_card(Card.from_str(card_str_val), r, i)
                 except ValueError: pass
-    deck_sim = Deck(cards=set(deck_list))
+
+    actual_deck_cards_for_simulation = set(deck_list)
+    if num_unknown_removed_cards > 0 and len(deck_list) > num_unknown_removed_cards:
+        try:
+            actual_deck_cards_for_simulation = set(random.sample(list(deck_list), len(deck_list) - num_unknown_removed_cards)) # random.sample needs list
+        except ValueError:
+            logger.warning(f"Rollout: Error sampling for unknown cards ({len(deck_list)} cards, {num_unknown_removed_cards} unknown). Using full deck_list.")
+            actual_deck_cards_for_simulation = set(deck_list) # Fallback
+    elif num_unknown_removed_cards > 0 and len(deck_list) <= num_unknown_removed_cards:
+            logger.warning(f"Rollout: Few cards in deck_list ({len(deck_list)}) vs num_unknown ({num_unknown_removed_cards}). Simulating empty deck.")
+            actual_deck_cards_for_simulation = set()
+
+    deck_sim = Deck(cards=actual_deck_cards_for_simulation)
     simulation_actions_taken: List[Dict[str, Any]] = []
+    original_deck_size_for_heuristic = len(deck_list) # Original size before sampling unknown
     try:
         while not current_board.is_complete():
             num_on_board = current_board.get_total_cards()
@@ -712,13 +840,18 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list: List[int]) -> T
             elif num_on_board == PlayerBoard.TOTAL_CAPACITY - 2: num_to_deal, num_to_place_on_board = 3, 2
             elif num_on_board == PlayerBoard.TOTAL_CAPACITY - 1: num_to_deal, num_to_place_on_board = 3, 1
             else: break
-            if len(deck_sim) < num_to_deal: break
+            if len(deck_sim) < num_to_deal: break # deck_sim is already adjusted for unknowns
             dealt_cards = deck_sim.deal(num_to_deal)
             if not dealt_cards: break
-            deck_sim_set = set(deck_sim.get_remaining_cards())
-            best_actions_list = MCTSNode._choose_best_heuristic_placement_v2(current_board, dealt_cards, deck_sim_set, num_to_place_on_board)
+
+            # The deck_sim_set for _choose_best_heuristic_placement_v2 should be the current actual cards in simulation deck
+            deck_sim_set_for_heuristic = set(deck_sim.get_remaining_cards())
+
+            best_actions_list = MCTSNode._choose_best_heuristic_placement_v2(
+                current_board, dealt_cards, deck_sim_set_for_heuristic, num_to_place_on_board, num_unknown_removed_cards
+            )
             if not best_actions_list: break
-            best_action = best_actions_list[0]
+            best_action = best_actions_list[0] # This action was chosen based on deck_sim_set_for_heuristic
             if best_action and best_action.get('placements'):
                 action_placements = cast(List[Tuple[int, str, int]], best_action['placements'])
                 valid_move = True
@@ -735,5 +868,5 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list: List[int]) -> T
         final_reward = HEURISTIC_FOUL_PENALTY - 20.0
     return final_reward, simulation_actions_taken
 
-def run_parallel_rollout(board_dict: Dict, deck_list: List[int]) -> Tuple[float, List[Dict[str, Any]]]:
-    return heuristic_rollout_simulation_v2(board_dict, deck_list)
+def run_parallel_rollout(board_dict: Dict, deck_list: List[int], num_unknown_removed_cards: int) -> Tuple[float, List[Dict[str, Any]]]:
+    return heuristic_rollout_simulation_v2(board_dict, deck_list, num_unknown_removed_cards)
