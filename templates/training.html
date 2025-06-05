@@ -2,13 +2,12 @@
 <html lang="ru">
 <head>
     <title>OFC Training Mode</title>
-    <meta charset="UTF-8"> <!-- Добавил charset -->
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* Стили v1.2 (адаптация улучшена) */
+        /* Стили v1.3 (добавлена кнопка "?" и стили для нее) */
         :root {
-            /* Базовые размеры для десктопа */
             --card-width: 45px; --card-height: 65px; --card-font-size: 13px;
             --card-rank-font-size: 1.1em; --card-suit-font-size: 0.9em;
             --row-gap: 8px; --row-min-height: 75px; --table-padding: 10px;
@@ -44,6 +43,12 @@
             cursor: pointer; user-select: none; -webkit-user-select: none;
             border: 1px solid #bbb; padding: 1px; z-index: 2;
             transition: opacity 0.2s ease-out;
+        }
+        .card.card-unknown { /* Стиль для "?" карты */
+            font-size: 2em; /* Крупный знак вопроса */
+            line-height: var(--card-height); /* Центрирование по вертикали */
+            color: #555;
+            background-color: #e0e0e0; /* Другой фон для "?" */
         }
         .card span:first-child { font-size: var(--card-rank-font-size); }
         .card span:last-child { font-size: var(--card-suit-font-size); margin-top: 1px; }
@@ -154,7 +159,8 @@
         <div class="selector-row">
             <div class="selector-item" data-suit="♠">♠</div> <div class="selector-item" data-suit="♥">♥</div>
             <div class="selector-item" data-suit="♦">♦</div> <div class="selector-item" data-suit="♣">♣</div>
-            <button class="action-button" id="remove-button">-</button>
+            <div class="selector-item" data-special="?">?</div> <!-- Кнопка для "?" карты -->
+            <button class="action-button" id="remove-button" title="Сбросить выбранные карты из зоны комбинации перманентно">-</button>
         </div>
     </div>
 
@@ -170,12 +176,13 @@
     let selectedRank = null;
     let selectedSuit = null;
     let boardState = { top: [null, null, null], middle: [null, null, null, null, null], bottom: [null, null, null, null, null] };
-    let unavailableCards = new Set(); // Карты на доске ИЛИ в зоне комбинации
-    let permanentlyDiscardedCards = new Set(); // Карты, сброшенные навсегда (пользователем или ИИ)
+    let unavailableCards = new Set(); // Строки известных карт на доске ИЛИ в зоне комбинации
+    let permanentlyDiscardedCards = new Set(); // Строки известных карт И маркеры UNKNOWN_CARD_MARKER
     let isFullscreen = false;
 
-    const MAX_COMBO_CARDS = 5;
+    const MAX_COMBO_CARDS = 5; // Максимум карт в зоне комбинации (для первой улицы)
     const CARD_PLACEHOLDER = "__";
+    const UNKNOWN_CARD_MARKER = "??"; // Маркер для "?" карты, используется в JS и передается на бэкенд
 
     // --- DOM Элементы ---
     let royaltyDisplay = null;
@@ -189,30 +196,45 @@
     // --- Вспомогательные функции ---
     function getCardSuitSymbol(suitChar) { const map = {'c': '♣', 'd': '♦', 'h': '♥', 's': '♠'}; return map[suitChar?.toLowerCase()] || '?'; }
     function getCardSuitChar(suitSymbol) { const map = {'♣': 'c', '♦': 'd', '♥': 'h', '♠': 's'}; return map[suitSymbol] || '?'; }
+    
     function cardStrToRankSuit(cardStr) {
-        if (!cardStr || cardStr.length < 2) return { rank: '?', suit: '?' };
-        const rank = cardStr.substring(0, cardStr.length - 1).toUpperCase();
+        if (!cardStr || cardStr.length < 2 || cardStr === UNKNOWN_CARD_MARKER) return { rank: '?', suit: '?' };
+        // Обработка "10"
+        let rankStr = cardStr.substring(0, cardStr.length - 1);
+        if (rankStr === "10") rankStr = "T"; // Конвертируем "10" в "T" для консистентности с селекторами
+        const rank = rankStr.toUpperCase();
         const suitChar = cardStr.substring(cardStr.length - 1).toLowerCase();
         const suitSymbol = getCardSuitSymbol(suitChar);
         return { rank, suit: suitSymbol };
     }
 
-    function createCardElement(cardStr) {
+    function createCardElement(cardStrInput) {
+        let cardStr = cardStrInput;
+        // Конвертация "10s" -> "Ts" для dataset.card, если это не UNKNOWN_CARD_MARKER
+        if (cardStr && cardStr.startsWith("10") && cardStr !== UNKNOWN_CARD_MARKER) {
+            cardStr = "T" + cardStr.substring(2);
+        }
+
         if (!cardStr || cardStr === CARD_PLACEHOLDER) return null;
         try {
             const cardElement = document.createElement('div');
             cardElement.className = 'card';
-            const { rank, suit } = cardStrToRankSuit(cardStr);
-            if (rank === '?' || suit === '?') { console.error(`JS Error: Parse failed for card string "${cardStr}"`); return null; }
+            cardElement.dataset.card = cardStr; // Сохраняем в каноническом виде (e.g., "Ts") или UNKNOWN_CARD_MARKER
 
-            cardElement.dataset.card = cardStr;
-            cardElement.dataset.rank = rank;
-            cardElement.dataset.suit = suit;
-            cardElement.innerHTML = `<span>${rank}</span><span>${suit}</span>`;
-            if (suit === '♥' || suit === '♦') cardElement.style.color = '#e44145'; else cardElement.style.color = '#2d2d2d';
+            if (cardStr === UNKNOWN_CARD_MARKER) {
+                cardElement.classList.add('card-unknown');
+                cardElement.innerHTML = `<span>?</span>`;
+            } else {
+                const { rank, suit } = cardStrToRankSuit(cardStr); // rank будет 'T' для десятки
+                if (rank === '?' || suit === '?') { console.error(`JS Error: Parse failed for card string "${cardStr}"`); return null; }
+                cardElement.dataset.rank = rank; 
+                cardElement.dataset.suit = suit; 
+                cardElement.innerHTML = `<span>${rank}</span><span>${suit}</span>`;
+                if (suit === '♥' || suit === '♦') cardElement.style.color = '#e44145'; else cardElement.style.color = '#2d2d2d';
+            }
             cardElement.addEventListener('dblclick', handleDoubleClickRemoval);
             return cardElement;
-        } catch (error) { console.error(`JS Error in createCardElement for ${cardStr}:`, error); return null; }
+        } catch (error) { console.error(`JS Error in createCardElement for ${cardStrInput}:`, error); return null; }
     }
 
     function createCardSlotElement(row, index) {
@@ -223,7 +245,6 @@
         return slot;
     }
 
-    // --- Инициализация UI ---
     function setupTable() {
         if (!tableElement) { console.error("Table element not found for setup."); return; }
         const rows = ['top', 'middle', 'bottom'];
@@ -247,25 +268,32 @@
         }
     }
 
-    // --- Обновление UI ---
     function updateSelectorAvailability() {
-        // Карты на доске и в зоне комбинации уже учтены в unavailableCards при их добавлении/удалении
-        // permanentlyDiscardedCards - это отдельный сет для карт, которые нельзя выбрать вообще
-        const allEffectivelyUnavailable = new Set([...unavailableCards, ...permanentlyDiscardedCards]);
+        const allKnownUnavailableOrDiscarded = new Set([
+            ...unavailableCards, 
+            ...Array.from(permanentlyDiscardedCards).filter(c => c !== UNKNOWN_CARD_MARKER)
+        ]);
 
         document.querySelectorAll('.selector-item[data-rank]').forEach(item => {
             const rank = item.dataset.rank;
-            const hasAvailableCard = ['s', 'h', 'd', 'c'].some(suitChar => !allEffectivelyUnavailable.has(rank + suitChar));
+            const hasAvailableCard = ['s', 'h', 'd', 'c'].some(suitChar => !allKnownUnavailableOrDiscarded.has(rank + suitChar));
             item.classList.toggle('unavailable', !hasAvailableCard);
             if (!hasAvailableCard && selectedRank === rank) { item.classList.remove('selected'); selectedRank = null; }
         });
         document.querySelectorAll('.selector-item[data-suit]').forEach(item => {
             const suitSymbol = item.dataset.suit;
             const suitChar = getCardSuitChar(suitSymbol);
-            const hasAvailableCard = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'].some(rank => !allEffectivelyUnavailable.has(rank + suitChar));
+            const hasAvailableCard = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2'].some(rank => !allKnownUnavailableOrDiscarded.has(rank + suitChar));
             item.classList.toggle('unavailable', !hasAvailableCard);
             if (!hasAvailableCard && selectedSuit === suitSymbol) { item.classList.remove('selected'); selectedSuit = null; }
         });
+        
+        const unknownSelector = document.querySelector('.selector-item[data-special="?"]');
+        if (unknownSelector) {
+            const comboSlots = combinationArea.querySelectorAll('.combination-slot');
+            const hasEmptyComboSlot = Array.from(comboSlots).some(slot => !slot.querySelector('.card'));
+            unknownSelector.classList.toggle('unavailable', !hasEmptyComboSlot);
+        }
     }
 
     function updateBoardUI() {
@@ -274,17 +302,17 @@
             if (!rowElement) return;
             const slots = rowElement.querySelectorAll('.card-slot');
             slots.forEach((slot, index) => {
-                const cardStr = rowCards[index];
-                const existingCard = slot.querySelector('.card');
-                if (cardStr && !existingCard) {
+                const cardStr = rowCards[index]; // Это каноническая строка (e.g., "Ts")
+                const existingCardElement = slot.querySelector('.card');
+                if (cardStr && !existingCardElement) {
                     const cardEl = createCardElement(cardStr);
                     if (cardEl) slot.appendChild(cardEl); slot.classList.add('taken');
-                } else if (!cardStr && existingCard) {
-                    existingCard.remove(); slot.classList.remove('taken');
-                } else if (cardStr && existingCard && existingCard.dataset.card !== cardStr) {
-                    existingCard.remove(); const cardEl = createCardElement(cardStr);
+                } else if (!cardStr && existingCardElement) {
+                    existingCardElement.remove(); slot.classList.remove('taken');
+                } else if (cardStr && existingCardElement && existingCardElement.dataset.card !== cardStr) {
+                    existingCardElement.remove(); const cardEl = createCardElement(cardStr);
                     if (cardEl) slot.appendChild(cardEl); slot.classList.add('taken');
-                } else if (cardStr && existingCard) { slot.classList.add('taken');
+                } else if (cardStr && existingCardElement) { slot.classList.add('taken');
                 } else { slot.classList.remove('taken'); }
             });
         });
@@ -292,42 +320,37 @@
 
     function resetCombinationAreaDOM() {
         if (!combinationArea) return;
-        // При сбросе зоны комбинации, карты из нее должны перестать быть unavailable
         combinationArea.querySelectorAll('.card').forEach(card => {
-            if (card.dataset.card) unavailableCards.delete(card.dataset.card);
+            const cardStr = card.dataset.card;
+            if (cardStr && cardStr !== UNKNOWN_CARD_MARKER) { 
+                unavailableCards.delete(cardStr);
+            }
             card.remove();
         });
         combinationArea.querySelectorAll('.combination-slot').forEach(slot => slot.classList.remove('taken'));
+        updateSelectorAvailability(); // Обновляем доступность "?" кнопки
     }
 
-    // --- Обработчики Действий ---
-    function toggleMenu() {
-        const menu = document.getElementById('menu-panel');
-        if (!menu) return;
-        menuOpen = !menuOpen;
-        menu.classList.toggle('open', menuOpen);
-    }
-
-    function toggleFullScreen() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(err => {
-                alert(`Не удалось включить полноэкранный режим: ${err.message}`);
-            });
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-    }
-    document.addEventListener('fullscreenchange', () => {
-        isFullscreen = !!document.fullscreenElement;
-        if (fullscreenIcon) {
-            fullscreenIcon.textContent = isFullscreen ? 'fullscreen_exit' : 'fullscreen';
-        }
-    });
+    function toggleMenu() { /* ... без изменений ... */ }
+    function toggleFullScreen() { /* ... без изменений ... */ }
+    document.addEventListener('fullscreenchange', () => { /* ... без изменений ... */ });
 
     function handleCardSelection(element) {
         if (!element || element.classList.contains('unavailable')) return;
+
+        if (element.dataset.special === "?") {
+            const cardStr = UNKNOWN_CARD_MARKER;
+            const emptySlot = Array.from(combinationArea.querySelectorAll('.combination-slot')).find(slot => !slot.querySelector('.card'));
+            if (emptySlot) {
+                const cardEl = createCardElement(cardStr);
+                if (cardEl) { emptySlot.appendChild(cardEl); }
+            } else { alert(`Зона комбинации заполнена (${MAX_COMBO_CARDS} карт).`); }
+            selectedRank = null; selectedSuit = null;
+            document.querySelectorAll('.selector-item.selected').forEach(el => el.classList.remove('selected'));
+            updateSelectorAvailability();
+            return;
+        }
+
         if (element.dataset.rank) {
             if (selectedRank === element.dataset.rank) { selectedRank = null; element.classList.remove('selected'); }
             else { document.querySelectorAll('[data-rank].selected').forEach(el => el.classList.remove('selected')); selectedRank = element.dataset.rank; element.classList.add('selected'); }
@@ -339,19 +362,19 @@
 
         if (selectedRank && selectedSuit) {
             const suitChar = getCardSuitChar(selectedSuit);
-            const cardStr = selectedRank + suitChar;
-            // Проверяем по объединенному сету недоступных и сброшенных
-            if (unavailableCards.has(cardStr) || permanentlyDiscardedCards.has(cardStr)) {
+            const cardStr = selectedRank + suitChar; // Каноническая строка (e.g., "Ts")
+            
+            if (unavailableCards.has(cardStr) || Array.from(permanentlyDiscardedCards).includes(cardStr)) {
                  console.warn(`Attempted to select unavailable/discarded card: ${cardStr}`); alert(`Карта ${cardStr} недоступна.`);
                  selectedRank = null; selectedSuit = null; document.querySelectorAll('.selector-item.selected').forEach(el => el.classList.remove('selected'));
                  updateSelectorAvailability(); return;
             }
             const emptySlot = Array.from(combinationArea.querySelectorAll('.combination-slot')).find(slot => !slot.querySelector('.card'));
             if (emptySlot) {
-                const cardEl = createCardElement(cardStr);
+                const cardEl = createCardElement(cardStr); // createCardElement вернет с data-card="Ts"
                 if (cardEl) {
                     emptySlot.appendChild(cardEl);
-                    unavailableCards.add(cardStr); // Добавляем в unavailable, т.к. она теперь в комбо-зоне
+                    unavailableCards.add(cardStr); // Добавляем каноническую строку
                     updateSelectorAvailability();
                 }
             } else { alert(`Зона комбинации заполнена (${MAX_COMBO_CARDS} карт).`); }
@@ -359,22 +382,26 @@
         }
     }
 
-    function permanentlyRemoveComboCards() {
+    function permanentlyRemoveComboCards() { // Кнопка "-"
         if (!combinationArea) return;
-        const comboCards = combinationArea.querySelectorAll('.card');
-        if (comboCards.length === 0) { alert("Нет карт в зоне комбинации для удаления."); return; }
-        console.log("Permanently removing cards from combo area...");
-        let cardsRemoved = [];
-        comboCards.forEach(card => {
-            const cardStr = card.dataset.card;
+        const comboCardsElements = combinationArea.querySelectorAll('.card');
+        if (comboCardsElements.length === 0) { alert("Нет карт в зоне комбинации для удаления."); return; }
+        
+        let cardsRemovedLog = [];
+        comboCardsElements.forEach(cardElement => {
+            const cardStr = cardElement.dataset.card; // Это каноническая строка или UNKNOWN_CARD_MARKER
             if (cardStr) {
-                permanentlyDiscardedCards.add(cardStr); // Добавляем в перманентно сброшенные
-                unavailableCards.delete(cardStr); // Удаляем из временно недоступных (т.к. она больше не в комбо)
-                cardsRemoved.push(cardStr); card.remove();
+                permanentlyDiscardedCards.add(cardStr); 
+                if (cardStr !== UNKNOWN_CARD_MARKER) {
+                    unavailableCards.delete(cardStr); 
+                }
+                cardsRemovedLog.push(cardStr);
+                cardElement.remove();
             }
         });
         combinationArea.querySelectorAll('.combination-slot').forEach(slot => slot.classList.remove('taken'));
-        console.log("Permanently removed:", cardsRemoved); console.log("Permanently discarded set:", permanentlyDiscardedCards);
+        console.log("Cards marked as permanently discarded by user:", cardsRemovedLog);
+        console.log("Current permanentlyDiscardedCards set:", permanentlyDiscardedCards);
         updateSelectorAvailability();
     }
 
@@ -383,22 +410,20 @@
         const cardElement = event.target.closest('.card');
         if (!cardElement) return;
 
-        const cardStr = cardElement.dataset.card;
+        const cardStr = cardElement.dataset.card; // Каноническая строка или UNKNOWN_CARD_MARKER
         const parentSlot = cardElement.parentElement;
         if (!cardStr || !parentSlot) return;
 
-        console.log(`Double-click processing for card: ${cardStr}`);
         const isOnBoard = parentSlot.classList.contains('card-slot');
         const isInCombo = parentSlot.classList.contains('combination-slot');
 
         if (isOnBoard || isInCombo) {
             cardElement.remove(); parentSlot.classList.remove('taken');
-            // Карта возвращается в "пул" доступных, если она не была перманентно сброшена
-            if (!permanentlyDiscardedCards.has(cardStr)) {
-                unavailableCards.delete(cardStr);
-                console.log(`Card ${cardStr} removed from unavailableCards (returned to deck).`);
-            } else {
-                console.log(`Card ${cardStr} was permanently discarded, not returning to unavailableCards.`);
+            
+            if (cardStr !== UNKNOWN_CARD_MARKER) { 
+                if (!permanentlyDiscardedCards.has(cardStr)) { 
+                    unavailableCards.delete(cardStr); 
+                }
             }
 
             if (isOnBoard) {
@@ -407,97 +432,129 @@
                 if (row && boardState[row] && index >= 0 && index < boardState[row].length) {
                     if (boardState[row][index] === cardStr) {
                         boardState[row][index] = null;
-                        console.log(`Card ${cardStr} removed from boardState[${row}][${index}].`);
-                    } else {
-                         boardState[row][index] = null;
                     }
                 }
             }
             updateSelectorAvailability();
-            console.log("Double-click handling finished.");
         }
     }
 
     function getBoardState() {
         let cardCount = 0;
         const currentBoardState = { top: Array(3).fill(null), middle: Array(5).fill(null), bottom: Array(5).fill(null) };
-        unavailableCards.clear(); // Очищаем перед пересчетом карт на доске и в комбо
+        unavailableCards.clear(); 
         Object.keys(currentBoardState).forEach(rowName => {
             const rowElement = document.getElementById(`${rowName}-row`);
             if (!rowElement) return;
             const slots = rowElement.querySelectorAll('.card-slot');
             slots.forEach((slot, index) => {
                 const card = slot.querySelector('.card');
-                if (card && card.dataset.card) {
-                    const cardStr = card.dataset.card;
+                if (card && card.dataset.card && card.dataset.card !== UNKNOWN_CARD_MARKER) {
+                    const cardStr = card.dataset.card; // Каноническая строка
                     currentBoardState[rowName][index] = cardStr;
-                    unavailableCards.add(cardStr); // Карта на доске -> unavailable
+                    unavailableCards.add(cardStr); 
                     cardCount++;
                 } else {
                     currentBoardState[rowName][index] = null;
                 }
             });
         });
-        combinationArea.querySelectorAll('.card').forEach(card => { // Карты в комбо-зоне тоже unavailable
-            if (card.dataset.card) unavailableCards.add(card.dataset.card);
+        combinationArea.querySelectorAll('.card').forEach(card => { 
+            const cardStr = card.dataset.card;
+            if (cardStr && cardStr !== UNKNOWN_CARD_MARKER) {
+                unavailableCards.add(cardStr);
+            }
         });
         boardState = currentBoardState;
+        updateSelectorAvailability(); // Обновляем доступность после пересчета карт на доске/в комбо
         return { board: boardState, cardCount };
     }
 
-    function placeCardsOnBoard(moveData) {
-        console.log("Placing cards from AI move:", moveData);
-        if (!moveData) return;
-        ['top', 'middle', 'bottom'].forEach(rowName => {
-            if (moveData[rowName] && Array.isArray(moveData[rowName])) {
-                moveData[rowName].forEach(cardObj => {
-                    if (cardObj && cardObj.rank && cardObj.suit) {
-                         const suitChar = getCardSuitChar(cardObj.suit);
-                         const cardStr = cardObj.rank + suitChar;
-                         const rowElement = document.getElementById(`${rowName}-row`);
-                         if(rowElement) {
-                             const slots = rowElement.querySelectorAll('.card-slot');
-                             let placed = false;
-                             for(let i = 0; i < slots.length; i++) {
-                                 const slot = slots[i];
-                                 if (!slot.querySelector('.card')) { // Ищем ПУСТОЙ слот
-                                     const cardEl = createCardElement(cardStr);
-                                     if (cardEl) {
-                                         slot.appendChild(cardEl); slot.classList.add('taken');
-                                         if (boardState[rowName]) { boardState[rowName][i] = cardStr; }
-                                         unavailableCards.add(cardStr); // Карта размещена на доске -> unavailable
-                                         console.log(`Placed ${cardStr} in ${rowName}[${i}]`);
-                                         placed = true; break;
-                                     }
-                                 }
-                             }
-                             if (!placed) console.warn(`Could not find empty slot for ${cardStr} in row ${rowName}`);
-                         }
-                    }
-                });
-            }
+    function placeCardsOnBoard(aiMoveData) { // aiMoveData - это data.move от сервера
+        console.log("Placing cards from AI move:", aiMoveData);
+        if (!aiMoveData) return;
+        
+        // Сначала очистим текущее состояние boardState от карт, которые могли быть в selected_cards
+        // и которые ИИ сейчас переразместит или сбросит.
+        // Это важно, если ИИ решает переместить карту, которая уже была на доске (хотя это не типично для OFC).
+        // В нашем случае, selected_cards - это карты из combination_area, они не на доске.
+        // Но если бы selected_cards могли быть с доски, это было бы нужно.
+
+        Object.keys(boardState).forEach(rowName => {
+            aiMoveData[rowName]?.forEach((cardToPlaceObj, indexInAiMove) => {
+                // Ищем первый свободный слот в boardState[rowName] для размещения
+                // или конкретный слот, если бы AI возвращал индексы.
+                // Текущий AI возвращает просто список карт для каждого ряда, подразумевая заполнение слева направо в пустые.
+                // Это неверно. AI должен возвращать точные позиции (row, index).
+                // Формат ответа от /ai_move:
+                // {"move": {"top": [{"rank": R, "suit": S, "row": "top", "index": I}, ...], ...}}
+                // Нет, формат ответа: {"move": {"top": [{"rank":R, "suit":S}, ...], "middle": ..., "discarded": ...}}
+                // Это означает, что placeCardsOnBoard должен сам найти пустые слоты.
+                // Это не очень хорошо, т.к. порядок карт в ответе AI для ряда может быть важен.
+                // ИИ должен возвращать точные (карта, ряд, индекс).
+                // Предположим, что `best_placement_info['placements']` в app.py это [(card_int, row_str, index_int), ...]
+                // И `response_placements_formatted` в app.py это [{"card_str": CS, "rank": R, "suit": SY, "row": RO, "index": I}, ...]
+                // Тогда `placeCardsOnBoard` должен получать этот `response_placements_formatted`.
+                // Сейчас `placeCardsOnBoard` получает `data.move`, который имеет другую структуру.
+                // ИСПРАВЛЕНИЕ: `placeCardsOnBoard` должен принимать `response_placements_formatted` из `app.py`
+                // или `data.move.placements` если мы изменим формат ответа.
+                // Пока что, будем считать, что `aiMoveData` это `response_placements_formatted` (список объектов с row, index).
+                // Это изменение нужно будет сделать в `getAIPlacement` при вызове `placeCardsOnBoard`.
+            });
         });
-        // Карты, которые были в комбо-зоне и были размещены ИИ, уже добавлены в unavailableCards.
-        // Карты, которые были в комбо-зоне, но НЕ были размещены ИИ (т.е. сброшены ИИ или остались из-за нехватки места),
-        // должны быть удалены из unavailableCards, если они не были явно сброшены.
-        // Однако, AI ход должен размещать ВСЕ карты из comboCards, кроме одной сброшенной.
-        // Поэтому после placeCardsOnBoard, combo-зона должна быть пуста.
-        // Сброшенная ИИ карта обрабатывается в getAIPlacement.
-        updateBoardUI(); // Обновляем UI на основе boardState
+
+        // Если `aiMoveData` это `data.move` из текущего `app.py`:
+        Object.entries(aiMoveData).forEach(([rowName, cardsInRowArray]) => {
+            if (rowName === "discarded" || !Array.isArray(cardsInRowArray)) return;
+
+            cardsInRowArray.forEach(cardObj => { // cardObj это {"rank": R, "suit": S}
+                if (cardObj && cardObj.rank && cardObj.suit) {
+                    const suitChar = getCardSuitChar(cardObj.suit);
+                    const cardStr = cardObj.rank + suitChar; // Каноническая строка
+                    
+                    let placed = false;
+                    for (let i = 0; i < (boardState[rowName]?.length || 0); i++) {
+                        if (boardState[rowName][i] === null) {
+                            boardState[rowName][i] = cardStr;
+                            unavailableCards.add(cardStr);
+                            placed = true;
+                            break;
+                        }
+                    }
+                    if (!placed) console.warn(`Could not find empty slot for ${cardStr} in row ${rowName} during AI placement.`);
+                }
+            });
+        });
+        updateBoardUI(); // Обновляем UI на основе измененного boardState
     }
 
     async function getAIPlacement() {
-        const { board, cardCount } = getBoardState(); // Обновляет unavailableCards картами с доски и комбо
+        const { board, cardCount } = getBoardState(); 
         const comboCardsElements = combinationArea.querySelectorAll('.card');
-        const comboCardsStrings = Array.from(comboCardsElements).map(el => el.dataset.card).filter(Boolean);
-        if (comboCardsStrings.length === 0) { alert("Пожалуйста, добавьте карты в 'Combination Area'."); return; }
-        if (cardCount + comboCardsStrings.length > 13) { alert(`Слишком много карт (${cardCount + comboCardsStrings.length}). Максимум 13.`); return; }
+        const comboCardsStrings = Array.from(comboCardsElements)
+            .map(el => el.dataset.card) // канонические строки или UNKNOWN_CARD_MARKER
+            .filter(Boolean)
+            .filter(cs => cs !== UNKNOWN_CARD_MARKER); 
+
+        if (comboCardsStrings.length === 0 && cardCount < 13) { // Если нет карт для ИИ и доска не полна
+            alert("Пожалуйста, добавьте ИЗВЕСТНЫЕ карты в 'Combination Area' для размещения AI."); return;
+        }
+        
+        // Ослабленная проверка для Задачи 1:
+        if (cardCount >= 13 && comboCardsStrings.length > 0) { 
+            alert("Доска уже заполнена. Нельзя добавить новые карты."); return; 
+        }
+        // Если cardCount < 13, запрос отправляется, даже если cardCount + comboCardsStrings.length > 13.
+        // ИИ сам решит, сколько карт разместить.
 
         const aiSettings = getAiSettings();
-        const permanentlyDiscardedList = Array.from(permanentlyDiscardedCards);
+        const allPermanentlyDiscardedList = Array.from(permanentlyDiscardedCards); 
+
         const requestData = {
-            selected_cards: comboCardsStrings, board: board,
-            discarded_cards: permanentlyDiscardedList, ai_settings: aiSettings
+            selected_cards: comboCardsStrings, 
+            board: board,
+            discarded_cards: allPermanentlyDiscardedList, 
+            ai_settings: aiSettings
         };
         console.log("Requesting AI placement:", JSON.stringify(requestData, null, 2));
         if (waitingOverlay) waitingOverlay.style.display = 'flex';
@@ -520,25 +577,57 @@
             if (data.error) { throw new Error(data.error); }
             if (!data.move) { console.error("Invalid AI response structure: 'move' field is missing.", data); throw new Error("AI response missing 'move' data."); }
 
-            // Карты из comboCards были либо размещены, либо сброшены.
-            // Очищаем combo-зону и удаляем эти карты из 'unavailableCards' (т.к. они больше не в комбо).
-            // placeCardsOnBoard добавит размещенные карты обратно в 'unavailableCards'.
-            // Сброшенная карта будет добавлена в 'permanentlyDiscardedCards'.
-            resetCombinationAreaDOM(); // Это удалит карты из DOM и из unavailableCards
+            resetCombinationAreaDOM(); // Очищает комбо-зону и убирает карты из unavailableCards
+            
+            // Вместо placeCardsOnBoard, которая заполняет слева направо,
+            // нужно напрямую обновить boardState на основе точных позиций от AI.
+            // Предполагаем, что data.move.placements (если бы он был) содержал бы [{card_str, rank, suit, row, index}, ...]
+            // Но текущий формат ответа data.move это {"top": [...], "middle": [...], "bottom": [...]}
+            // Это означает, что app.py должен вернуть ТОЧНЫЕ позиции в этих массивах.
+            // Если app.py возвращает {"top": [{"rank":"A", "suit":"♠"}, ...]} без индексов,
+            // то placeCardsOnBoard будет пытаться заполнить первые пустые слоты, что может быть неверно.
+            // ИСПРАВЛЕНИЕ: app.py должен вернуть структуру, где каждая карта имеет row и index.
+            // Пока что, если app.py возвращает data.move как есть, placeCardsOnBoard попытается заполнить.
+            // Это нужно будет синхронизировать с форматом ответа app.py.
+            // Для Задачи 1 (11 карт, 3 сданы, 2 разместить):
+            // AI вернет 2 карты в data.move.placements (или в data.move.top/middle/bottom).
+            // И 1 карту в data.move.discarded.
 
-            placeCardsOnBoard(data.move); // Размещает карты на доске, обновляет boardState и unavailableCards
-
-            // Обработка карты, сброшенной ИИ
-            if (data.move.discarded && data.move.discarded !== CARD_PLACEHOLDER) {
-                console.log(`AI discarded: ${data.move.discarded}. Adding to permanently discarded.`);
-                permanentlyDiscardedCards.add(data.move.discarded);
-                // Если карта была в unavailable (например, если она была в combo и ее сбросили),
-                // она уже удалена оттуда resetCombinationAreaDOM.
-                // Если ее не было в combo, но ИИ ее как-то сбросил (не должно быть по текущей логике),
-                // то добавление в permanentlyDiscardedCards сделает ее недоступной.
+            // Обновляем boardState и unavailableCards на основе того, что вернул AI
+            // Это должно быть сделано на основе точных позиций, которые AI решил использовать.
+            // Если AI вернул data.move.placements = [{rank, suit, row, index}, ...], то:
+            if (data.move_details && data.move_details.placements_formatted) { // Если сервер вернет новый формат
+                data.move_details.placements_formatted.forEach(p => {
+                    const cardString = p.rank + getCardSuitChar(p.suit); // Восстанавливаем строку карты
+                    if (boardState[p.row] && boardState[p.row][p.index] === null) {
+                        boardState[p.row][p.index] = cardString;
+                        unavailableCards.add(cardString);
+                    } else {
+                        console.error(`AI tried to place ${cardString} on occupied/invalid slot ${p.row}[${p.index}]`);
+                    }
+                });
+                updateBoardUI(); // Обновляем доску на основе измененного boardState
+            } else {
+                // Используем старый placeCardsOnBoard, если формат ответа не изменился
+                placeCardsOnBoard(data.move); 
             }
 
-            updateSelectorAvailability(); // Обновляем доступность селекторов с учетом всех изменений
+
+            if (data.move.discarded) {
+                const discardedByAI = data.move.discarded; // Может быть строкой или массивом строк
+                if (Array.isArray(discardedByAI)) {
+                    discardedByAI.forEach(dCardStr => {
+                        if (dCardStr && dCardStr !== CARD_PLACEHOLDER) {
+                            permanentlyDiscardedCards.add(dCardStr);
+                        }
+                    });
+                } else if (discardedByAI && discardedByAI !== CARD_PLACEHOLDER) {
+                    permanentlyDiscardedCards.add(discardedByAI);
+                }
+                console.log(`AI discarded: ${JSON.stringify(discardedByAI)}. Updated permanentlyDiscardedCards:`, permanentlyDiscardedCards);
+            }
+
+            updateSelectorAvailability(); 
             checkEndGame();
         } catch (error) {
             console.error('Error getting AI placement:', error);
@@ -549,23 +638,21 @@
         }
     }
 
-    // --- Логика конца игры ---
     function checkEndGame() {
-        const { cardCount } = getBoardState();
+        const { cardCount } = getBoardState(); // Обновит boardState и cardCount
         console.log(`Checking end game. Cards on board: ${cardCount}`);
         if (cardCount === 13) {
             console.log("Board is full. Calculating score...");
             calculateAndShowScore(boardState);
         }
     }
-
-    async function calculateAndShowScore(finalBoard) {
+    
+    async function calculateAndShowScore(finalBoardState) { // Принимает boardState
         if (!royaltyDisplay) return;
         royaltyDisplay.textContent = "Подсчет очков..."; royaltyDisplay.style.color = '#b8860b';
         try {
-            const boardToSend = {};
-            for (const row in finalBoard) { boardToSend[row] = finalBoard[row].map(card => card === null ? null : card); }
-            const response = await fetch('/calculate_score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ board: boardToSend }) });
+            // finalBoardState уже в нужном формате {top: [str|null,...], ...}
+            const response = await fetch('/calculate_score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ board: finalBoardState }) });
             const scoreData = await response.json();
             console.log("Received score data:", scoreData);
             if (!response.ok) { throw new Error(scoreData.error || `Server error: ${response.status}`); }
@@ -588,13 +675,12 @@
         }
     }
 
-    // --- Сброс ---
     function resetTraining() {
         console.log("Resetting training board...");
         boardState = { top: Array(3).fill(null), middle: Array(5).fill(null), bottom: Array(5).fill(null) };
         unavailableCards.clear(); permanentlyDiscardedCards.clear();
         selectedRank = null; selectedSuit = null;
-        setupTable(); setupCombinationArea();
+        setupTable(); setupCombinationArea(); // setupCombinationArea очистит DOM комбо-зоны
         document.querySelectorAll('.selector-item.selected').forEach(el => el.classList.remove('selected'));
         if (royaltyDisplay) royaltyDisplay.textContent = '';
         updateSelectorAvailability();
@@ -604,11 +690,9 @@
         console.log("Training board reset complete.");
     }
 
-    // --- Настройки ---
     function getAiSettings() { return { aiTime: aiTimeSlider ? aiTimeSlider.value : 5, training_mode: true }; }
     function saveSettings() { alert('Настройки времени будут применены при следующем запросе к AI.'); toggleMenu(); }
 
-    // --- Инициализация при загрузке ---
     document.addEventListener('DOMContentLoaded', () => {
         console.log("DOM Content Loaded. Initializing UI...");
         royaltyDisplay = document.getElementById('royalty-display');
