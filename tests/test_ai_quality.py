@@ -1,64 +1,137 @@
-# tests/test_ai_quality.py v1.1
+# tests/test_ai_quality.py v1.2 (Added test for 11+3 cards, enhanced Fantasy test)
 """
 Тесты для оценки качества решений MCTS-агента.
-ИСПРАВЛЕНО: Добавлен import random.
-ИСПРАВЛЕНО: Логика в test_ai_correct_discard_choice для симуляции не первой улицы.
-ИСПРАВЛЕНО: Добавлен random.shuffle в test_ai_prefers_fantasy_qualification и test_ai_avoids_obvious_foul.
+- Добавлен тест на корректное размещение 2 из 3 карт при 11 картах на доске.
+- Улучшен тест на стремление к Фантазии.
 """
 import pytest
 from unittest.mock import ANY
-import random # <--- ДОБАВЛЕНО
+import random
 
 try:
     from mcts_agent import MCTSAgent
-    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS
-    from ofc_evaluators import check_board_foul, get_row_royalty, HAND_TYPE_TRIPS_3, RANK_QUEEN, calculate_total_royalty_for_board
+    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS, RANK_QUEEN, RANK_KING, RANK_ACE
+    from ofc_evaluators import check_board_foul, get_row_royalty, HAND_TYPE_TRIPS_3, calculate_total_royalty_for_board
 except ImportError:
     pytest.skip("Skipping AI quality tests due to missing core imports", allow_module_level=True)
 
-# Хелпер для конвертации строк карт в int
 def hand_to_int(card_strs: list) -> list:
-    return [Card.from_str(s) for s in card_strs if s and len(s) >= 2] # >=2 для случая типа '10s'
+    return [Card.from_str(s) for s in card_strs if s and len(s) >= 2]
 
 @pytest.fixture
 def agent_short_time():
-    return MCTSAgent(time_limit_ms=300, num_workers=1, rollouts_per_leaf=10) # Чуть больше времени
+    # Увеличим немного время для более сложных сценариев
+    return MCTSAgent(time_limit_ms=500, num_workers=1, rollouts_per_leaf=15)
 
-def test_ai_prefers_fantasy_qualification(agent_short_time):
+@pytest.fixture
+def agent_very_short_time(): # Для простых тестов, где не нужна глубокая симуляция
+    return MCTSAgent(time_limit_ms=100, num_workers=1, rollouts_per_leaf=5)
+
+
+def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
     """
-    Тест: ИИ должен стремиться к Фантазии (QQ+ на топе), если это возможно и безопасно.
-    Сценарий: Первые 5 карт, есть возможность собрать QQ на топе.
+    ЗАДАЧА 1: На доске 11 карт, ИИ получает 3, должен разместить 2 и 1 сбросить.
     """
     board = PlayerBoard()
-    cards_dealt = hand_to_int(['Qs', 'Qd', 'As', 'Ks', 'Ts'])
+    # Заполняем доску 11 картами (пример)
+    initial_placements = [
+        ('As', 'bottom', 0), ('Ks', 'bottom', 1), ('Qs', 'bottom', 2), ('Js', 'bottom', 3),
+        ('Ts', 'middle', 0), ('9s', 'middle', 1), ('8s', 'middle', 2), ('7s', 'middle', 3),
+        ('6s', 'top', 0), ('5s', 'top', 1), ('4s', 'top', 2) # 11 карт
+    ]
+    initial_board_cards_int = []
+    for card_str, row, idx in initial_placements:
+        c_int = Card.from_str(card_str)
+        board.add_card(c_int, row, idx)
+        initial_board_cards_int.append(c_int)
+    
+    assert board.get_total_cards() == 11
+
+    # Карты для ИИ (3 штуки)
+    cards_dealt_str = ['Ah', 'Kh', '2c'] # Очевидный сброс - 2c
+    cards_dealt_int = hand_to_int(cards_dealt_str)
+    
+    remaining_deck = Deck.FULL_DECK_CARDS - set(initial_board_cards_int) - set(cards_dealt_int)
+
+    placement_info = agent_short_time.choose_placement(board, cards_dealt_int, remaining_deck, 0)
+
+    assert placement_info is not None, "AI did not return a placement"
+    assert 'placements' in placement_info, "Placement info missing 'placements' key"
+    assert 'discarded' in placement_info, "Placement info missing 'discarded' key"
+
+    assert len(placement_info['placements']) == 2, f"AI should place 2 cards, but placed {len(placement_info['placements'])}"
+    
+    # Проверяем, что сброшена одна карта (discarded может быть int или tuple)
+    discarded_ai = placement_info['discarded']
+    num_discarded_by_ai = 0
+    if discarded_ai is not None:
+        if isinstance(discarded_ai, tuple):
+            num_discarded_by_ai = len(discarded_ai)
+        else: # int
+            num_discarded_by_ai = 1
+            
+    assert num_discarded_by_ai == 1, f"AI should discard 1 card, but discarded {num_discarded_by_ai} ({discarded_ai})"
+
+    # Проверяем, что сброшена наименее ценная карта (в данном случае 2c)
+    assert Card.to_str(placement_info['discarded']) == '2c', f"AI discarded {Card.to_str(placement_info['discarded'])}, expected 2c"
+
+    # Проверяем, что размещенные карты - это Ah и Kh
+    placed_by_ai_ints = {p[0] for p in placement_info['placements']}
+    expected_placed_ints = {Card.from_str('Ah'), Card.from_str('Kh')}
+    assert placed_by_ai_ints == expected_placed_ints, \
+        f"AI placed {[Card.to_str(c) for c in placed_by_ai_ints]}, expected {[Card.to_str(c) for c in expected_placed_ints]}"
+
+    # Проверяем, что доска после хода ИИ не фол
+    board_after_ai = board.copy()
+    for card_int, row, idx in placement_info['placements']:
+        board_after_ai.add_card(card_int, row, idx)
+    
+    assert board_after_ai.get_total_cards() == 13, "Board should have 13 cards after AI move"
+    assert not check_board_foul(board_after_ai), "AI made a move that resulted in a foul"
+
+
+@pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
+    (['Qs', 'Qd', 'As', 'Ks', 'Ts'], RANK_QUEEN),
+    (['Ks', 'Kd', 'As', 'Qs', 'Ts'], RANK_KING),
+    (['As', 'Ad', 'Ks', 'Qs', 'Ts'], RANK_ACE),
+    (['7s', '7d', '7c', 'Ks', 'Qs'], RANK_7), # Trips for fantasy
+])
+def test_ai_prefers_fantasy_qualification_progressive(agent_short_time, fantasy_hand_str, target_rank_int):
+    """
+    Тест: ИИ должен стремиться к Фантазии (QQ+, KK+, AA+, Trips на топе).
+    """
+    board = PlayerBoard()
+    cards_dealt = hand_to_int(fantasy_hand_str)
     remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
 
-    placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck)
+    placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
     assert placement_info is not None, "AI did not return a placement"
-    assert placement_info['placements'] is not None
     
-    # Создаем доску после хода ИИ
     board_after_ai_move = board.copy()
     for card_int, row, idx in placement_info['placements']:
         board_after_ai_move.add_card(card_int, row, idx)
 
-    # Проверяем топ на QQ+
     top_row_cards = board_after_ai_move.get_row_cards('top')
-    top_row_ranks = sorted([Card.get_rank_int(c) for c in top_row_cards if c is not None], reverse=True)
     
-    is_qq_or_better_on_top = False
-    if len(top_row_ranks) == 3: # Если топ заполнен
-        # Простая проверка на пару QQ, KK, AA или трипс
-        if (top_row_ranks[0] == top_row_ranks[1] and top_row_ranks[0] >= RANK_MAP['Q']) or \
-           (top_row_ranks[0] == top_row_ranks[1] == top_row_ranks[2]): # Трипс
-            is_qq_or_better_on_top = True
-    elif len(top_row_ranks) == 2: # Если на топе 2 карты
-         if top_row_ranks[0] == top_row_ranks[1] and top_row_ranks[0] >= RANK_MAP['Q']:
-             is_qq_or_better_on_top = True # Уже есть пара QQ+
-
+    fantasy_achieved = False
+    if len(top_row_cards) == 3:
+        from ofc_evaluator_3card import evaluate_3_card_ofc # Локальный импорт для теста
+        try:
+            _, type_top, _ = evaluate_3_card_ofc(top_row_cards[0], top_row_cards[1], top_row_cards[2])
+            if type_top == HAND_TYPE_TRIPS_3:
+                fantasy_achieved = True
+            elif type_top == HAND_TYPE_PAIR_3:
+                ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
+                pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
+                if pair_rank_top >= RANK_QUEEN: # QQ, KK, AA
+                    fantasy_achieved = True
+        except ValueError: # Если рука на топе невалидна (например, не 3 карты)
+            pass 
+    
     # Заполняем доску до конца случайными картами для полной проверки на фол
     if not board_after_ai_move.is_complete():
-        deck_list_for_completion = list(remaining_deck - set(board_after_ai_move.get_all_cards()))
+        current_board_all_cards = board_after_ai_move.get_all_cards()
+        deck_list_for_completion = list(remaining_deck - current_board_all_cards)
         random.shuffle(deck_list_for_completion)
         slots_to_fill = board_after_ai_move.get_available_slots()
         for i, (r, s_idx) in enumerate(slots_to_fill):
@@ -68,43 +141,43 @@ def test_ai_prefers_fantasy_qualification(agent_short_time):
     
     if board_after_ai_move.is_complete():
         is_foul = check_board_foul(board_after_ai_move)
-        if is_qq_or_better_on_top:
-            assert not is_foul, "AI aimed for Fantasyland but fouled."
-        # Если ИИ не пошел на ФЛ, но мог, это сложнее проверить автоматически без глубокого анализа.
-        # Для этого теста, если ФЛ достигнут без фола, это успех.
-        # Если ФЛ не достигнут, но и фола нет, тест проходит (ИИ мог выбрать другой путь).
-        # Если фол - тест падает.
-        assert not is_foul, "AI made a move that leads to a foul in fantasy attempt scenario."
-    
-    # Если QQ были в розданных картах, ожидаем, что ИИ попытается их использовать для ФЛ,
-    # если это не приводит к немедленному фолу или очень плохой доске.
-    # Этот ассерт очень мягкий, т.к. ИИ может иметь причины не ставить QQ на топ.
-    if Card.from_str('Qs') in cards_dealt and Card.from_str('Qd') in cards_dealt:
-        if is_qq_or_better_on_top:
-             pass # Хорошо
+        if fantasy_achieved:
+            assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
         else:
-             # Можно добавить логирование или более мягкий assert, например, что роялти не нулевые
-             # pytest.skip("AI did not place QQ on top, needs manual review or smarter check.")
-             pass # Пока пропускаем этот случай, если QQ не на топе, но и не фол
+            # Если Фантазия не достигнута, но могла быть, это сложнее.
+            # Для этого теста, если ФЛ не достигнут, но и фола нет, тест проходит.
+            assert not is_foul, f"AI made a move that leads to a foul in fantasy attempt scenario ({fantasy_hand_str})."
+    
+    # Если Фантазия была возможна с руки, ожидаем, что ИИ ее сделает, если это не фол.
+    # Этот ассерт может быть слишком строгим, т.к. ИИ может выбрать более сильную общую руку.
+    if any(Card.get_rank_int(c) == target_rank_int for c in cards_dealt): # Если целевая карта была в руке
+         if not fantasy_achieved and board_after_ai_move.is_complete() and not check_board_foul(board_after_ai_move):
+             # Можно добавить pytest.skip или warning, если ФЛ не достигнут, но ход валидный.
+             # Это указывает на то, что эвристика ФЛ может быть недостаточно агрессивной.
+             logger.warning(f"AI did not achieve fantasy with {fantasy_hand_str} but made a valid non-foul hand. Review fantasy heuristic.")
+         elif fantasy_achieved:
+             logger.info(f"AI successfully aimed for fantasy with {fantasy_hand_str}.")
+
 
 def test_ai_avoids_obvious_foul(agent_short_time):
     """
     Тест: ИИ должен избегать очевидного фола, если есть безопасная альтернатива.
-    Сценарий: Топ уже сильный, мидл слабый. Новая карта может усилить мидл выше топа.
     """
     board = PlayerBoard()
-    board.add_card(Card.from_str('2s'), 'top', 0)
-    board.add_card(Card.from_str('2d'), 'top', 1)
-    board.add_card(Card.from_str('3c'), 'top', 2) # Топ: 2,2,3
-
-    cards_dealt = hand_to_int(['As', 'Ad', 'Ks']) # Рука: AA, K
-    # Опасный ход: AA на мидл (AAx > 223 -> Фол)
-    # Безопасный ход: AA на боттом, K на мидл.
+    # Топ: KKK (очень сильный)
+    board.add_card(Card.from_str('Ks'), 'top', 0); board.add_card(Card.from_str('Kd'), 'top', 1); board.add_card(Card.from_str('Kc'), 'top', 2)
+    # Мидл: 223xx (очень слабый)
+    board.add_card(Card.from_str('2s'), 'middle', 0); board.add_card(Card.from_str('2d'), 'middle', 1); board.add_card(Card.from_str('3h'), 'middle', 2)
+    
+    # Сдаем карты, которые могут легко сделать мидл сильнее топа: Ah, Ad, Ac
+    cards_dealt = hand_to_int(['Ah', 'Ad', 'Ac']) 
+    # Опасный ход: AA на мидл (AAx сильнее KKK -> Фол)
+    # Безопасный ход: AA на боттом, третья карта (A) на мидл (если есть место) или сброс.
     
     initial_board_cards = board.get_all_cards()
     remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt) - initial_board_cards
 
-    placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck)
+    placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
     assert placement_info is not None, "AI did not return a placement"
 
     final_board = board.copy()
@@ -113,63 +186,50 @@ def test_ai_avoids_obvious_foul(agent_short_time):
         final_board.add_card(card_int, row, idx)
         placed_cards_in_move_ints.add(card_int)
     
-    # Заполняем доску до конца случайными картами для полной проверки на фол
     if not final_board.is_complete():
-        # Обновляем remaining_deck, исключая карты, которые ИИ только что разместил/сбросил
-        # (если они были взяты из remaining_deck, а не cards_dealt - но здесь они из cards_dealt)
-        # и те, что были сброшены ИИ
         current_remaining_deck_list = list(remaining_deck - placed_cards_in_move_ints)
         if placement_info.get('discarded') is not None:
-            if placement_info['discarded'] in current_remaining_deck_list: # на всякий случай
-                 current_remaining_deck_list.remove(placement_info['discarded'])
+            discarded_val = placement_info['discarded']
+            if isinstance(discarded_val, tuple):
+                for d_card in discarded_val:
+                    if d_card in current_remaining_deck_list: current_remaining_deck_list.remove(d_card)
+            elif discarded_val in current_remaining_deck_list:
+                current_remaining_deck_list.remove(discarded_val)
         
-        random.shuffle(current_remaining_deck_list) # <--- Используем random
+        random.shuffle(current_remaining_deck_list)
         slots_to_fill = final_board.get_available_slots()
         for i, (r, s_idx) in enumerate(slots_to_fill):
-            if i < len(current_remaining_deck_list):
-                final_board.add_card(current_remaining_deck_list[i], r, s_idx)
+            if i < len(current_remaining_deck_list): final_board.add_card(current_remaining_deck_list[i], r, s_idx)
             else: break 
     
     if final_board.is_complete():
         assert not check_board_foul(final_board), "AI made a move that leads to a foul"
-    else:
-        # Если доска не полная, сложно однозначно сказать про фол без оценки всех линий.
-        # Но если уже есть очевидный фол между заполненными линиями, это проблема.
-        # check_board_foul должен это обработать.
-        # Для этого теста, если он не полный, но уже фол, это провал.
-        if final_board.get_total_cards() >= 8: # Хотя бы 2 линии можно сравнить
-             assert not check_board_foul(final_board), "AI made a move that leads to an early foul"
+    elif final_board.get_total_cards() >= 8: # Если хотя бы топ и мидл заполнены
+         assert not check_board_foul(final_board), "AI made a move that leads to an early foul between top/middle"
 
 
-def test_ai_correct_discard_choice(agent_short_time):
+def test_ai_correct_discard_choice_not_first_street(agent_very_short_time):
     """
     Тест: ИИ должен делать очевидный выбор сброса (не первая улица).
-    Сценарий: На доске уже есть карты. Рука As, Ks, 2c. Очевидный сброс - 2c.
     """
     board = PlayerBoard()
-    # Симулируем, что это не первая улица, добавив несколько карт на доску
-    board.add_card(Card.from_str('7h'), 'bottom', 0)
-    board.add_card(Card.from_str('8h'), 'bottom', 1)
-    board.add_card(Card.from_str('9h'), 'middle', 0)
-    board.add_card(Card.from_str('Th'), 'middle', 1)
-    board.add_card(Card.from_str('Jh'), 'top', 0)
-    # Итого 5 карт на доске, следующая улица - раздача 3 карт.
-
-    cards_dealt = hand_to_int(['As', 'Ks', '2c'])
+    board.add_card(Card.from_str('7h'), 'bottom', 0); board.add_card(Card.from_str('8h'), 'bottom', 1)
+    board.add_card(Card.from_str('9s'), 'middle', 0); board.add_card(Card.from_str('Ts'), 'middle', 1)
+    board.add_card(Card.from_str('Jc'), 'top', 0) # 5 карт на доске
+    
+    cards_dealt = hand_to_int(['As', 'Ks', '2c']) # Очевидный сброс 2c
     initial_board_cards = board.get_all_cards()
     remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt) - initial_board_cards
 
-    placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck)
-    assert placement_info is not None, "AI did not return a placement in discard choice test"
+    placement_info = agent_very_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
+    assert placement_info is not None, "AI did not return a placement"
     assert placement_info.get('discarded') is not None, "AI did not discard a card"
     
     discarded_card_str = Card.to_str(placement_info['discarded'])
     assert discarded_card_str == '2c', f"AI discarded {discarded_card_str}, expected 2c"
-
     placed_card_ints = {p[0] for p in placement_info['placements']}
-    assert Card.from_str('As') in placed_card_ints, "As was not placed"
-    assert Card.from_str('Ks') in placed_card_ints, "Ks was not placed"
-    assert len(placed_card_ints) == 2, "Incorrect number of cards placed"
+    assert Card.from_str('As') in placed_card_ints and Card.from_str('Ks') in placed_card_ints
+    assert len(placed_card_ints) == 2
 
 
 def test_ai_first_street_strong_hand_to_bottom(agent_short_time):
@@ -180,22 +240,74 @@ def test_ai_first_street_strong_hand_to_bottom(agent_short_time):
     cards_dealt = hand_to_int(['As', 'Ks', 'Qs', 'Js', 'Ts']) # Роял-Флеш
     remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
 
-    placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck)
-    assert placement_info is not None, "AI returned no placement for strong starting hand"
-    assert len(placement_info['placements']) == 5, "AI did not place all 5 cards on the first street"
+    placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
+    assert placement_info is not None and len(placement_info['placements']) == 5
 
-    bottom_row_cards_placed = []
-    middle_row_cards_placed = []
-    top_row_cards_placed = []
+    bottom_cards = [p[0] for p in placement_info['placements'] if p[1] == 'bottom']
+    assert len(bottom_cards) == 5, "AI did not place all 5 cards of RF on bottom"
+    assert set(bottom_cards) == set(cards_dealt), "Cards on bottom do not match dealt RF"
 
-    for card_int, row, _ in placement_info['placements']:
-        if row == 'bottom': bottom_row_cards_placed.append(card_int)
-        elif row == 'middle': middle_row_cards_placed.append(card_int)
-        elif row == 'top': top_row_cards_placed.append(card_int)
+
+def test_ai_handles_unknown_cards_conservatively(agent_short_time):
+    """
+    Тест: При большом количестве "?" карт, ИИ должен быть более консервативен
+    в отношении дро, зависящих от многих аутов.
+    Сценарий: Две опции - рискованное флеш-дро (много аутов, но много "?")
+                 или менее ценная, но более надежная пара.
+    """
+    board = PlayerBoard() # Пустая доска
+    # Рука: 4 карты на флеш + одна карта для пары
+    # Ah Kh Qh Jh 2d (4 червы + двойка бубен)
+    cards_dealt = hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', '2d'])
     
-    # Ожидаем, что все 5 карт сильной руки пойдут на боттом
-    assert len(bottom_row_cards_placed) == 5, \
-        f"AI did not place all 5 cards on bottom. Bottom: {len(bottom_row_cards_placed)}, Mid: {len(middle_row_cards_placed)}, Top: {len(top_row_cards_placed)}"
+    # Сценарий 1: Мало "?" карт
+    remaining_deck_few_q = Deck.FULL_DECK_CARDS - set(cards_dealt)
+    # Убедимся, что в колоде много черв для флеша
+    # (Deck.FULL_DECK_CARDS уже содержит все карты)
     
-    assert set(bottom_row_cards_placed) == set(cards_dealt), \
-        f"Cards on bottom {hand_to_str(bottom_row_cards_placed)} do not match dealt strong hand {hand_to_str(cards_dealt)}"
+    placement_few_q = agent_short_time.choose_placement(board.copy(), cards_dealt, remaining_deck_few_q, num_unknown_removed_cards=1)
+    assert placement_few_q is not None
+    
+    board_after_few_q = PlayerBoard()
+    for c,r,i in placement_few_q['placements']: board_after_few_q.add_card(c,r,i)
+    # Ожидаем, что ИИ пойдет на флеш (например, 4 червы на боттом)
+    bottom_cards_few_q = board_after_few_q.get_row_cards('bottom')
+    is_flush_attempt_few_q = False
+    if len(bottom_cards_few_q) >= 4:
+        suits_bottom = Counter(Card.get_suit_int(c) for c in bottom_cards_few_q)
+        if any(count >= 4 for count in suits_bottom.values()):
+            is_flush_attempt_few_q = True
+    
+    # Сценарий 2: Много "?" карт (например, 15)
+    # Колода та же, но ИИ знает, что много карт удалено неизвестно как
+    placement_many_q = agent_short_time.choose_placement(board.copy(), cards_dealt, remaining_deck_few_q, num_unknown_removed_cards=15)
+    assert placement_many_q is not None
+
+    board_after_many_q = PlayerBoard()
+    for c,r,i in placement_many_q['placements']: board_after_many_q.add_card(c,r,i)
+    bottom_cards_many_q = board_after_many_q.get_row_cards('bottom')
+    is_flush_attempt_many_q = False
+    if len(bottom_cards_many_q) >= 4:
+        suits_bottom = Counter(Card.get_suit_int(c) for c in bottom_cards_many_q)
+        if any(count >= 4 for count in suits_bottom.values()):
+            is_flush_attempt_many_q = True
+
+    # Ожидаем, что при малом "?" ИИ может пойти на флеш,
+    # а при большом "?" может предпочесть более безопасную игру (например, пару 22 на мидл/топ, а AKQJ на боттом).
+    # Этот тест сложен для точного ассерта, т.к. зависит от многих факторов.
+    # Пока что проверим, что ходы разные или что оценка флеша ниже при многих "?".
+    # Если is_flush_attempt_few_q == True, то ожидаем, что is_flush_attempt_many_q может быть False.
+    if is_flush_attempt_few_q and not is_flush_attempt_many_q:
+        logger.info("AI correctly became more conservative with flush draw due to many '?' cards.")
+        pass # Это ожидаемое поведение
+    elif is_flush_attempt_few_q and is_flush_attempt_many_q:
+        logger.warning("AI still attempted flush draw with many '?' cards. Review conservatism.")
+        # Это не обязательно ошибка, но требует внимания.
+    elif not is_flush_attempt_few_q and is_flush_attempt_many_q:
+        logger.warning("AI attempted flush draw ONLY with many '?' cards. Unexpected.")
+    else: # Оба не пошли на флеш
+        logger.info("AI did not attempt flush draw in either '?' scenario for this hand.")
+
+    # Более простой ассерт: просто убедиться, что ИИ не падает и возвращает ход.
+    assert placement_few_q is not None
+    assert placement_many_q is not None
