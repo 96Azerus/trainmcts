@@ -1,0 +1,65 @@
+Script started on 2025-06-05 13:45:52+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="81" LINES="101"]
+[0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ docker run -it --rm -p 8080:10000 -e PORT=10000 -e FLASK_SECRET_KEY='cc18fbc293c2e732bf1bb6af97943642' mypokerapp
+[2025-06-05 13:45:59 +0000] [1] [INFO] Starting gunicorn 20.1.0
+[2025-06-05 13:45:59 +0000] [1] [INFO] Listening at: http://0.0.0.0:10000 (1)
+[2025-06-05 13:45:59 +0000] [1] [INFO] Using worker: sync
+[2025-06-05 13:45:59 +0000] [7] [INFO] Booting worker with pid: 7
+[2025-06-05 13:45:59 +0000] [7] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/arbiter.py", line 589, in spawn_worker
+    worker.init_process()
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/base.py", line 134, in init_process
+    self.load_wsgi()
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/workers/base.py", line 146, in load_wsgi
+    self.wsgi = self.app.wsgi()
+                ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/app/base.py", line 67, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 58, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 48, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/gunicorn/util.py", line 359, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 936, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1074, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1004, in source_to_code
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/app/app.py", line 107
+    app.logger.info("Route / called (GET)"); try: return render_template('training.html')
+                                             ^^^
+SyntaxError: invalid syntax
+[2025-06-05 13:45:59 +0000] [7] [INFO] Worker exiting (pid: 7)
+[2025-06-05 13:45:59 +0000] [1] [INFO] Shutting down: Master
+[2025-06-05 13:45:59 +0000] [1] [INFO] Reason: Worker failed to boot.
+[0;32m@96Azerus [1;31m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ exit[K[K[K[Kgit add logs.txt
+нала"
+git push origin main[0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ git commit -m "Добавил логи терминала" [A
+[main a858a50] Добавил логи терминала
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 logs.txt
+[0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ git push origin main
+Enumerating objects: 4, done.
+Counting objects:  25% (1/4)Counting objects:  50% (2/4)Counting objects:  75% (3/4)Counting objects: 100% (4/4)Counting objects: 100% (4/4), done.
+Delta compression using up to 4 threads
+Compressing objects:  50% (1/2)Compressing objects: 100% (2/2)Compressing objects: 100% (2/2), done.
+Writing objects:  33% (1/3)Writing objects:  66% (2/3)Writing objects: 100% (3/3)Writing objects: 100% (3/3), 310 bytes | 310.00 KiB/s, done.
+Total 3 (delta 1), reused 1 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas:   0% (0/1)[Kremote: Resolving deltas: 100% (1/1)[Kremote: Resolving deltas: 100% (1/1), completed with 1 local object.[K
+To https://github.com/96Azerus/trainmcts
+   ecc3eff..a858a50  main -> main
+[0;32m@96Azerus [0m➜ [1;34m/workspaces/trainmcts [0;36m([1;31mmain[0;36m) [0m$ exit
+exit
+
+Script done on 2025-06-05 13:47:19+00:00 [COMMAND_EXIT_CODE="0"]
