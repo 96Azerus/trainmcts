@@ -159,8 +159,11 @@ class MCTSAgent:
         
         try:
             if self.num_workers > 1:
-                 try: pool = multiprocessing.Pool(processes=self.num_workers)
-                 except Exception as e_pool_create: logger.error(f"MP Pool creation failed: {e_pool_create}. Fallback to 1 worker.", exc_info=True); self.num_workers = 1
+                 try:
+                     pool = multiprocessing.Pool(processes=self.num_workers)
+                 except Exception as e_pool_create:
+                     logger.error(f"MP Pool creation failed: {e_pool_create}. Fallback to 1 worker.", exc_info=True)
+                     self.num_workers = 1
 
             while time.time() - start_mcts_time < self.time_limit:
                 path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
@@ -201,14 +204,30 @@ class MCTSAgent:
                          self._backpropagate_standard(path, reward)
                          self._backpropagate_rave(path, actions_hist_rollout, reward) # Передаем историю действий из роллаута
         except KeyboardInterrupt:
-             logger.warning("MCTS interrupted."); if pool: try: pool.terminate(); pool.join()
-             except Exception: pass; return None
+             logger.warning("MCTS interrupted.")
+             if pool:
+                 try:
+                     pool.terminate()
+                     pool.join()
+                 except Exception:
+                     pass
+             return None
         except Exception as e_mcts:
-            logger.error(f"Critical MCTS error: {e_mcts}", exc_info=True); if pool: try: pool.terminate(); pool.join()
-            except Exception: pass; return None
+            logger.error(f"Critical MCTS error: {e_mcts}", exc_info=True)
+            if pool:
+                try:
+                    pool.terminate()
+                    pool.join()
+                except Exception:
+                    pass
+            return None
         finally:
-            if pool: try: pool.close(); pool.join()
-            except Exception as e_pool_close: logger.error(f"Error closing MCTS pool: {e_pool_close}")
+            if pool:
+                try:
+                    pool.close()
+                    pool.join()
+                except Exception as e_pool_close:
+                    logger.error(f"Error closing MCTS pool: {e_pool_close}")
 
         self.last_simulation_count = num_simulations_total_loop
         elapsed_time = time.time() - start_mcts_time
@@ -374,14 +393,6 @@ class MCTSAgent:
             
             if not skip:
                 num_placed_cand = len(placements_cand)
-                # Проверка, что количество размещаемых карт соответствует ожиданиям
-                # Это должно быть гарантировано MCTSNode._generate_next_states
-                # num_expected_to_place = min(len(initial_cards_dealt), available_slots_on_board)
-                # if len(initial_cards_dealt) > 1 and available_slots_on_board > 0 and cards_on_board_start > 0:
-                #    num_expected_to_place = min(len(initial_cards_dealt) -1, available_slots_on_board)
-                # if is_first_street: num_expected_to_place = 5
-
-                # Логика num_cards_ai_will_target_to_place из начала choose_placement:
                 num_expected_to_place = min(len(initial_cards_dealt), available_slots_on_board)
                 if len(initial_cards_dealt) > 1 and available_slots_on_board > 0 and root_node.board.get_total_cards() > 0 :
                      num_expected_to_place = min(len(initial_cards_dealt) -1, available_slots_on_board)
@@ -402,7 +413,6 @@ class MCTSAgent:
             logger.warning("All placements filtered or no children. Fallback to first sorted (if any).")
             if child_stats:
                  fallback_cand = child_stats[0][0]
-                 # Проверка на количество карт для fallback
                  num_placed_fallback = len(fallback_cand.get('placements', []))
                  num_expected_to_place_fb = min(len(initial_cards_dealt), available_slots_on_board)
                  if len(initial_cards_dealt) > 1 and available_slots_on_board > 0 and root_node.board.get_total_cards() > 0 :

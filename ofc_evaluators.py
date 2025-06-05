@@ -41,10 +41,13 @@ try:
     )
 except ImportError:
     logging.critical("Failed to import from ofc_logic in ofc_evaluators.py")
-    class Card: @staticmethod # type: ignore
-    def to_str(c): return "??" ; @staticmethod # type: ignore
-    def get_rank_int(c): return 0; @staticmethod # type: ignore
-    def get_suit_int(c): return 0
+    class Card: # type: ignore
+        @staticmethod
+        def to_str(c): return "??"
+        @staticmethod
+        def get_rank_int(c): return 0
+        @staticmethod
+        def get_suit_int(c): return 0
     class PlayerBoard: ROW_NAMES = ['top','middle','bottom']; ROW_CAPACITY={'top':3,'middle':5,'bottom':5};pass # type: ignore
     INVALID_CARD = -1; RANK_MAP = {}; STR_RANKS = "" # type: ignore
     RANK_2=0;RANK_3=1;RANK_4=2;RANK_5=3;RANK_6=4;RANK_7=5;RANK_8=6;RANK_9=7;RANK_TEN=8;RANK_JACK=9;RANK_QUEEN=10;RANK_KING=11;RANK_ACE=12 # type: ignore

@@ -200,8 +200,7 @@ class TestEstimateRowPotential(unittest.TestCase):
         cards = [s_to_c("Ah"), s_to_c("Kh"), s_to_c("Qh")]
 
         # Deck with many hearts (e.g., 10 hearts remaining)
-        deck_many_hearts_list = ["Jh", "Th", "9h", "8h", "7h", "6h", "5h", "4h", "3h", "2h"] + \
-                                ["As", "Ks", "Qs", "Js", "Ts"] # 10 Spades
+        deck_many_hearts_list = ["Jh", "Th", "9h", "8h", "7h", "6h", "5h", "4h", "3h", "2h"] +                                 ["As", "Ks", "Qs", "Js", "Ts"] # 10 Spades
         deck_many_hearts = set(s_to_c(c) for c in deck_many_hearts_list)
         score_many_outs = MCTSNode._estimate_row_potential(cards, deck_many_hearts)
 
@@ -471,8 +470,7 @@ class TestEstimateRowPotential(unittest.TestCase):
         # Ah Kh Qh Js (3 Hearts, 1 Spade) -> needs 1 heart
         cards = [s_to_c("Ah"), s_to_c("Kh"), s_to_c("Qh"), s_to_c("Js")]
         # Deck with 10 hearts, 10 spades
-        deck_list = ["Jh", "Th", "9h", "8h", "7h", "6h", "5h", "4h", "3h", "2h"] + \
-                    ["As", "Ks", "Qs", "Ts", "9s", "8s", "7s", "6s", "5s", "4s"]
+        deck_list = ["Jh", "Th", "9h", "8h", "7h", "6h", "5h", "4h", "3h", "2h"] +                     ["As", "Ks", "Qs", "Ts", "9s", "8s", "7s", "6s", "5s", "4s"]
         deck = set(s_to_c(c) for c in deck_list if c not in ["Ah", "Kh", "Qh", "Js"])
 
         score = MCTSNode._estimate_row_potential(cards, deck)
@@ -505,28 +503,9 @@ class TestEstimateRowPotential(unittest.TestCase):
         deck = set(s_to_c(c) for c in deck_list)
         score = MCTSNode._estimate_row_potential(cards, deck)
 
-        # Expected straight part: 4 Kings * GUTSHOT_DRAW_SCORE_PER_OUT (1.0) = 4.0
-        # This case (TJQA) is tricky. _calc_straight_potential iterates combinations of 3.
-        # (T,J,Q) needs K or 9. (J,Q,A) needs K. (T,Q,A) needs J,K. (T,J,A) needs Q,K.
-        # The current logic for 4-card gutshot: iterate combos of 3.
-        # Combo (J,Q,A) -> sorted [JQ A]. J=rank8, Q=rank9, A=rank12. (9-8=1, 12-9=3). Not gutshot by that rule.
-        # Combo (T,J,Q) -> sorted [TJQ]. T=rank8, J=rank9, Q=rank10. (9-8=1, 10-9=1). Open ended. needs 8 or K.
-        #   outs for K = 4. outs for 8 (not T, rank7) = 0. Score for this part: 4 * 2.0 = 8.0
-        # This means TJQA is seen as TJQ + A, and TJQ is open-ended needing K or 9(rank7).
-        # This is a limitation of simple gutshot detection.
-        # A specific check for TJQA->K might be needed if this is critical.
-        # For now, let's test what the current code *does*.
-        # Current code: T J Q A. unique_ranks = [T, J, Q, A].
-        # OESD check: no.
-        # Gutshot check:
-        # (T,J,Q) -> oesd, not gutshot. needs K or 9(rank7).
-        # (T,J,A) -> J-T=1, A-J=3. (rank9-rank8=1, rank12-rank9=3). Not gutshot.
-        # (T,Q,A) -> Q-T=2, A-Q=2. Not gutshot.
-        # (J,Q,A) -> Q-J=1, A-Q=2. (rank9-rank8=1, rank12-rank9=2 for JQA). Gutshot needing K (rank10). Yes.
-        # Gutshot outs for K (rank10): 4. score += 4 * 1.0 = 4.0
         ranks, _, _, _ = MCTSNode._get_card_props(cards)
         straight_score_comp = MCTSNode._calculate_straight_potential_for_row(ranks, 4, deck)
-        self.assertAlmostEqual(straight_score_comp, 4.0, delta=0.1, "4-card Gutshot (TJQA->K) score mismatch.")
+        self.assertAlmostEqual(straight_score_comp, 4.0, delta=0.1, msg="4-card Gutshot (TJQA->K) score mismatch.")
         self.assertTrue(score >= 4.0)
 
     # --- Edge Cases ---
@@ -714,10 +693,11 @@ def test_generate_next_states_street2(root_node_fixture, sample_cards):
 @patch('mcts_node.MCTSNode._generate_next_states')
 def test_expand_with_pw(mock_generate, root_node_fixture, sample_cards):
     # Настраиваем PW так, чтобы разрешить только 1 ребенка сначала
-    with patch('mcts_node.PW_C', 1.0), patch('mcts_node.PW_ALPHA', 0.1):
-        mock_board = PlayerBoard()
-        mock_discard = None
-        mock_placement_info = {'placements': [(sample_cards['As'], 'top', 0)], 'discarded': None}
+    with patch('mcts_node.PW_C', 1.0):
+        with patch('mcts_node.PW_ALPHA', 0.1):
+            mock_board = PlayerBoard()
+            mock_discard = None
+            mock_placement_info = {'placements': [(sample_cards['As'], 'top', 0)], 'discarded': None}
         mock_key = tuple(sorted(mock_placement_info['placements']))
 
         # Мокаем генерацию состояний
