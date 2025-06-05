@@ -1,16 +1,14 @@
-# ofc_evaluator_3card.py v2.3
-# ИЗМЕНЕНО: Уровень логгера по умолчанию на INFO
-# ИСПРАВЛЕНО: Ключ для 66A и ранги для 532/432 в lookup table.
-# ИСПРАВЛЕНО: Все ключи в three_card_lookup отсортированы по убыванию.
+# ofc_evaluator_3card.py v2.4 (Logging level consistency)
 """
 Оценка 3-карточной руки OFC (верхний бокс) + таблица поиска.
+Уровень логгера по умолчанию INFO для консистентности.
 """
 import logging
+import sys # Добавлен sys
 from typing import Tuple, List, Dict
-# import itertools # Закомментировано, так как не используется
 
 try:
-    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, RANK_MAP, card_to_str
+    from ofc_logic import Card, INVALID_CARD, CARD_PLACEHOLDER, RANK_MAP, card_to_str, STR_RANKS # Добавлен STR_RANKS
 except ImportError:
     class Card: # type: ignore
         RANK_ACE = 12
@@ -22,14 +20,15 @@ except ImportError:
         def is_valid_card_int(c): return isinstance(c, int) and c > 0
     INVALID_CARD = -1 # type: ignore
     CARD_PLACEHOLDER = "__" # type: ignore
-    RANK_MAP = {'A': 12, 'K': 11, 'Q': 10, 'J': 9, 'T': 8, '9': 7, '8': 6, '7': 5, '6': 4, '5': 3, '4': 2, '3': 1, '2': 0} # type: ignore
+    STR_RANKS = "23456789TJQKA" # type: ignore
+    RANK_MAP = {rank: i for i, rank in enumerate(STR_RANKS)} # type: ignore
     def card_to_str(c): return Card.to_str(c) # type: ignore
     logging.error("Could not import from ofc_logic in ofc_evaluator_3card.py")
 
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
-    logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
+    logger.setLevel(logging.INFO) # Установлен INFO
+    handler = logging.StreamHandler(sys.stdout) # Используем sys.stdout
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
@@ -37,12 +36,13 @@ if not logger.hasHandlers():
 HAND_TYPE_TRIPS_3 = "Trips"
 HAND_TYPE_PAIR_3 = "Pair"
 HAND_TYPE_HIGH_CARD_3 = "High Card"
-TRIPS_BASE_RANK = 1
-PAIR_BASE_RANK = 13 + 1
-HIGH_CARD_BASE_RANK = 169 + 1
-WORST_RANK_3CARD = 455
+TRIPS_BASE_RANK = 1 # Не используется напрямую в текущей таблице, но для информации
+PAIR_BASE_RANK = 13 + 1 # Не используется
+HIGH_CARD_BASE_RANK = 169 + 1 # Не используется
+WORST_RANK_3CARD = 455 # Худший возможный ранг (432 непарные)
 
-# All keys (tuples of 3 ranks) are sorted in descending order.
+# Таблица three_card_lookup остается без изменений, так как она уже была исправлена ранее.
+# Ключи (кортежи из 3 рангов) отсортированы по убыванию.
 three_card_lookup: Dict[Tuple[int, int, int], Tuple[int, str, str]] = {
     (12, 12, 12): (1, 'Trips', 'AAA'), (11, 11, 11): (2, 'Trips', 'KKK'),
     (10, 10, 10): (3, 'Trips', 'QQQ'), (9, 9, 9): (4, 'Trips', 'JJJ'),
@@ -279,7 +279,7 @@ def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, s
     ranks: List[int] = []
     input_cards: List[int] = [card1, card2, card3]
     valid_cards: List[int] = []
-    hand_str_log = [card_to_str(c) for c in input_cards]
+    hand_str_log = [card_to_str(c) for c in input_cards] # Для логгирования
     logger.debug(f"Evaluating 3-card hand: {hand_str_log} (ints: {input_cards})")
 
     for i, card_int in enumerate(input_cards):
@@ -287,7 +287,6 @@ def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, s
         if card_int == INVALID_CARD or card_int <= 0: raise ValueError(f"Card {i+1} is invalid: {card_int}")
         try:
             rank_int = Card.get_rank_int(card_int)
-            logger.debug(f"  Card {card_to_str(card_int)} -> Rank: {rank_int}")
             if 0 <= rank_int <= 12: ranks.append(rank_int); valid_cards.append(card_int)
             else: raise ValueError(f"Invalid rank {rank_int} from card {card_int}")
         except Exception as e:
@@ -297,26 +296,15 @@ def evaluate_3_card_ofc(card1: int, card2: int, card3: int) -> Tuple[int, str, s
     if len(valid_cards) != len(set(valid_cards)): raise ValueError(f"Duplicate cards found: {hand_str_log}")
 
     lookup_key = tuple(sorted(ranks, reverse=True))
-    logger.debug(f"Generated lookup key: {lookup_key}")
-
     result = three_card_lookup.get(lookup_key)
     logger.debug(f"Lookup result for key {lookup_key}: {result}")
 
     if result is None:
         logger.error(f"3-card lookup key not found: {lookup_key} for cards {hand_str_log}")
-        # This is the critical point: if a key is not found, it means the hand is not in the table.
-        # This can happen for valid OFC top hands like '2s 2d 3c' if not all pair combinations are exhaustive.
-        # Or if the key sorting logic here is different from how the table was constructed.
-        # For OFC top, any pair 66-AA or any trips is scoreable. Other pairs are just "Pair".
-        # Any other hand is "High Card". We should ensure all these possibilities resolve.
         raise ValueError(f"Combination not found in lookup table for key: {lookup_key}")
-
-    if not isinstance(result, tuple) or len(result) != 3:
-        logger.error(f"Invalid result format in lookup table for key {lookup_key}: {result}")
-        raise ValueError(f"Invalid result format in lookup table for key: {lookup_key}")
-    if not isinstance(result[0], int) or not (1 <= result[0] <= WORST_RANK_3CARD):
-         logger.error(f"Invalid rank value {result[0]} found in lookup table for key {lookup_key}")
-         raise ValueError(f"Invalid rank value in lookup table for key: {lookup_key}")
+    if not (isinstance(result, tuple) and len(result) == 3 and isinstance(result[0], int) and (1 <= result[0] <= WORST_RANK_3CARD)):
+         logger.error(f"Invalid result format or rank value in lookup table for key {lookup_key}: {result}")
+         raise ValueError(f"Invalid result format or rank value in lookup table for key: {lookup_key}")
 
     logger.debug(f"Returning: {result}")
     return result
