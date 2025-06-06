@@ -1,4 +1,4 @@
-# mcts_agent.py v2.8 (Simplified placement count logic)
+# mcts_agent.py v2.9 (Syntax fix in except block)
 """
 Реализация MCTS-агента для задачи размещения НАБОРА карт OFC Pineapple.
 - Адаптирован для обработки ситуации, когда карт сдано больше, чем доступных слотов.
@@ -19,13 +19,12 @@ from typing import Optional, Any, List, Tuple, Set, Dict
 from collections import Counter, defaultdict
 
 try:
-    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS # Добавлен STR_RANKS для логгирования
-    # HEURISTIC_FOUL_PENALTY импортируется из mcts_node, где он определен
+    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS
     from mcts_node import MCTSNode, run_parallel_rollout, RAVE_K, PW_C, PW_ALPHA, HEURISTIC_FOUL_PENALTY
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
         check_board_foul, get_row_royalty,
-        ROYALTY_TOP_PAIRS, RANK_QUEEN, RANK_KING, RANK_ACE # Добавлены RANK_ константы
+        ROYALTY_TOP_PAIRS, RANK_QUEEN, RANK_KING, RANK_ACE
     )
     from ofc_evaluator_5card import evaluator_5card_instance as evaluator_5card
 except ImportError as e:
@@ -38,7 +37,8 @@ except ImportError as e:
     RAVE_K = 500.0; PW_C = 2.0; PW_ALPHA = 0.5; HEURISTIC_FOUL_PENALTY = -1000.0 # type: ignore
     def get_hand_rank_safe(*args): return (9999, 9, "Invalid") # type: ignore
     WORST_RANK = 9999; WORST_CLASS = 9 # type: ignore
-    def check_board_foul(*args): return False # type: ignore
+    # FIX: Исправлен синтаксис, определения функций на разных строках
+    def check_board_foul(*args): return False
     def get_row_royalty(*args): return 0 # type: ignore
     ROYALTY_TOP_PAIRS = {}; RANK_MAP = {}; STR_RANKS = ""; RANK_QUEEN=10;RANK_KING=11;RANK_ACE=12 # type: ignore
     class MockEvaluator5Card: evaluate = lambda s, c: 9999 # type: ignore
@@ -58,7 +58,7 @@ class MCTSAgent:
     DEFAULT_EXPLORATION: float = 1.414 
     DEFAULT_TIME_LIMIT_MS: int = 5000
     DEFAULT_NUM_WORKERS: int = max(1, multiprocessing.cpu_count() - 1 if multiprocessing.cpu_count() > 1 else 1)
-    DEFAULT_ROLLOUTS_PER_LEAF: int = 15 # Немного увеличено
+    DEFAULT_ROLLOUTS_PER_LEAF: int = 15
 
     def __init__(self,
                  exploration: Optional[float] = None,
@@ -80,18 +80,18 @@ class MCTSAgent:
 
         logger.info(f"MCTS Agent initialized: TimeLimit={self.time_limit:.2f}s, Exploration={self.exploration}, "
                     f"Workers={self.num_workers}, RolloutsPerLeaf={self.rollouts_per_leaf}, RAVE_K={RAVE_K}")
-        try: # Установка метода start для multiprocessing
+        try:
             current_method = multiprocessing.get_start_method(allow_none=True)
-            if sys.platform == "win32": # На Windows 'spawn' часто является единственным безопасным методом
+            if sys.platform == "win32":
                 if current_method != 'spawn':
                     try: multiprocessing.set_start_method('spawn', force=True); logger.info("Set MP start method to 'spawn' for Windows.")
                     except RuntimeError: logger.warning("MP start method already set on Windows, cannot change to 'spawn'.")
-            elif current_method != 'spawn': # Для других ОС тоже пробуем 'spawn' для консистентности
+            elif current_method != 'spawn':
                 available_methods = multiprocessing.get_all_start_methods()
                 if 'spawn' in available_methods:
                     try: multiprocessing.set_start_method('spawn', force=True); logger.info("Set MP start method to 'spawn'.")
                     except RuntimeError: logger.warning("MP start method already set, cannot change to 'spawn'.")
-                elif 'forkserver' in available_methods: # 'forkserver' как альтернатива
+                elif 'forkserver' in available_methods:
                      try: multiprocessing.set_start_method('forkserver', force=True); logger.info("Set MP start method to 'forkserver'.")
                      except RuntimeError: logger.warning("MP start method already set, cannot change to 'forkserver'.")
                 else: logger.warning(f"'spawn' or 'forkserver' MP start method not available. Current: {current_method}")
@@ -114,9 +114,8 @@ class MCTSAgent:
         cards_on_board_start = initial_board.get_total_cards()
         available_slots = PlayerBoard.TOTAL_CAPACITY - cards_on_board_start
         
-        # FIX: Упрощенная и более надежная логика определения количества размещаемых карт
         if cards_on_board_start == 0:
-            num_to_place = 5 # Первая улица, размещаем 5
+            num_to_place = 5
         else:
             num_to_discard = 1 if num_dealt > 1 else 0
             num_to_place = num_dealt - num_to_discard
@@ -130,14 +129,14 @@ class MCTSAgent:
         logger.info(f"Remaining deck size (for AI): {len(current_remaining_deck)}")
         logger.info(f"Number of unknown cards removed: {num_unknown_removed_cards}")
 
-        if available_slots <= 0: # Нет места на доске
+        if available_slots <= 0:
             if num_dealt > 0:
                  logger.warning(f"No available slots on board, but {num_dealt} cards dealt. Discarding all.")
                  discard_val: Any = tuple(sorted(cards_just_dealt)) if len(cards_just_dealt) > 1 else cards_just_dealt[0]
                  return {'placements': [], 'discarded': discard_val, 'score': HEURISTIC_FOUL_PENALTY, 'reason': "No slots, discarding all."}
             else: return None
 
-        if num_cards_ai_will_target_to_place <= 0 and num_dealt > 0: # Нечего размещать, но карты есть -> сброс всех
+        if num_cards_ai_will_target_to_place <= 0 and num_dealt > 0:
             logger.info(f"Target to place is {num_cards_ai_will_target_to_place}, but {num_dealt} cards dealt. Discarding all.")
             discard_val: Any = tuple(sorted(cards_just_dealt)) if len(cards_just_dealt) > 1 else cards_just_dealt[0]
             return {'placements': [], 'discarded': discard_val, 'score': HEURISTIC_FOUL_PENALTY / 2, 'reason': "Target place is <=0, discarding all."}
@@ -167,7 +166,7 @@ class MCTSAgent:
                 if leaf_node is None: logger.warning("Selection returned None leaf node."); break
                 node_to_rollout_from = leaf_node
                 if not leaf_node.is_terminal():
-                    if leaf_node.untried_next_states or not leaf_node.children: # Условие для вызова expand
+                    if leaf_node.untried_next_states or not leaf_node.children:
                         expanded_node = leaf_node.expand()
                         if expanded_node: node_to_rollout_from = expanded_node; path.append(expanded_node)
                 
@@ -197,34 +196,25 @@ class MCTSAgent:
                 except Exception as e_roll: logger.error(f"Error preparing/running rollout: {e_roll}", exc_info=True)
                 
                 if rollout_results:
-                    for reward, actions_hist_rollout in rollout_results: # actions_hist_rollout - это список словарей placement_info
+                    for reward, actions_hist_rollout in rollout_results:
                          self._backpropagate_standard(path, reward)
-                         self._backpropagate_rave(path, actions_hist_rollout, reward) # Передаем историю действий из роллаута
+                         self._backpropagate_rave(path, actions_hist_rollout, reward)
         except KeyboardInterrupt:
              logger.warning("MCTS interrupted.")
              if pool:
-                 try:
-                     pool.terminate()
-                     pool.join()
-                 except Exception:
-                     pass
+                 try: pool.terminate(); pool.join()
+                 except Exception: pass
              return None
         except Exception as e_mcts:
             logger.error(f"Critical MCTS error: {e_mcts}", exc_info=True)
             if pool:
-                try:
-                    pool.terminate()
-                    pool.join()
-                except Exception:
-                    pass
+                try: pool.terminate(); pool.join()
+                except Exception: pass
             return None
         finally:
             if pool:
-                try:
-                    pool.close()
-                    pool.join()
-                except Exception as e_pool_close:
-                    logger.error(f"Error closing MCTS pool: {e_pool_close}")
+                try: pool.close(); pool.join()
+                except Exception as e_pool_close: logger.error(f"Error closing MCTS pool: {e_pool_close}")
 
         self.last_simulation_count = num_simulations_total_loop
         elapsed_time = time.time() - start_mcts_time
@@ -244,47 +234,37 @@ class MCTSAgent:
             cache_key = (current_node.board.get_board_state_tuple(), frozenset(current_node.remaining_deck), current_node.num_unknown_removed_cards)
             if cache_key in self.transposition_table:
                 self.cache_hits += 1
-                if current_node.visits == 0: # Загружаем только если узел "новый" для этого пути
+                if current_node.visits == 0:
                     cached_data = self.transposition_table[cache_key]
                     current_node.visits = cached_data.get('visits', 0)
                     current_node.total_reward = cached_data.get('total_reward', 0.0)
-                    # RAVE статы должны быть defaultdict, чтобы .get не вызывал ошибку, если ключа нет
                     current_node.rave_visits_count = cached_data.get('rave_visits_count', 0)
                     current_node.rave_total_reward = cached_data.get('rave_total_reward', 0.0)
             else: self.cache_misses += 1
 
             if current_node.is_terminal(): return path, current_node
             
-            # Генерация состояний, если узел еще не был полностью исследован на предмет начальных ходов
             if current_node.untried_next_states is None and not current_node._generated_states_for_expand:
                 cards_to_generate_for: List[int]
                 if current_node is root_node: cards_to_generate_for = initial_cards_for_root
-                else: # Логика для не-корневых узлов (ходы в симуляции)
+                else:
                     cards_on_board = current_node.board.get_total_cards()
-                    available_slots_node = PlayerBoard.TOTAL_CAPACITY - cards_on_board
-                    num_cards_to_deal_next = 0
-                    if available_slots_node > 0: # Если есть куда ставить
-                        if cards_on_board == 0: num_cards_to_deal_next = 5 # Не должно быть здесь
-                        else: num_cards_to_deal_next = 3 # Стандартная раздача 3 карт
-                    
+                    num_cards_to_deal_next = 5 if cards_on_board == 0 else 3
                     cards_to_generate_for = []
-                    if num_cards_to_deal_next > 0:
-                        if len(current_node.remaining_deck) >= num_cards_to_deal_next:
-                            try: cards_to_generate_for = random.sample(list(current_node.remaining_deck), num_cards_to_deal_next)
-                            except ValueError: logger.debug(f"Select: Not enough cards in deck for node {current_node}"); cards_to_generate_for = []
-                        # else: logger.debug(f"Select: Not enough cards in deck ({len(current_node.remaining_deck)}) to deal {num_cards_to_deal_next}")
+                    if num_cards_to_deal_next > 0 and len(current_node.remaining_deck) >= num_cards_to_deal_next:
+                        try: cards_to_generate_for = random.sample(list(current_node.remaining_deck), num_cards_to_deal_next)
+                        except ValueError: logger.debug(f"Select: Not enough cards in deck for node {current_node}"); cards_to_generate_for = []
                 
-                # _generate_next_states заполнит _generated_states_for_expand
                 current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for) 
                 if not current_node._generated_states_for_expand and not current_node.children:
-                    return path, current_node # Лист, если нет сгенерированных ходов
+                    return path, current_node
 
             has_unexpanded_action = any(key not in current_node.children for key in current_node._generated_states_for_expand)
             if has_unexpanded_action:
                 num_children = len(current_node.children)
                 allowed_children_pw = PW_C * math.pow(current_node.visits + 1, PW_ALPHA)
                 if num_children < allowed_children_pw or (num_children == 0 and current_node._generated_states_for_expand):
-                    return path, current_node # Возвращаем узел для вызова expand()
+                    return path, current_node
 
             if not current_node.children: return path, current_node 
             
@@ -292,7 +272,7 @@ class MCTSAgent:
             if selected_child is None:
                 logger.warning(f"UCT select child returned None for node with {len(current_node.children)} children. V={current_node.visits}. Forcing random choice.")
                 if current_node.children: selected_child = random.choice(list(current_node.children.values()))
-                if selected_child is None: return path, current_node # Все еще None - проблема
+                if selected_child is None: return path, current_node
             current_node = selected_child; path.append(current_node)
 
     def _backpropagate_standard(self, path: List[MCTSNode], reward: float):
@@ -300,38 +280,34 @@ class MCTSAgent:
         for node in reversed(path):
             node.visits += 1; node.total_reward += reward
             cache_key = (node.board.get_board_state_tuple(), frozenset(node.remaining_deck), node.num_unknown_removed_cards)
-            # Обновляем или создаем запись в ТТ
             entry = self.transposition_table.get(cache_key, {})
             entry['visits'] = node.visits
             entry['total_reward'] = node.total_reward
-            entry['rave_visits_count'] = node.rave_visits_count # Сохраняем RAVE статы
+            entry['rave_visits_count'] = node.rave_visits_count
             entry['rave_total_reward'] = node.rave_total_reward
             self.transposition_table[cache_key] = entry
 
 
     def _backpropagate_rave(self, path: List[MCTSNode], simulation_actions_history: List[Dict[str, Any]], reward: float):
-        # simulation_actions_history - это список словарей placement_info из роллаута
         sim_action_keys_in_rollout = set()
-        for action_info in simulation_actions_history: # action_info это dict {'placements': [...], 'discarded': ...}
+        for action_info in simulation_actions_history:
             placements = action_info.get('placements')
             discarded = action_info.get('discarded')
-            if placements: # Может быть пустым, если действие - только сброс
+            if placements:
                  try:
                      placement_tuples = tuple(sorted([(int(p[0]), str(p[1]), int(p[2])) for p in placements]))
                      action_key_from_sim = (placement_tuples, discarded)
                      sim_action_keys_in_rollout.add(action_key_from_sim)
                  except Exception as e: logger.warning(f"RAVE Backprop: Error creating key from sim_action {action_info}: {e}")
-            elif discarded is not None: # Действие - только сброс
-                 action_key_from_sim = (tuple(), discarded) # Пустой кортеж для размещений
+            elif discarded is not None:
+                 action_key_from_sim = (tuple(), discarded)
                  sim_action_keys_in_rollout.add(action_key_from_sim)
 
         if not sim_action_keys_in_rollout: return
 
-        for node_in_path in path: # Для каждого узла на пути от корня до листа, с которого начался роллаут
+        for node_in_path in path:
             for child_action_key, child_node in node_in_path.children.items():
-                # child_action_key это ключ действия, ведущего к child_node
                 if child_action_key in sim_action_keys_in_rollout:
-                    # Если действие, ведущее к этому ребенку, было совершено где-то в симуляции (AMAF)
                     child_node.rave_visits_count += 1
                     child_node.rave_total_reward += reward
 
@@ -351,25 +327,25 @@ class MCTSAgent:
                  except Exception as e_fall: logger.error(f"Fallback selection error: {e_fall}"); return None
             return None
 
-        is_first_street = (root_node.board.get_total_cards() == 0) # Упрощенная проверка
+        is_first_street = (root_node.board.get_total_cards() == 0)
         trip_in_hand_rank = -1
-        if is_first_street and len(initial_cards_dealt) == 5: # Только для 5 карт на 1й улице
+        if is_first_street and len(initial_cards_dealt) == 5:
             ranks = [Card.get_rank_int(c) for c in initial_cards_dealt if c is not None]
             rank_counts = Counter(ranks)
             trip_in_hand_rank = next((rank for rank, count in rank_counts.items() if count >= 3), -1)
             if trip_in_hand_rank != -1: logger.info(f"Rule Check: First street with trip of {STR_RANKS[trip_in_hand_rank]} detected.")
 
-        child_stats: List[Tuple[Dict[str, Any], int, float, int, float]] = [] # p_info, visits, avg_r, rave_v, rave_r
+        child_stats: List[Tuple[Dict[str, Any], int, float, int, float]] = []
         
         logger.info(f"--- Evaluating {len(root_node.children)} child nodes for final placement ---")
         for _, child_node in root_node.children.items():
              p_info = child_node.placement_info
              if p_info is None: logger.warning(f"Child node missing placement_info."); continue
              avg_reward = child_node.total_reward / child_node.visits if child_node.visits > 0 else -float('inf')
-             rave_avg_reward = child_node.rave_total_reward / child_node.rave_visits_count if child_node.rave_visits_count > 0 else avg_reward # Fallback to avg_reward if no RAVE
+             rave_avg_reward = child_node.rave_total_reward / child_node.rave_visits_count if child_node.rave_visits_count > 0 else avg_reward
              child_stats.append((p_info, child_node.visits, avg_reward, child_node.rave_visits_count, rave_avg_reward))
         
-        child_stats.sort(key=lambda x: (x[2], x[1], x[4]), reverse=True) # Sort by AvgReward, then Visits, then RaveAvgReward
+        child_stats.sort(key=lambda x: (x[2], x[1], x[4]), reverse=True)
 
         LOG_TOP_N = 5
         logger.info(f"Top {min(LOG_TOP_N, len(child_stats))} placement options by AI (Sorted by AvgR, V, RaveR):")
@@ -389,8 +365,6 @@ class MCTSAgent:
                     skip = True
             
             if not skip:
-                # FIX: Упрощенная и более надежная логика определения ожидаемого количества карт
-                num_expected_to_place = 0
                 if root_node.board.get_total_cards() == 0:
                     num_expected_to_place = 5
                 else:
@@ -415,7 +389,6 @@ class MCTSAgent:
                  fallback_cand = child_stats[0][0]
                  num_placed_fallback = len(fallback_cand.get('placements', []))
                  
-                 num_expected_to_place_fb = 0
                  if root_node.board.get_total_cards() == 0:
                      num_expected_to_place_fb = 5
                  else:
@@ -431,4 +404,4 @@ class MCTSAgent:
             logger.error("No children stats for fallback. No valid move found.")
             return None
         
-        return best_allowed_placement # Should be unreachable
+        return best_allowed_placement
