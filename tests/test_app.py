@@ -1,4 +1,4 @@
-# tests/test_app.py v2.4 (Refactored for Set Placement MCTS, Arg Check Fix v3)
+# tests/test_app.py v2.5 (Updated for new API response format)
 """
 Интеграционные тесты для Flask приложения app.py.
 Обновлены для работы с choose_placement и новым API.
@@ -24,7 +24,6 @@ except ImportError:
 def client():
     """Создает тестовый клиент Flask."""
     flask_app.config['TESTING'] = True
-    # flask_app.logger.setLevel(logging.CRITICAL) # Раскомментировать для подавления логов
     with flask_app.test_client() as client:
         yield client
 
@@ -44,6 +43,8 @@ def test_ai_move_valid_request(MockMCTSAgent, client):
     card_as_int = Card.from_str('As')
     card_ks_int = Card.from_str('Ks')
     card_qs_int = Card.from_str('Qs')
+    
+    # Мок ответа от MCTS агента
     mock_placement_info = {
         'placements': [(card_as_int, 'top', 0), (card_ks_int, 'middle', 0)],
         'discarded': card_qs_int
@@ -61,40 +62,39 @@ def test_ai_move_valid_request(MockMCTSAgent, client):
     assert response.status_code == 200
     data = response.get_json()
 
+    # FIX: Проверяем новый, более структурированный формат ответа
     assert "move" in data
-    assert "top" in data["move"] and "middle" in data["move"] and "bottom" in data["move"]
+    assert "placements_details" in data["move"]
     assert "discarded" in data["move"]
-    assert data["move"]["top"] == [{"rank": "A", "suit": "♠"}]
-    assert data["move"]["middle"] == [{"rank": "K", "suit": "♠"}]
-    assert data["move"]["bottom"] == []
+    
+    expected_placements = [
+        {"rank": "A", "suit": "♠", "row": "top", "index": 0},
+        {"rank": "K", "suit": "♠", "row": "middle", "index": 0}
+    ]
+    # Сортируем для независимости от порядка
+    assert sorted(data["move"]["placements_details"], key=lambda x: x['rank']) == sorted(expected_placements, key=lambda x: x['rank'])
     assert data["move"]["discarded"] == "Qs"
 
-    # --- ИСПРАВЛЕНО: Проверка аргументов через assert_called_once_with с именованными аргументами ---
-    expected_known = {card_as_int, card_ks_int, card_qs_int, Card.from_str("2c"), Card.from_str("3d")}
+    # FIX: Проверка аргументов через assert_called_once_with с именованными аргументами
+    board_cards = set() # Пустая доска
+    discarded_cards = {Card.from_str("2c"), Card.from_str("3d")}
+    hand_cards = {card_as_int, card_ks_int, card_qs_int}
+    
+    expected_known = board_cards.union(discarded_cards).union(hand_cards)
     expected_remaining = Deck.FULL_DECK_CARDS - expected_known
     expected_cards_dealt = [card_as_int, card_ks_int, card_qs_int]
 
-    # Проверяем, что вызов был один раз с ожидаемыми типами и значениями карт/колоды
-    # Используем ANY для доски и именованные аргументы
     mock_agent_instance.choose_placement.assert_called_once_with(
-        initial_board=ANY, # initial_board (проверяем тип ниже)
-        cards_just_dealt=expected_cards_dealt, # cards_just_dealt
-        current_remaining_deck=expected_remaining # current_remaining_deck
+        initial_board=ANY,
+        cards_just_dealt=expected_cards_dealt,
+        current_remaining_deck=expected_remaining,
+        num_unknown_removed_cards=0 # Проверяем, что этот аргумент передается
     )
-
-    # Дополнительно проверим тип первого аргумента (доски) из последнего вызова
-    # (так как assert_called_once_with уже проверил, что вызов был один)
-    # Теперь нужно смотреть в call_args.kwargs, так как аргументы именованные
-    call_args = mock_agent_instance.choose_placement.call_args.args # Должен быть пустым
-    call_kwargs = mock_agent_instance.choose_placement.call_args.kwargs # Аргументы здесь
-
-    assert call_args == (), f"Expected no positional args, got {call_args}"
-    assert isinstance(call_kwargs.get('initial_board'), PlayerBoard), \
-        f"Keyword arg 'initial_board' type mismatch: expected PlayerBoard, got {type(call_kwargs.get('initial_board'))}"
-    # Остальные аргументы уже проверены в assert_called_once_with
+    
+    call_kwargs = mock_agent_instance.choose_placement.call_args.kwargs
+    assert isinstance(call_kwargs.get('initial_board'), PlayerBoard)
 
 
-# Остальные тесты для /ai_move
 @patch('app.MCTSAgent')
 def test_ai_move_no_cards_to_place(MockMCTSAgent, client):
     request_data = {
@@ -103,8 +103,8 @@ def test_ai_move_no_cards_to_place(MockMCTSAgent, client):
         "discarded_cards": [], "ai_settings": {}
     }
     response = client.post('/ai_move', json=request_data)
-    assert response.status_code == 400
-    data = response.get_json(); assert "error" in data and "No valid cards" in data["error"]
+    assert response.status_code == 200 # Теперь это не ошибка, а просто сообщение
+    data = response.get_json(); assert "message" in data and "No valid cards" in data["message"]
     MockMCTSAgent.return_value.choose_placement.assert_not_called()
 
 def test_ai_move_invalid_json(client):
@@ -126,7 +126,7 @@ def test_ai_move_duplicate_cards_hand_board(MockMCTSAgent, client):
     }
     response = client.post('/ai_move', json=request_data)
     assert response.status_code == 400
-    data = response.get_json(); assert "error" in data and "Duplicate cards found between hand and board" in data["error"]
+    data = response.get_json(); assert "error" in data and "Duplicates hand-board" in data["error"]
     MockMCTSAgent.return_value.choose_placement.assert_not_called()
 
 @patch('app.MCTSAgent')
@@ -138,7 +138,7 @@ def test_ai_move_duplicate_cards_hand_discarded(MockMCTSAgent, client):
     }
     response = client.post('/ai_move', json=request_data)
     assert response.status_code == 400
-    data = response.get_json(); assert "error" in data and "already permanently discarded" in data["error"]
+    data = response.get_json(); assert "error" in data and "Duplicates hand-known_discard" in data["error"]
     MockMCTSAgent.return_value.choose_placement.assert_not_called()
 
 @patch('app.MCTSAgent')
@@ -153,7 +153,7 @@ def test_ai_move_agent_returns_none(MockMCTSAgent, client):
     response = client.post('/ai_move', json=request_data)
     assert response.status_code == 200
     data = response.get_json(); assert "move" in data
-    assert data["move"]["top"] == [] and data["move"]["middle"] == [] and data["move"]["bottom"] == []
+    assert data["move"]["placements_details"] == []
     assert data["move"]["discarded"] is None
     mock_agent_instance.choose_placement.assert_called_once()
 
@@ -199,7 +199,8 @@ def test_calculate_score_foul_board(mock_get_royalty, mock_check_foul, client):
     assert response.status_code == 200
     data = response.get_json()
     assert data["foul"] is True
-    assert "royalties" not in data and "total_royalty" not in data
+    assert data["royalties"] == {}
+    assert data["total_royalty"] == 0
     mock_check_foul.assert_called_once()
     mock_get_royalty.assert_not_called()
 
