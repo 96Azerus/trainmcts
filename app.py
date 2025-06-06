@@ -1,4 +1,4 @@
-# app.py v2.4 (Handles "??" discard marker, AI subset placement logic, refined response)
+# app.py v2.5 (Syntax fix, refined response structure)
 """
 Основной файл веб-приложения Flask для режима тренировки OFC Pineapple.
 Обрабатывает HTTP-запросы, вызывает MCTS AI для получения оптимального
@@ -47,7 +47,7 @@ app.logger.addHandler(stream_handler)
 app.logger.setLevel(log_level)
 logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
-app.logger.info("--- Flask App Initialization (v2.4) ---")
+app.logger.info("--- Flask App Initialization (v2.5) ---")
 is_production = os.environ.get('RENDER') == 'true' or os.environ.get('FLASK_ENV') == 'production'
 app.logger.info(f"Production mode: {is_production}")
 
@@ -159,11 +159,12 @@ def get_ai_move():
     app.logger.info(f"Unknown cards removed (markers): {num_unknown_removed_total}")
 
     all_distinct_known_cards = board_cards_set.union(hand_cards_set).union(known_perm_discard_set)
+    # FIX: Исправлена синтаксическая ошибка в f-string
     if len(all_distinct_known_cards) + len(remaining_deck_for_ai) + num_unknown_removed_total != 52:
          app.logger.error(
              f"CARD ACCOUNTING ERROR: DistinctKnown({len(all_distinct_known_cards)})"
              f" + AI_Deck({len(remaining_deck_for_ai)})"
-             f" + UnknownRemoved({num_unknown_removed_total)})"
+             f" + UnknownRemoved({num_unknown_removed_total})"
              f" = {len(all_distinct_known_cards) + len(remaining_deck_for_ai) + num_unknown_removed_total} != 52."
          )
 
@@ -277,7 +278,7 @@ def reset_game_state():
     return jsonify({"status": "success", "message": "Server state reset acknowledged"})
 
 if __name__ == '__main__':
-    app.logger.info("--- Starting Main Execution (v2.4) ---")
+    app.logger.info("--- Starting Main Execution (v2.5) ---")
     port = int(os.environ.get('PORT', 10000))
     debug_mode = os.environ.get('FLASK_DEBUG', '0').lower() in ['true', '1', 'yes'] and not is_production
     if debug_mode:
