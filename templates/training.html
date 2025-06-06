@@ -331,9 +331,26 @@
         updateSelectorAvailability(); // Обновляем доступность "?" кнопки
     }
 
-    function toggleMenu() { /* ... без изменений ... */ }
-    function toggleFullScreen() { /* ... без изменений ... */ }
-    document.addEventListener('fullscreenchange', () => { /* ... без изменений ... */ });
+    function toggleMenu() {
+        const menu = document.getElementById('menu-panel');
+        if (menu) {
+            menuOpen = !menuOpen;
+            menu.classList.toggle('open', menuOpen);
+        }
+    }
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`));
+        } else {
+            document.exitFullscreen();
+        }
+    }
+    document.addEventListener('fullscreenchange', () => {
+        isFullscreen = !!document.fullscreenElement;
+        if (fullscreenIcon) {
+            fullscreenIcon.textContent = isFullscreen ? 'fullscreen_exit' : 'fullscreen';
+        }
+    });
 
     function handleCardSelection(element) {
         if (!element || element.classList.contains('unavailable')) return;
@@ -470,64 +487,6 @@
         return { board: boardState, cardCount };
     }
 
-    function placeCardsOnBoard(aiMoveData) { // aiMoveData - это data.move от сервера
-        console.log("Placing cards from AI move:", aiMoveData);
-        if (!aiMoveData) return;
-        
-        // Сначала очистим текущее состояние boardState от карт, которые могли быть в selected_cards
-        // и которые ИИ сейчас переразместит или сбросит.
-        // Это важно, если ИИ решает переместить карту, которая уже была на доске (хотя это не типично для OFC).
-        // В нашем случае, selected_cards - это карты из combination_area, они не на доске.
-        // Но если бы selected_cards могли быть с доски, это было бы нужно.
-
-        Object.keys(boardState).forEach(rowName => {
-            aiMoveData[rowName]?.forEach((cardToPlaceObj, indexInAiMove) => {
-                // Ищем первый свободный слот в boardState[rowName] для размещения
-                // или конкретный слот, если бы AI возвращал индексы.
-                // Текущий AI возвращает просто список карт для каждого ряда, подразумевая заполнение слева направо в пустые.
-                // Это неверно. AI должен возвращать точные позиции (row, index).
-                // Формат ответа от /ai_move:
-                // {"move": {"top": [{"rank": R, "suit": S, "row": "top", "index": I}, ...], ...}}
-                // Нет, формат ответа: {"move": {"top": [{"rank":R, "suit":S}, ...], "middle": ..., "discarded": ...}}
-                // Это означает, что placeCardsOnBoard должен сам найти пустые слоты.
-                // Это не очень хорошо, т.к. порядок карт в ответе AI для ряда может быть важен.
-                // ИИ должен возвращать точные (карта, ряд, индекс).
-                // Предположим, что `best_placement_info['placements']` в app.py это [(card_int, row_str, index_int), ...]
-                // И `response_placements_formatted` в app.py это [{"card_str": CS, "rank": R, "suit": SY, "row": RO, "index": I}, ...]
-                // Тогда `placeCardsOnBoard` должен получать этот `response_placements_formatted`.
-                // Сейчас `placeCardsOnBoard` получает `data.move`, который имеет другую структуру.
-                // ИСПРАВЛЕНИЕ: `placeCardsOnBoard` должен принимать `response_placements_formatted` из `app.py`
-                // или `data.move.placements` если мы изменим формат ответа.
-                // Пока что, будем считать, что `aiMoveData` это `response_placements_formatted` (список объектов с row, index).
-                // Это изменение нужно будет сделать в `getAIPlacement` при вызове `placeCardsOnBoard`.
-            });
-        });
-
-        // Если `aiMoveData` это `data.move` из текущего `app.py`:
-        Object.entries(aiMoveData).forEach(([rowName, cardsInRowArray]) => {
-            if (rowName === "discarded" || !Array.isArray(cardsInRowArray)) return;
-
-            cardsInRowArray.forEach(cardObj => { // cardObj это {"rank": R, "suit": S}
-                if (cardObj && cardObj.rank && cardObj.suit) {
-                    const suitChar = getCardSuitChar(cardObj.suit);
-                    const cardStr = cardObj.rank + suitChar; // Каноническая строка
-                    
-                    let placed = false;
-                    for (let i = 0; i < (boardState[rowName]?.length || 0); i++) {
-                        if (boardState[rowName][i] === null) {
-                            boardState[rowName][i] = cardStr;
-                            unavailableCards.add(cardStr);
-                            placed = true;
-                            break;
-                        }
-                    }
-                    if (!placed) console.warn(`Could not find empty slot for ${cardStr} in row ${rowName} during AI placement.`);
-                }
-            });
-        });
-        updateBoardUI(); // Обновляем UI на основе измененного boardState
-    }
-
     async function getAIPlacement() {
         const { board, cardCount } = getBoardState(); 
         const comboCardsElements = combinationArea.querySelectorAll('.card');
@@ -540,12 +499,9 @@
             alert("Пожалуйста, добавьте ИЗВЕСТНЫЕ карты в 'Combination Area' для размещения AI."); return;
         }
         
-        // Ослабленная проверка для Задачи 1:
         if (cardCount >= 13 && comboCardsStrings.length > 0) { 
             alert("Доска уже заполнена. Нельзя добавить новые карты."); return; 
         }
-        // Если cardCount < 13, запрос отправляется, даже если cardCount + comboCardsStrings.length > 13.
-        // ИИ сам решит, сколько карт разместить.
 
         const aiSettings = getAiSettings();
         const allPermanentlyDiscardedList = Array.from(permanentlyDiscardedCards); 
@@ -579,26 +535,11 @@
 
             resetCombinationAreaDOM(); // Очищает комбо-зону и убирает карты из unavailableCards
             
-            // Вместо placeCardsOnBoard, которая заполняет слева направо,
-            // нужно напрямую обновить boardState на основе точных позиций от AI.
-            // Предполагаем, что data.move.placements (если бы он был) содержал бы [{card_str, rank, suit, row, index}, ...]
-            // Но текущий формат ответа data.move это {"top": [...], "middle": [...], "bottom": [...]}
-            // Это означает, что app.py должен вернуть ТОЧНЫЕ позиции в этих массивах.
-            // Если app.py возвращает {"top": [{"rank":"A", "suit":"♠"}, ...]} без индексов,
-            // то placeCardsOnBoard будет пытаться заполнить первые пустые слоты, что может быть неверно.
-            // ИСПРАВЛЕНИЕ: app.py должен вернуть структуру, где каждая карта имеет row и index.
-            // Пока что, если app.py возвращает data.move как есть, placeCardsOnBoard попытается заполнить.
-            // Это нужно будет синхронизировать с форматом ответа app.py.
-            // Для Задачи 1 (11 карт, 3 сданы, 2 разместить):
-            // AI вернет 2 карты в data.move.placements (или в data.move.top/middle/bottom).
-            // И 1 карту в data.move.discarded.
-
-            // Обновляем boardState и unavailableCards на основе того, что вернул AI
-            // Это должно быть сделано на основе точных позиций, которые AI решил использовать.
-            // Если AI вернул data.move.placements = [{rank, suit, row, index}, ...], то:
-            if (data.move_details && data.move_details.placements_formatted) { // Если сервер вернет новый формат
-                data.move_details.placements_formatted.forEach(p => {
-                    const cardString = p.rank + getCardSuitChar(p.suit); // Восстанавливаем строку карты
+            // FIX: Обработка нового, более точного формата ответа от AI
+            if (data.move && data.move.placements_details) {
+                data.move.placements_details.forEach(p => {
+                    // Восстанавливаем каноническую строку карты (e.g., "Ts")
+                    const cardString = (p.rank === 'T' ? 'T' : p.rank) + getCardSuitChar(p.suit);
                     if (boardState[p.row] && boardState[p.row][p.index] === null) {
                         boardState[p.row][p.index] = cardString;
                         unavailableCards.add(cardString);
@@ -608,10 +549,9 @@
                 });
                 updateBoardUI(); // Обновляем доску на основе измененного boardState
             } else {
-                // Используем старый placeCardsOnBoard, если формат ответа не изменился
-                placeCardsOnBoard(data.move); 
+                console.error("AI response format is not as expected (missing placements_details):", data);
+                alert("Ошибка: формат ответа AI не соответствует ожиданиям.");
             }
-
 
             if (data.move.discarded) {
                 const discardedByAI = data.move.discarded; // Может быть строкой или массивом строк
