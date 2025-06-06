@@ -1,4 +1,4 @@
-# mcts_node.py v2.11 (Simplified placement count logic)
+# mcts_node.py v2.12 (Syntax fix in except block)
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
 - Улучшены эвристики для стремления к Фантазии (с учетом прогрессивной Фантазии).
@@ -10,7 +10,7 @@
 import random
 import math
 import logging
-import sys # Добавлен sys для StreamHandler
+import sys
 from typing import List, Tuple, Dict, Optional, Set, Any, cast
 from collections import Counter, defaultdict
 import itertools
@@ -39,35 +39,25 @@ except ImportError:
             self._cards_placed=c
 
         def copy(self):
-            # Simplified copy for mock
             new_rows = {r: list(self.rows[r]) for r in self.rows}
             return PlayerBoard(r=new_rows, c=self._cards_placed)
 
-        def get_total_cards(self):
-            return self._cards_placed
-
-        def is_complete(self):
-            return self._cards_placed == self.TOTAL_CAPACITY
-
+        def get_total_cards(self): return self._cards_placed
+        def is_complete(self): return self._cards_placed == self.TOTAL_CAPACITY
         def add_card(self, card_int, row_name, slot_idx):
             if len(self.rows[row_name]) < self.ROW_CAPACITY[row_name]:
-                 self.rows[row_name].append(card_int) # Simplified add
+                 self.rows[row_name].append(card_int)
                  self._cards_placed +=1
                  return True
             return False
-
-        def get_row_cards(self, row_name):
-            return list(self.rows[row_name])
-
+        def get_row_cards(self, row_name): return list(self.rows[row_name])
         def get_available_slots(self) -> List[Tuple[str, int]]:
             slots = []
             for rn in self.ROW_NAMES:
                 for i in range(self.ROW_CAPACITY[rn] - len(self.rows[rn])):
                     slots.append((rn, len(self.rows[rn]) + i))
             return slots
-
-        def get_board_state_tuple(self):
-            return tuple(tuple(sorted(self.rows[rn])) for rn in self.ROW_NAMES)
+        def get_board_state_tuple(self): return tuple(tuple(sorted(self.rows[rn])) for rn in self.ROW_NAMES)
 
     class Card: # type: ignore
         @staticmethod
@@ -78,7 +68,6 @@ except ImportError:
         def to_str(c): return "??"
         @staticmethod
         def from_str(s): return 0
-        # pass # type: ignore # Removed pass as class has methods
 
     class Deck: # type: ignore
         FULL_DECK_CARDS=set(range(52))
@@ -92,13 +81,14 @@ except ImportError:
             return dealt
         def get_remaining_cards(self): return list(self.cards)
         def __len__(self): return len(self.cards)
-        # pass # type: ignore
 
     RANK_MAP={}; STR_RANKS=""; CARD_PLACEHOLDER="__"; UNKNOWN_CARD_MARKER_LOGIC="??" # type: ignore
     def card_to_str(c):return "??" # type: ignore
     def get_hand_rank_safe(*a): return 9999,9,"Inv" # type: ignore
     WORST_RANK=9999;WORST_CLASS=9 # type: ignore
-    def check_board_foul(*a): return False; def get_row_royalty(*a):return 0 # type: ignore
+    # FIX: Исправлен синтаксис, определения функций на разных строках
+    def check_board_foul(*a): return False
+    def get_row_royalty(*a):return 0 # type: ignore
     def calculate_total_royalty_for_board(*a):return 0; ROYALTY_TOP_PAIRS={} # type: ignore
     HAND_TYPE_PAIR_3="P";HAND_TYPE_TRIPS_3="T"; RANK_QUEEN=10;RANK_KING=11;RANK_ACE=12 # type: ignore
     class Eval5: evaluate=lambda s,c:9999;get_rank_class=lambda s,r:9;class_to_string=lambda s,rc:"E" # type: ignore
@@ -109,7 +99,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
     logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler(sys.stdout) # Используем sys.stdout
+    handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
@@ -209,7 +199,6 @@ class MCTSNode:
 
         if available_slots_count <= 0 or num_dealt == 0: return []
 
-        # FIX: Упрощенная и более надежная логика определения количества размещаемых карт
         if num_cards_on_board == 0:
             num_to_place_on_board = 5
             if num_dealt != 5:
@@ -592,7 +581,6 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list_initial: List[in
     try:
         while not current_board.is_complete():
             avail_slots = PlayerBoard.TOTAL_CAPACITY - current_board.get_total_cards()
-            # FIX: Упрощенная логика определения количества карт для раздачи/размещения
             if current_board.get_total_cards() == 0:
                 n_deal, n_place = 5, 5
             else:
