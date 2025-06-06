@@ -1,10 +1,11 @@
-# mcts_agent.py v2.7 (Handles subset placement, improved fantasy focus, "?" card propagation)
+# mcts_agent.py v2.8 (Simplified placement count logic)
 """
 Реализация MCTS-агента для задачи размещения НАБОРА карт OFC Pineapple.
 - Адаптирован для обработки ситуации, когда карт сдано больше, чем доступных слотов.
 - Усилен фокус на достижение Фантазии в эвристиках (через MCTSNode).
 - Корректно передает num_unknown_removed_cards.
 - Улучшено логирование и выбор лучшего хода.
+- Упрощена логика определения количества размещаемых карт.
 """
 
 import time
@@ -113,14 +114,14 @@ class MCTSAgent:
         cards_on_board_start = initial_board.get_total_cards()
         available_slots = PlayerBoard.TOTAL_CAPACITY - cards_on_board_start
         
-        num_cards_ai_will_target_to_place = min(num_dealt, available_slots)
-        if num_dealt > 1 and num_cards_ai_will_target_to_place == num_dealt and available_slots > 0 :
-            # Если мы можем разместить все сданные карты, но их больше одной,
-            # то по правилам Ананаса мы должны одну сбросить (кроме первой улицы).
-            # На первой улице (cards_on_board_start == 0) мы ставим все 5.
-            if cards_on_board_start > 0 :
-                 num_cards_ai_will_target_to_place = num_dealt -1
-
+        # FIX: Упрощенная и более надежная логика определения количества размещаемых карт
+        if cards_on_board_start == 0:
+            num_to_place = 5 # Первая улица, размещаем 5
+        else:
+            num_to_discard = 1 if num_dealt > 1 else 0
+            num_to_place = num_dealt - num_to_discard
+        
+        num_cards_ai_will_target_to_place = min(num_to_place, available_slots)
 
         logger.info(f"\n--- AI Agent: Choosing placement ---")
         logger.info(f"Initial Board ({cards_on_board_start} cards):\n{initial_board}")
@@ -132,17 +133,13 @@ class MCTSAgent:
         if available_slots <= 0: # Нет места на доске
             if num_dealt > 0:
                  logger.warning(f"No available slots on board, but {num_dealt} cards dealt. Discarding all.")
-                 discard_val: Any = None
-                 if len(cards_just_dealt) == 1: discard_val = cards_just_dealt[0]
-                 elif len(cards_just_dealt) > 1: discard_val = tuple(sorted(cards_just_dealt))
+                 discard_val: Any = tuple(sorted(cards_just_dealt)) if len(cards_just_dealt) > 1 else cards_just_dealt[0]
                  return {'placements': [], 'discarded': discard_val, 'score': HEURISTIC_FOUL_PENALTY, 'reason': "No slots, discarding all."}
             else: return None
 
         if num_cards_ai_will_target_to_place <= 0 and num_dealt > 0: # Нечего размещать, но карты есть -> сброс всех
             logger.info(f"Target to place is {num_cards_ai_will_target_to_place}, but {num_dealt} cards dealt. Discarding all.")
-            discard_val: Any = None
-            if len(cards_just_dealt) == 1: discard_val = cards_just_dealt[0]
-            elif len(cards_just_dealt) > 1: discard_val = tuple(sorted(cards_just_dealt))
+            discard_val: Any = tuple(sorted(cards_just_dealt)) if len(cards_just_dealt) > 1 else cards_just_dealt[0]
             return {'placements': [], 'discarded': discard_val, 'score': HEURISTIC_FOUL_PENALTY / 2, 'reason': "Target place is <=0, discarding all."}
 
 
@@ -392,12 +389,15 @@ class MCTSAgent:
                     skip = True
             
             if not skip:
-                num_placed_cand = len(placements_cand)
-                num_expected_to_place = min(len(initial_cards_dealt), available_slots_on_board)
-                if len(initial_cards_dealt) > 1 and available_slots_on_board > 0 and root_node.board.get_total_cards() > 0 :
-                     num_expected_to_place = min(len(initial_cards_dealt) -1, available_slots_on_board)
-                if root_node.board.get_total_cards() == 0: num_expected_to_place = 5 # Первая улица
+                # FIX: Упрощенная и более надежная логика определения ожидаемого количества карт
+                num_expected_to_place = 0
+                if root_node.board.get_total_cards() == 0:
+                    num_expected_to_place = 5
+                else:
+                    num_to_discard = 1 if len(initial_cards_dealt) > 1 else 0
+                    num_expected_to_place = min(len(initial_cards_dealt) - num_to_discard, available_slots_on_board)
 
+                num_placed_cand = len(placements_cand)
                 if num_placed_cand != num_expected_to_place:
                      logger.error(f"Filter Error: Candidate places {num_placed_cand}, expected {num_expected_to_place}. P_info: {p_info_cand}")
                      continue
@@ -414,10 +414,13 @@ class MCTSAgent:
             if child_stats:
                  fallback_cand = child_stats[0][0]
                  num_placed_fallback = len(fallback_cand.get('placements', []))
-                 num_expected_to_place_fb = min(len(initial_cards_dealt), available_slots_on_board)
-                 if len(initial_cards_dealt) > 1 and available_slots_on_board > 0 and root_node.board.get_total_cards() > 0 :
-                      num_expected_to_place_fb = min(len(initial_cards_dealt) -1, available_slots_on_board)
-                 if root_node.board.get_total_cards() == 0: num_expected_to_place_fb = 5
+                 
+                 num_expected_to_place_fb = 0
+                 if root_node.board.get_total_cards() == 0:
+                     num_expected_to_place_fb = 5
+                 else:
+                     num_to_discard_fb = 1 if len(initial_cards_dealt) > 1 else 0
+                     num_expected_to_place_fb = min(len(initial_cards_dealt) - num_to_discard_fb, available_slots_on_board)
 
                  if num_placed_fallback == num_expected_to_place_fb:
                      logger.warning(f"Using fallback (might violate rules): {fallback_cand}")
