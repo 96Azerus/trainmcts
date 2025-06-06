@@ -1,4 +1,4 @@
-# mcts_node.py v2.10 (Refined Fantasy logic, weights usage, "?" card handling in heuristics)
+# mcts_node.py v2.11 (Simplified placement count logic)
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
 - Улучшены эвристики для стремления к Фантазии (с учетом прогрессивной Фантазии).
@@ -209,17 +209,15 @@ class MCTSNode:
 
         if available_slots_count <= 0 or num_dealt == 0: return []
 
-        num_to_place_on_board: int
+        # FIX: Упрощенная и более надежная логика определения количества размещаемых карт
         if num_cards_on_board == 0:
             num_to_place_on_board = 5
-            if num_dealt != 5: logger.error(f"GenStates: Street 1, expected 5, got {num_dealt}"); return []
-        else:
-            if num_dealt == 3:
-                num_to_place_on_board = min(2, available_slots_count)
-            elif num_dealt > 0 :
-                num_to_place_on_board = min(num_dealt -1 if num_dealt > 1 else num_dealt, available_slots_count)
-            else:
+            if num_dealt != 5:
+                logger.error(f"GenStates: Street 1, expected 5 cards, but got {num_dealt}. Cannot generate states.")
                 return []
+        else:
+            num_to_discard = 1 if num_dealt > 1 else 0
+            num_to_place_on_board = min(num_dealt - num_to_discard, available_slots_count)
         
         if num_to_place_on_board <= 0 and num_dealt > 0:
             discard_info = tuple(sorted(cards_just_dealt)) if len(cards_just_dealt) > 1 else cards_just_dealt[0]
@@ -593,8 +591,14 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list_initial: List[in
     sim_deck_obj = Deck(cards=deck_for_sim)
     try:
         while not current_board.is_complete():
-            avail_slots = PlayerBoard.TOTAL_CAPACITY - current_board.get_total_cards(); n_deal, n_place = (5,5) if current_board.get_total_cards()==0 else (3, min(2, avail_slots))
-            if avail_slots <= 0 or n_place == 0 or len(sim_deck_obj) < n_deal: break
+            avail_slots = PlayerBoard.TOTAL_CAPACITY - current_board.get_total_cards()
+            # FIX: Упрощенная логика определения количества карт для раздачи/размещения
+            if current_board.get_total_cards() == 0:
+                n_deal, n_place = 5, 5
+            else:
+                n_deal, n_place = 3, min(2, avail_slots)
+
+            if avail_slots <= 0 or n_place <= 0 or len(sim_deck_obj) < n_deal: break
             dealt = sim_deck_obj.deal(n_deal)
             if not dealt: break
             deck_snapshot_for_h = set(sim_deck_obj.get_remaining_cards()); original_size_for_h = len(deck_snapshot_for_h) + len(dealt)
