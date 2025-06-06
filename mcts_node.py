@@ -413,10 +413,22 @@ class MCTSNode:
         score = 0.0
         for suit, count in suit_counts.items():
             if num_cards == 4:
-                if count == 4: is_sf, _ = MCTSNode._is_straight_flush_possible(ranks, suits, suit); score += weights['made_flush_score'] + (weights['sf_bonus_over_flush'] if is_sf else 0); break 
-                elif count == 3: def check(c): return Card.get_suit_int(c) == suit; score += MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size) * weights['flush_draw_score_per_out']; break
+                if count == 4:
+                    is_sf, _ = MCTSNode._is_straight_flush_possible(ranks, suits, suit)
+                    score += weights['made_flush_score'] + (weights['sf_bonus_over_flush'] if is_sf else 0)
+                    break
+                elif count == 3:
+                    def check(c):
+                        return Card.get_suit_int(c) == suit
+                    score += MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size) * weights['flush_draw_score_per_out']
+                    break
             elif num_cards == 3:
-                if count == 3: def check(c): return Card.get_suit_int(c) == suit; outs = MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size); score += (outs * weights['three_to_flush_score_per_out'] if outs >=2 else 0) ; break
+                if count == 3:
+                    def check(c):
+                        return Card.get_suit_int(c) == suit
+                    outs = MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size)
+                    score += (outs * weights['three_to_flush_score_per_out'] if outs >=2 else 0)
+                    break
         return score
 
     @staticmethod
@@ -441,60 +453,102 @@ class MCTSNode:
         if num_cards == 4 and len(unique_ranks) == 4:
             outs = 0
             if (unique_ranks[3]-unique_ranks[0] == 3 and unique_ranks[1]-unique_ranks[0]==1 and unique_ranks[2]-unique_ranks[1]==1):
-                if unique_ranks[0] > RANK_MAP['2']: def check_l(c): return Card.get_rank_int(c) == unique_ranks[0]-1; outs += MCTSNode._count_specific_outs(deck, check_l, num_unknown_removed, original_deck_size)
-                if unique_ranks[3] < RANK_ACE: def check_h(c): return Card.get_rank_int(c) == unique_ranks[3]+1; outs += MCTSNode._count_specific_outs(deck, check_h, num_unknown_removed, original_deck_size)
+                if unique_ranks[0] > RANK_MAP['2']:
+                    def check_l(c): return Card.get_rank_int(c) == unique_ranks[0]-1
+                    outs += MCTSNode._count_specific_outs(deck, check_l, num_unknown_removed, original_deck_size)
+                if unique_ranks[3] < RANK_ACE:
+                    def check_h(c): return Card.get_rank_int(c) == unique_ranks[3]+1
+                    outs += MCTSNode._count_specific_outs(deck, check_h, num_unknown_removed, original_deck_size)
             elif set(unique_ranks) == {RANK_ACE, RANK_MAP['2'], RANK_MAP['3'], RANK_MAP['4']}:
-                def check_5(c): return Card.get_rank_int(c) == RANK_MAP['5']; outs += MCTSNode._count_specific_outs(deck, check_5, num_unknown_removed, original_deck_size)
+                def check_5(c): return Card.get_rank_int(c) == RANK_MAP['5']
+                outs += MCTSNode._count_specific_outs(deck, check_5, num_unknown_removed, original_deck_size)
             elif set(unique_ranks) == {RANK_MAP['T'], RANK_MAP['J'], RANK_MAP['Q'], RANK_MAP['K']}:
-                def check_A(c): return Card.get_rank_int(c) == RANK_ACE; outs += MCTSNode._count_specific_outs(deck, check_A, num_unknown_removed, original_deck_size)
-                def check_9(c): return Card.get_rank_int(c) == RANK_MAP['9']; outs += MCTSNode._count_specific_outs(deck, check_9, num_unknown_removed, original_deck_size)
+                def check_A(c): return Card.get_rank_int(c) == RANK_ACE
+                outs += MCTSNode._count_specific_outs(deck, check_A, num_unknown_removed, original_deck_size)
+                def check_9(c): return Card.get_rank_int(c) == RANK_MAP['9']
+                outs += MCTSNode._count_specific_outs(deck, check_9, num_unknown_removed, original_deck_size)
             score += outs * weights['open_ended_draw_score_per_out']
             if outs == 0:
                 gut_outs = 0
                 for combo3 in itertools.combinations(unique_ranks, 3):
                     sc = sorted(list(combo3))
-                    if (sc[1]-sc[0]==1 and sc[2]-sc[1]==2): def check_g(c): return Card.get_rank_int(c) == sc[1]+1; gut_outs += MCTSNode._count_specific_outs(deck, check_g, num_unknown_removed, original_deck_size)
-                    elif (sc[1]-sc[0]==2 and sc[2]-sc[1]==1): def check_g(c): return Card.get_rank_int(c) == sc[0]+1; gut_outs += MCTSNode._count_specific_outs(deck, check_g, num_unknown_removed, original_deck_size)
+                    if (sc[1]-sc[0]==1 and sc[2]-sc[1]==2):
+                        def check_g(c): return Card.get_rank_int(c) == sc[1]+1
+                        gut_outs += MCTSNode._count_specific_outs(deck, check_g, num_unknown_removed, original_deck_size)
+                    elif (sc[1]-sc[0]==2 and sc[2]-sc[1]==1):
+                        def check_g(c): return Card.get_rank_int(c) == sc[0]+1
+                        gut_outs += MCTSNode._count_specific_outs(deck, check_g, num_unknown_removed, original_deck_size)
                 score += gut_outs * weights['gutshot_draw_score_per_out']
         elif num_cards == 3 and len(unique_ranks) == 3:
             if (unique_ranks[1]-unique_ranks[0]==1 and unique_ranks[2]-unique_ranks[1]==1):
                 oesd3_outs = 0
-                if unique_ranks[0] > RANK_MAP['2']: def c_l(c): return Card.get_rank_int(c) == unique_ranks[0]-1; oesd3_outs += MCTSNode._count_specific_outs(deck, c_l, num_unknown_removed, original_deck_size)
-                if unique_ranks[2] < RANK_ACE: def c_h(c): return Card.get_rank_int(c) == unique_ranks[2]+1; oesd3_outs += MCTSNode._count_specific_outs(deck, c_h, num_unknown_removed, original_deck_size)
+                if unique_ranks[0] > RANK_MAP['2']:
+                    def c_l(c): return Card.get_rank_int(c) == unique_ranks[0]-1
+                    oesd3_outs += MCTSNode._count_specific_outs(deck, c_l, num_unknown_removed, original_deck_size)
+                if unique_ranks[2] < RANK_ACE:
+                    def c_h(c): return Card.get_rank_int(c) == unique_ranks[2]+1
+                    oesd3_outs += MCTSNode._count_specific_outs(deck, c_h, num_unknown_removed, original_deck_size)
                 score += oesd3_outs * weights['three_to_open_ended_score_per_out']
             elif (unique_ranks[1]-unique_ranks[0]==1 and unique_ranks[2]-unique_ranks[1]==2):
-                def c_g(c): return Card.get_rank_int(c) == unique_ranks[1]+1; score += MCTSNode._count_specific_outs(deck, c_g, num_unknown_removed, original_deck_size) * weights['three_to_gutshot_score_per_out']
+                def c_g(c): return Card.get_rank_int(c) == unique_ranks[1]+1
+                score += MCTSNode._count_specific_outs(deck, c_g, num_unknown_removed, original_deck_size) * weights['three_to_gutshot_score_per_out']
             elif (unique_ranks[1]-unique_ranks[0]==2 and unique_ranks[2]-unique_ranks[1]==1):
-                def c_g(c): return Card.get_rank_int(c) == unique_ranks[0]+1; score += MCTSNode._count_specific_outs(deck, c_g, num_unknown_removed, original_deck_size) * weights['three_to_gutshot_score_per_out']
+                def c_g(c): return Card.get_rank_int(c) == unique_ranks[0]+1
+                score += MCTSNode._count_specific_outs(deck, c_g, num_unknown_removed, original_deck_size) * weights['three_to_gutshot_score_per_out']
         return score
 
     @staticmethod
     def _calculate_n_of_a_kind_potential(ranks: List[int], rank_counts: Counter, num_cards: int, deck: Set[int], num_unknown_removed: int, original_deck_size: int, weights: Dict[str, float]) -> float:
         score = 0.0
         if num_cards == 4:
-            quads_r = next((r for r,c in rank_counts.items() if c==4),-1); trips_r = next((r for r,c in rank_counts.items() if c==3),-1); pairs_r = [r for r,c in rank_counts.items() if c==2]
-            if quads_r!=-1: score+=weights['four_of_a_kind_score']
+            quads_r = next((r for r,c in rank_counts.items() if c==4),-1)
+            trips_r = next((r for r,c in rank_counts.items() if c==3),-1)
+            pairs_r = [r for r,c in rank_counts.items() if c==2]
+            if quads_r!=-1:
+                score+=weights['four_of_a_kind_score']
             elif trips_r!=-1:
-                score+=weights['three_of_a_kind_made_score']; def c_q(c):return Card.get_rank_int(c)==trips_r; score+=MCTSNode._count_specific_outs(deck,c_q,num_unknown_removed,original_deck_size)*weights['out_to_quads_score']
-                k_r=next((r for r in ranks if r!=trips_r),-1);
-                if k_r!=-1: def c_fh(c):return Card.get_rank_int(c)==k_r; score+=MCTSNode._count_specific_outs(deck,c_fh,num_unknown_removed,original_deck_size)*weights['out_to_full_house_from_trips_score']
-            elif len(pairs_r)==2: score+=weights['two_pair_made_score'];
-                for pr_r in pairs_r: def c_fh(c):return Card.get_rank_int(c)==pr_r; score+=MCTSNode._count_specific_outs(deck,c_fh,num_unknown_removed,original_deck_size)*weights['out_to_full_house_from_two_pair_score']
+                score+=weights['three_of_a_kind_made_score']
+                def c_q(c):return Card.get_rank_int(c)==trips_r
+                score+=MCTSNode._count_specific_outs(deck,c_q,num_unknown_removed,original_deck_size)*weights['out_to_quads_score']
+                k_r=next((r for r in ranks if r!=trips_r),-1)
+                if k_r!=-1:
+                    def c_fh(c):return Card.get_rank_int(c)==k_r
+                    score+=MCTSNode._count_specific_outs(deck,c_fh,num_unknown_removed,original_deck_size)*weights['out_to_full_house_from_trips_score']
+            elif len(pairs_r)==2:
+                score+=weights['two_pair_made_score']
+                for pr_r in pairs_r:
+                    def c_fh(c):return Card.get_rank_int(c)==pr_r
+                    score+=MCTSNode._count_specific_outs(deck,c_fh,num_unknown_removed,original_deck_size)*weights['out_to_full_house_from_two_pair_score']
             elif len(pairs_r)==1:
-                score+=weights['pair_made_score_4cards']; pr_r=pairs_r[0]; def c_t(c):return Card.get_rank_int(c)==pr_r; score+=MCTSNode._count_specific_outs(deck,c_t,num_unknown_removed,original_deck_size)*weights['out_to_trips_score']
-                k_rs=[r for r in ranks if r!=pr_r];
-                for kr_r in k_rs: def c_p2(c):return Card.get_rank_int(c)==kr_r; score+=MCTSNode._count_specific_outs(deck,c_p2,num_unknown_removed,original_deck_size)*weights['out_to_pair_score']
+                score+=weights['pair_made_score_4cards']
+                pr_r=pairs_r[0]
+                def c_t(c):return Card.get_rank_int(c)==pr_r
+                score+=MCTSNode._count_specific_outs(deck,c_t,num_unknown_removed,original_deck_size)*weights['out_to_trips_score']
+                k_rs=[r for r in ranks if r!=pr_r]
+                for kr_r in k_rs:
+                    def c_p2(c):return Card.get_rank_int(c)==kr_r
+                    score+=MCTSNode._count_specific_outs(deck,c_p2,num_unknown_removed,original_deck_size)*weights['out_to_pair_score']
             else:
-                for r_v in ranks: def c_p(c):return Card.get_rank_int(c)==r_v; score+=MCTSNode._count_specific_outs(deck,c_p,num_unknown_removed,original_deck_size)*weights['out_to_pair_score_needing_two']
+                for r_v in ranks:
+                    def c_p(c):return Card.get_rank_int(c)==r_v
+                    score+=MCTSNode._count_specific_outs(deck,c_p,num_unknown_removed,original_deck_size)*weights['out_to_pair_score_needing_two']
         elif num_cards == 3:
-            trips_r = next((r for r,c in rank_counts.items() if c==3),-1); pair_r = next((r for r,c in rank_counts.items() if c==2),-1)
-            if trips_r!=-1: score+=weights['three_of_a_kind_made_score']
+            trips_r = next((r for r,c in rank_counts.items() if c==3),-1)
+            pair_r = next((r for r,c in rank_counts.items() if c==2),-1)
+            if trips_r!=-1:
+                score+=weights['three_of_a_kind_made_score']
             elif pair_r!=-1:
-                score+=weights['pair_made_score']; def c_t(c):return Card.get_rank_int(c)==pair_r; score+=MCTSNode._count_specific_outs(deck,c_t,num_unknown_removed,original_deck_size)*weights['out_to_trips_score']
-                k_r=next((r for r in ranks if r!=pair_r),-1);
-                if k_r!=-1: def c_kp(c):return Card.get_rank_int(c)==k_r; score+=MCTSNode._count_specific_outs(deck,c_kp,num_unknown_removed,original_deck_size)*weights['out_to_pair_score']
+                score+=weights['pair_made_score']
+                def c_t(c):return Card.get_rank_int(c)==pair_r
+                score+=MCTSNode._count_specific_outs(deck,c_t,num_unknown_removed,original_deck_size)*weights['out_to_trips_score']
+                k_r=next((r for r in ranks if r!=pair_r),-1)
+                if k_r!=-1:
+                    def c_kp(c):return Card.get_rank_int(c)==k_r
+                    score+=MCTSNode._count_specific_outs(deck,c_kp,num_unknown_removed,original_deck_size)*weights['out_to_pair_score']
             else:
-                for r_v in ranks: def c_p(c):return Card.get_rank_int(c)==r_v; score+=MCTSNode._count_specific_outs(deck,c_p,num_unknown_removed,original_deck_size)*weights['out_to_pair_score_needing_two']
+                for r_v in ranks:
+                    def c_p(c):return Card.get_rank_int(c)==r_v
+                    score+=MCTSNode._count_specific_outs(deck,c_p,num_unknown_removed,original_deck_size)*weights['out_to_pair_score_needing_two']
         return score
 
     @staticmethod
@@ -571,10 +625,17 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list_initial: List[in
     current_board = PlayerBoard(); actions_hist: List[Dict[str, Any]] = []
     for r, c_strs in board_dict.get('rows', {}).items():
         for i, c_str in enumerate(c_strs):
-            if c_str and c_str != CARD_PLACEHOLDER: try: current_board.add_card(Card.from_str(c_str), r, i); except ValueError: pass
+            if c_str and c_str != CARD_PLACEHOLDER:
+                try:
+                    current_board.add_card(Card.from_str(c_str), r, i)
+                except ValueError:
+                    pass
     deck_for_sim: Set[int]
     if num_unknown_sim > 0 and len(deck_list_initial) > num_unknown_sim:
-        try: deck_for_sim = set(random.sample(deck_list_initial, len(deck_list_initial) - num_unknown_sim)); except ValueError: deck_for_sim = set(deck_list_initial)
+        try:
+            deck_for_sim = set(random.sample(deck_list_initial, len(deck_list_initial) - num_unknown_sim))
+        except ValueError:
+            deck_for_sim = set(deck_list_initial)
     elif num_unknown_sim > 0: deck_for_sim = set()
     else: deck_for_sim = set(deck_list_initial)
     sim_deck_obj = Deck(cards=deck_for_sim)
@@ -586,22 +647,32 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list_initial: List[in
             else:
                 n_deal, n_place = 3, min(2, avail_slots)
 
-            if avail_slots <= 0 or n_place <= 0 or len(sim_deck_obj) < n_deal: break
+            if avail_slots <= 0 or n_place <= 0 or len(sim_deck_obj) < n_deal:
+                break
             dealt = sim_deck_obj.deal(n_deal)
-            if not dealt: break
-            deck_snapshot_for_h = set(sim_deck_obj.get_remaining_cards()); original_size_for_h = len(deck_snapshot_for_h) + len(dealt)
+            if not dealt:
+                break
+            deck_snapshot_for_h = set(sim_deck_obj.get_remaining_cards())
+            original_size_for_h = len(deck_snapshot_for_h) + len(dealt)
             best_acts = MCTSNode._choose_best_heuristic_placement_v2(current_board, dealt, deck_snapshot_for_h, n_place, num_unknown_sim)
-            if not best_acts: break
+            if not best_acts:
+                break
             best_act = best_acts[0]
             if best_act and best_act.get('placements'):
                 valid = True
                 for c,r,s_idx in best_act['placements']:
-                    if not current_board.add_card(c,r,s_idx): valid=False; break
-                if not valid: break
+                    if not current_board.add_card(c,r,s_idx):
+                        valid=False
+                        break
+                if not valid:
+                    break
                 actions_hist.append(best_act)
-            else: break
+            else:
+                break
         final_score = float(calculate_total_royalty_for_board(current_board)) if not check_board_foul(current_board) else HEURISTIC_FOUL_PENALTY
-    except Exception as e: logger.error(f"Rollout error: {e}", exc_info=True); final_score = HEURISTIC_FOUL_PENALTY - 50.0
+    except Exception as e:
+        logger.error(f"Rollout error: {e}", exc_info=True)
+        final_score = HEURISTIC_FOUL_PENALTY - 50.0
     return final_score, actions_hist
 
 def run_parallel_rollout(board_dict: Dict, deck_list: List[int], num_unknown_removed_cards: int) -> Tuple[float, List[Dict[str, Any]]]:

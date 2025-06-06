@@ -10,7 +10,11 @@ import random
 
 try:
     from mcts_agent import MCTSAgent
-    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS, RANK_QUEEN, RANK_KING, RANK_ACE
+    from ofc_logic import (
+        PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS,
+        RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+        RANK_TEN, RANK_JACK, RANK_QUEEN, RANK_KING, RANK_ACE
+    )
     from ofc_evaluators import check_board_foul, get_row_royalty, HAND_TYPE_TRIPS_3, calculate_total_royalty_for_board
 except ImportError:
     pytest.skip("Skipping AI quality tests due to missing core imports", allow_module_level=True)
