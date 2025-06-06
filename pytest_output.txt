@@ -3,27 +3,27 @@ platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-uti
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: cov-6.1.1, anyio-4.9.0
-collecting ... FATAL ERROR during initial imports: invalid syntax (mcts_node.py, line 101)
+collecting ... FATAL ERROR during initial imports: invalid syntax (mcts_node.py, line 417)
 Traceback (most recent call last):
   File "/workspaces/trainmcts/app.py", line 24, in <module>
     from mcts_agent import MCTSAgent, HEURISTIC_FOUL_PENALTY # Импортируем HEURISTIC_FOUL_PENALTY
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/workspaces/trainmcts/mcts_agent.py", line 24, in <module>
+  File "/workspaces/trainmcts/mcts_agent.py", line 23, in <module>
     from mcts_node import MCTSNode, run_parallel_rollout, RAVE_K, PW_C, PW_ALPHA, HEURISTIC_FOUL_PENALTY
-  File "/workspaces/trainmcts/mcts_node.py", line 101
-    def check_board_foul(*a): return False; def get_row_royalty(*a):return 0 # type: ignore
-                                            ^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 417
+    elif count == 3: def check(c): return Card.get_suit_int(c) == suit; score += MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size) * weights['flush_draw_score_per_out']; break
+                     ^^^
 SyntaxError: invalid syntax
 collected 0 items / 1 error
 INTERNALERROR> Traceback (most recent call last):
 INTERNALERROR>   File "/workspaces/trainmcts/app.py", line 24, in <module>
 INTERNALERROR>     from mcts_agent import MCTSAgent, HEURISTIC_FOUL_PENALTY # Импортируем HEURISTIC_FOUL_PENALTY
 INTERNALERROR>     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-INTERNALERROR>   File "/workspaces/trainmcts/mcts_agent.py", line 24, in <module>
+INTERNALERROR>   File "/workspaces/trainmcts/mcts_agent.py", line 23, in <module>
 INTERNALERROR>     from mcts_node import MCTSNode, run_parallel_rollout, RAVE_K, PW_C, PW_ALPHA, HEURISTIC_FOUL_PENALTY
-INTERNALERROR>   File "/workspaces/trainmcts/mcts_node.py", line 101
-INTERNALERROR>     def check_board_foul(*a): return False; def get_row_royalty(*a):return 0 # type: ignore
-INTERNALERROR>                                             ^^^
+INTERNALERROR>   File "/workspaces/trainmcts/mcts_node.py", line 417
+INTERNALERROR>     elif count == 3: def check(c): return Card.get_suit_int(c) == suit; score += MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size) * weights['flush_draw_score_per_out']; break
+INTERNALERROR>                      ^^^
 INTERNALERROR> SyntaxError: invalid syntax
 INTERNALERROR> 
 INTERNALERROR> During handling of the above exception, another exception occurred:
@@ -138,4 +138,4 @@ INTERNALERROR>   File "/workspaces/trainmcts/app.py", line 34, in <module>
 INTERNALERROR>     sys.exit(1)
 INTERNALERROR> SystemExit: 1
 
-=============================== 1 error in 0.29s ===============================
+=============================== 1 error in 0.28s ===============================
