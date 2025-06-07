@@ -94,7 +94,10 @@ def get_hand_rank_safe(cards: List[Optional[int]]) -> Tuple[int, int, str]:
             hand_class = evaluator_5card.get_rank_class(rank); type_str = evaluator_5card.class_to_string(hand_class)
             logger.debug(f"Eval 5-card: {hand_str_log} -> Rank:{rank}, Class:{hand_class}, Type:{type_str}")
             return rank, hand_class, type_str
-        else: logger.warning(f"get_hand_rank_safe unsupported length {expected_len}."); return WORST_RANK, WORST_CLASS, "Invalid"
+        else:
+            # ИСПРАВЛЕНИЕ: Уровень логирования изменен с WARNING на DEBUG.
+            logger.debug(f"get_hand_rank_safe unsupported length {expected_len}.")
+            return WORST_RANK, WORST_CLASS, "Invalid"
     except ValueError as ve: logger.warning(f"ValueError evaluating {expected_len}-card hand {hand_str_log}: {ve}"); return WORST_RANK, WORST_CLASS, "Invalid"
     except Exception as e: logger.error(f"Unexpected error evaluating {expected_len}-card hand {hand_str_log}: {e}", exc_info=True); return WORST_RANK, WORST_CLASS, "Invalid"
 
@@ -110,7 +113,7 @@ def check_board_foul(board: PlayerBoard) -> bool:
         mid_r, mid_c, _ = get_hand_rank_safe(board.rows['middle'])
         bot_r, bot_c, _ = get_hand_rank_safe(board.rows['bottom'])
         if top_r==WORST_RANK or mid_r==WORST_RANK or bot_r==WORST_RANK: logger.warning(f"Invalid ranks for foul check. T:{top_r}, M:{mid_r}, B:{bot_r}"); board.is_foul=False; return False # Ошибка оценки
-        
+
         # Меньший ранг/класс означает более сильную руку
         top_vs_mid_foul = (top_c < mid_c) or (top_c == mid_c and top_r < mid_r)
         mid_vs_bot_foul = (mid_c < bot_c) or (mid_c == bot_c and mid_r < bot_r)
