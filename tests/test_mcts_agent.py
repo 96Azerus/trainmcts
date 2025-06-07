@@ -162,19 +162,22 @@ def test_choose_placement_mcts_loop_flow(MockMCTSNode, mock_rollout_func, agent_
             return [node], node
         return [node, mock_child1], mock_child1
 
-    agent_default._select = MagicMock(side_effect=select_effect)
-    agent_default._backpropagate_standard = MagicMock()
-    agent_default._backpropagate_rave = MagicMock()
+    # ИСПРАВЛЕНИЕ: Создаем экземпляр агента с 1 воркером, чтобы избежать проблем с multiprocessing.
+    # Причина: Тест падал из-за ошибки сериализации (pickling) MagicMock объектов при использовании Pool.
+    agent_instance = MCTSAgent(time_limit_ms=10, num_workers=1, rollouts_per_leaf=1)
+    agent_instance._select = MagicMock(side_effect=select_effect)
+    agent_instance._backpropagate_standard = MagicMock()
+    agent_instance._backpropagate_rave = MagicMock()
     mock_rollout_func.return_value = (5.0, [p_info1])
     MockMCTSNode.return_value = mock_root
 
-    chosen_placement = agent_default.choose_placement(initial_board, cards_dealt, deck, num_unknown)
+    chosen_placement = agent_instance.choose_placement(initial_board, cards_dealt, deck, num_unknown)
 
-    assert agent_default._select.call_count >= 1
+    assert agent_instance._select.call_count >= 1
     mock_root.expand.assert_called_once()
     mock_rollout_func.assert_called()
-    agent_default._backpropagate_standard.assert_called()
-    agent_default._backpropagate_rave.assert_called()
+    agent_instance._backpropagate_standard.assert_called()
+    agent_instance._backpropagate_rave.assert_called()
     assert chosen_placement == p_info1
 
 
