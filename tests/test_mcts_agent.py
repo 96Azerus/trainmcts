@@ -38,17 +38,23 @@ def test_mcts_agent_init_custom():
 @patch('mcts_agent.MCTSNode')
 @patch('mcts_agent.multiprocessing.Pool')
 def test_choose_placement_basic_run_and_selection(MockPool, MockMCTSNode, agent_default):
+    # ИСПРАВЛЕНИЕ: Добавляем карту на доску, чтобы тест не считался "первой улицей".
+    # Причина: Это делает расчет num_expected_to_place внутри агента корректным для этого тестового случая.
+    initial_board = PlayerBoard()
+    initial_board.add_card(Card.from_str('2c'), 'bottom', 0)
+
     mock_root = MagicMock(spec=MCTSNode)
-    mock_root.board = PlayerBoard(); mock_root.remaining_deck = Deck.FULL_DECK_CARDS.copy()
+    mock_root.board = initial_board
+    mock_root.remaining_deck = Deck.FULL_DECK_CARDS.copy()
     mock_root.children = {}; mock_root.visits = 0; mock_root.total_reward = 0.0
-    mock_root.rave_visits_count = 0; mock_root.rave_total_reward = 0.0 # Обновленные имена
+    mock_root.rave_visits_count = 0; mock_root.rave_total_reward = 0.0
     mock_root.untried_next_states = []; mock_root._generated_states_for_expand = {}
-    mock_root.num_unknown_removed_cards = 0 # Добавляем поле
+    mock_root.num_unknown_removed_cards = 0
 
     card_as = Card.from_str('As'); card_ks = Card.from_str('Ks')
     # p_info1: avg_reward = 5.0. p_info2: avg_reward = 6.0. Ожидаем p_info2.
-    p_info1 = {'placements': [(card_as, 'top', 0)], 'discarded': None, 'score': 50}
-    p_info2 = {'placements': [(card_ks, 'middle', 0)], 'discarded': None, 'score': 60}
+    p_info1 = {'placements': [(card_as, 'top', 0)], 'discarded': card_ks, 'score': 50}
+    p_info2 = {'placements': [(card_ks, 'middle', 0)], 'discarded': card_as, 'score': 60}
 
     mock_child1 = MagicMock(spec=MCTSNode); mock_child1.visits = 10; mock_child1.total_reward = 50.0
     mock_child1.rave_visits_count = 15; mock_child1.rave_total_reward = 70.0
@@ -57,7 +63,7 @@ def test_choose_placement_basic_run_and_selection(MockPool, MockMCTSNode, agent_
     mock_child2 = MagicMock(spec=MCTSNode); mock_child2.visits = 5; mock_child2.total_reward = 30.0 # 30/5 = 6.0
     mock_child2.rave_visits_count = 8; mock_child2.rave_total_reward = 40.0
     mock_child2.placement_info = p_info2; mock_child2.num_unknown_removed_cards = 0
-    
+
     # Ключи для children должны соответствовать формату (tuple_of_placements, discarded)
     key1_pl = tuple(sorted([(int(p[0]), str(p[1]), int(p[2])) for p in p_info1['placements']]))
     key1 = (key1_pl, p_info1['discarded'])
@@ -66,17 +72,16 @@ def test_choose_placement_basic_run_and_selection(MockPool, MockMCTSNode, agent_
     mock_root.children = {key1: mock_child1, key2: mock_child2}
 
     MockMCTSNode.return_value = mock_root # Конструктор MCTSNode вернет наш мок
-    
+
     with patch('mcts_agent.run_parallel_rollout', return_value=(1.0, [])):
         agent_instance = MCTSAgent(time_limit_ms=10, num_workers=1, rollouts_per_leaf=1)
         with patch.object(agent_instance, '_select', return_value=([mock_root], mock_root)): # _select возвращает корень для выбора
             with patch.object(agent_instance, '_backpropagate_standard'):
                 with patch.object(agent_instance, '_backpropagate_rave'):
-                    initial_board = PlayerBoard()
                     cards_dealt = hand_to_int(['Ac', 'Kc'])
-                    remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
+                    remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt) - {Card.from_str('2c')}
                     num_unknown = 1
-                    
+
                     placement_result = agent_instance.choose_placement(initial_board, cards_dealt, remaining_deck, num_unknown)
 
     MockMCTSNode.assert_called_once_with(
@@ -93,23 +98,24 @@ def test_choose_placement_no_cards(agent_default):
 
 def test_choose_placement_no_available_slots(agent_default):
     board = PlayerBoard()
-    # Заполняем доску полностью
     all_cards_list = list(Deck.FULL_DECK_CARDS)
+    # Заполняем доску полностью
+    full_board_cards = set()
     for i in range(PlayerBoard.TOTAL_CAPACITY):
-        row_name = PlayerBoard.ROW_NAMES[i % 3]
-        row_cap = PlayerBoard.ROW_CAPACITY[row_name]
-        slot_idx = (i // 3) % row_cap if row_name == 'top' else (i // 3) % row_cap # Примерное заполнение
-        # Упрощенное заполнение для теста
-        if row_name == 'top' and i < 3: board.add_card(all_cards_list[i], 'top', i)
-        elif row_name == 'middle' and i >=3 and i < 8: board.add_card(all_cards_list[i], 'middle', i-3)
-        elif row_name == 'bottom' and i >=8 and i < 13: board.add_card(all_cards_list[i], 'bottom', i-8)
-    
+        card_to_add = all_cards_list[i]
+        full_board_cards.add(card_to_add)
+        if i < 3: board.add_card(card_to_add, 'top', i)
+        elif i < 8: board.add_card(card_to_add, 'middle', i - 3)
+        else: board.add_card(card_to_add, 'bottom', i - 8)
+
     assert board.is_complete()
     cards_dealt = [all_cards_list[13], all_cards_list[14]] # Еще карты
-    result = agent_default.choose_placement(board, cards_dealt, Deck.FULL_DECK_CARDS.copy() - set(all_cards_list[:13]) - set(cards_dealt), 0)
+    remaining_deck = Deck.FULL_DECK_CARDS.copy() - full_board_cards - set(cards_dealt)
+    result = agent_default.choose_placement(board, cards_dealt, remaining_deck, 0)
     assert result is not None
     assert result['placements'] == []
     assert result['discarded'] == tuple(sorted(cards_dealt))
+    # ИСПРАВЛЕНИЕ: Ожидаемый текст сообщения изменен для соответствия исправленному коду.
     assert result['reason'] == "No slots available, discarding all dealt cards."
 
 
@@ -126,10 +132,8 @@ def test_choose_placement_mcts_loop_flow(MockMCTSNode, mock_rollout_func, agent_
     mock_root.children = {}; mock_root.visits = 0; mock_root.total_reward = 0.0
     mock_root.rave_visits_count = 0; mock_root.rave_total_reward = 0.0
     mock_root.is_terminal.return_value = False
-    mock_root._generated_states_for_expand = {} # Инициализируем
-    
-    # MCTSNode._generate_next_states вернет список [(board, discarded_info), ...]
-    # и заполнит _generated_states_for_expand = {action_key: (board, discarded_info, placement_info_dict)}
+    mock_root._generated_states_for_expand = {}
+
     mock_next_board1 = initial_board.copy(); mock_next_board1.add_card(Card.from_str('Ac'), 'top', 0); mock_next_board1.add_card(Card.from_str('Kc'), 'middle', 0)
     mock_discard1 = Card.from_str('Qc')
     p_info1 = {'placements': [(Card.from_str('Ac'),'top',0), (Card.from_str('Kc'),'middle',0)], 'discarded': mock_discard1, 'score':10}
@@ -138,30 +142,30 @@ def test_choose_placement_mcts_loop_flow(MockMCTSNode, mock_rollout_func, agent_
 
     mock_root._generate_next_states.return_value = [(mock_next_board1, mock_discard1)]
     mock_root._generated_states_for_expand = {key1: (mock_next_board1, mock_discard1, p_info1)}
-    mock_root.untried_next_states = None # Чтобы _select вызвал _generate_next_states
+    mock_root.untried_next_states = None
 
     mock_child1 = MagicMock(spec=MCTSNode)
     mock_child1.board = mock_next_board1; mock_child1.remaining_deck = deck - {Card.from_str('Ac'), Card.from_str('Kc'), mock_discard1}
     mock_child1.visits = 0; mock_child1.total_reward = 0.0; mock_child1.rave_visits_count = 0; mock_child1.rave_total_reward = 0.0
     mock_child1.is_terminal.return_value = False; mock_child1.untried_next_states = None
     mock_child1.placement_info = p_info1; mock_child1.num_unknown_removed_cards = num_unknown
-    mock_child1._generate_next_states.return_value = [] # Не будет генерировать дальше
-    
+    mock_child1._generate_next_states.return_value = []
+
     mock_root.expand.return_value = mock_child1
-    mock_child1.expand.return_value = None # Лист
+    mock_child1.expand.return_value = None
 
     select_call_count = 0
     def select_effect(node, cards_for_node):
         nonlocal select_call_count; select_call_count += 1
-        if node is mock_root and select_call_count == 1: # Первый вызов для корня
-            node.untried_next_states = node._generate_next_states(cards_for_node) # Имитируем генерацию
-            return [node], node # Возвращаем корень для expand
-        return [node, mock_child1], mock_child1 # Последующие выборы идут к листу
-    
+        if node is mock_root and select_call_count == 1:
+            node.untried_next_states = node._generate_next_states(cards_for_node)
+            return [node], node
+        return [node, mock_child1], mock_child1
+
     agent_default._select = MagicMock(side_effect=select_effect)
     agent_default._backpropagate_standard = MagicMock()
     agent_default._backpropagate_rave = MagicMock()
-    mock_rollout_func.return_value = (5.0, [p_info1]) # run_parallel_rollout возвращает (reward, actions_history)
+    mock_rollout_func.return_value = (5.0, [p_info1])
     MockMCTSNode.return_value = mock_root
 
     chosen_placement = agent_default.choose_placement(initial_board, cards_dealt, deck, num_unknown)
@@ -182,7 +186,7 @@ def test_choose_placement_no_trip_on_top_rule(agent_default):
 
     placement_info = agent_default.choose_placement(board, cards_dealt, remaining_deck, 0)
     assert placement_info is not None
-    
+
     top_cards_ranks = [Card.get_rank_int(p[0]) for p in placement_info['placements'] if p[1] == 'top']
     rank_counts_top = Counter(top_cards_ranks)
     assert not any(count >= 3 for count in rank_counts_top.values()), "AI placed trip on top (1st street)"
@@ -190,7 +194,7 @@ def test_choose_placement_no_trip_on_top_rule(agent_default):
 def test_backpropagate_rave_updates_child_stats(agent_default):
     """Тест: _backpropagate_rave должен обновлять RAVE-статистику детей."""
     root = MCTSNode(PlayerBoard(), set(), num_unknown_removed_cards=0)
-    
+
     # Действие 1 (ребенок 1)
     p_info1 = {'placements': [(Card.from_str('As'), 'top', 0)], 'discarded': Card.from_str('Ks')}
     key1_pl = tuple(sorted([(p[0],p[1],p[2]) for p in p_info1['placements']]))
@@ -206,10 +210,10 @@ def test_backpropagate_rave_updates_child_stats(agent_default):
     root.children[key2] = child2
 
     path_to_leaf = [root] # Роллаут начался с корня (лист не важен для этого теста)
-    
+
     # Симуляция, в которой было совершено действие, ведущее к child1
     simulation_actions_history = [p_info1, {'placements': [(Card.from_str('2s'),'mid',0)], 'discarded':None}] # p_info1 + еще одно действие
-    
+
     agent_default._backpropagate_rave(path_to_leaf, simulation_actions_history, reward=10.0)
 
     assert child1.rave_visits_count == 1
@@ -220,4 +224,4 @@ def test_backpropagate_rave_updates_child_stats(agent_default):
     # Еще одна симуляция, снова с child1
     agent_default._backpropagate_rave(path_to_leaf, simulation_actions_history, reward=5.0)
     assert child1.rave_visits_count == 2
-    assert child1.rave_total_reward == 15.0 
+    assert child1.rave_total_reward == 15.0
