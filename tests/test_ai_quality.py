@@ -7,6 +7,7 @@
 import pytest
 from unittest.mock import ANY
 import random
+import logging # ИСПРАВЛЕНИЕ: Добавлен импорт logging
 
 try:
     from mcts_agent import MCTSAgent
@@ -15,9 +16,13 @@ try:
         RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
         RANK_TEN, RANK_JACK, RANK_QUEEN, RANK_KING, RANK_ACE
     )
-    from ofc_evaluators import check_board_foul, get_row_royalty, HAND_TYPE_TRIPS_3, calculate_total_royalty_for_board
+    # ИСПРАВЛЕНИЕ: Добавлены недостающие импорты
+    from ofc_evaluators import check_board_foul, get_row_royalty, HAND_TYPE_TRIPS_3, HAND_TYPE_PAIR_3, calculate_total_royalty_for_board
 except ImportError:
     pytest.skip("Skipping AI quality tests due to missing core imports", allow_module_level=True)
+
+# ИСПРАВЛЕНИЕ: Добавлено создание логгера для использования в тестах
+logger = logging.getLogger(__name__)
 
 def hand_to_int(card_strs: list) -> list:
     return [Card.from_str(s) for s in card_strs if s and len(s) >= 2]
@@ -48,13 +53,13 @@ def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
         c_int = Card.from_str(card_str)
         board.add_card(c_int, row, idx)
         initial_board_cards_int.append(c_int)
-    
+
     assert board.get_total_cards() == 11
 
     # Карты для ИИ (3 штуки)
     cards_dealt_str = ['Ah', 'Kh', '2c'] # Очевидный сброс - 2c
     cards_dealt_int = hand_to_int(cards_dealt_str)
-    
+
     remaining_deck = Deck.FULL_DECK_CARDS - set(initial_board_cards_int) - set(cards_dealt_int)
 
     placement_info = agent_short_time.choose_placement(board, cards_dealt_int, remaining_deck, 0)
@@ -64,7 +69,7 @@ def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
     assert 'discarded' in placement_info, "Placement info missing 'discarded' key"
 
     assert len(placement_info['placements']) == 2, f"AI should place 2 cards, but placed {len(placement_info['placements'])}"
-    
+
     # Проверяем, что сброшена одна карта (discarded может быть int или tuple)
     discarded_ai = placement_info['discarded']
     num_discarded_by_ai = 0
@@ -73,7 +78,7 @@ def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
             num_discarded_by_ai = len(discarded_ai)
         else: # int
             num_discarded_by_ai = 1
-            
+
     assert num_discarded_by_ai == 1, f"AI should discard 1 card, but discarded {num_discarded_by_ai} ({discarded_ai})"
 
     # Проверяем, что сброшена наименее ценная карта (в данном случае 2c)
@@ -89,7 +94,7 @@ def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
     board_after_ai = board.copy()
     for card_int, row, idx in placement_info['placements']:
         board_after_ai.add_card(card_int, row, idx)
-    
+
     assert board_after_ai.get_total_cards() == 13, "Board should have 13 cards after AI move"
     assert not check_board_foul(board_after_ai), "AI made a move that resulted in a foul"
 
@@ -110,13 +115,13 @@ def test_ai_prefers_fantasy_qualification_progressive(agent_short_time, fantasy_
 
     placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
     assert placement_info is not None, "AI did not return a placement"
-    
+
     board_after_ai_move = board.copy()
     for card_int, row, idx in placement_info['placements']:
         board_after_ai_move.add_card(card_int, row, idx)
 
     top_row_cards = board_after_ai_move.get_row_cards('top')
-    
+
     fantasy_achieved = False
     if len(top_row_cards) == 3:
         from ofc_evaluator_3card import evaluate_3_card_ofc # Локальный импорт для теста
@@ -130,8 +135,8 @@ def test_ai_prefers_fantasy_qualification_progressive(agent_short_time, fantasy_
                 if pair_rank_top >= RANK_QUEEN: # QQ, KK, AA
                     fantasy_achieved = True
         except ValueError: # Если рука на топе невалидна (например, не 3 карты)
-            pass 
-    
+            pass
+
     # Заполняем доску до конца случайными картами для полной проверки на фол
     if not board_after_ai_move.is_complete():
         current_board_all_cards = board_after_ai_move.get_all_cards()
@@ -141,8 +146,8 @@ def test_ai_prefers_fantasy_qualification_progressive(agent_short_time, fantasy_
         for i, (r, s_idx) in enumerate(slots_to_fill):
             if i < len(deck_list_for_completion):
                 board_after_ai_move.add_card(deck_list_for_completion[i], r, s_idx)
-            else: break 
-    
+            else: break
+
     if board_after_ai_move.is_complete():
         is_foul = check_board_foul(board_after_ai_move)
         if fantasy_achieved:
@@ -151,7 +156,7 @@ def test_ai_prefers_fantasy_qualification_progressive(agent_short_time, fantasy_
             # Если Фантазия не достигнута, но могла быть, это сложнее.
             # Для этого теста, если ФЛ не достигнут, но и фола нет, тест проходит.
             assert not is_foul, f"AI made a move that leads to a foul in fantasy attempt scenario ({fantasy_hand_str})."
-    
+
     # Если Фантазия была возможна с руки, ожидаем, что ИИ ее сделает, если это не фол.
     # Этот ассерт может быть слишком строгим, т.к. ИИ может выбрать более сильную общую руку.
     if any(Card.get_rank_int(c) == target_rank_int for c in cards_dealt): # Если целевая карта была в руке
@@ -172,12 +177,12 @@ def test_ai_avoids_obvious_foul(agent_short_time):
     board.add_card(Card.from_str('Ks'), 'top', 0); board.add_card(Card.from_str('Kd'), 'top', 1); board.add_card(Card.from_str('Kc'), 'top', 2)
     # Мидл: 223xx (очень слабый)
     board.add_card(Card.from_str('2s'), 'middle', 0); board.add_card(Card.from_str('2d'), 'middle', 1); board.add_card(Card.from_str('3h'), 'middle', 2)
-    
+
     # Сдаем карты, которые могут легко сделать мидл сильнее топа: Ah, Ad, Ac
-    cards_dealt = hand_to_int(['Ah', 'Ad', 'Ac']) 
+    cards_dealt = hand_to_int(['Ah', 'Ad', 'Ac'])
     # Опасный ход: AA на мидл (AAx сильнее KKK -> Фол)
     # Безопасный ход: AA на боттом, третья карта (A) на мидл (если есть место) или сброс.
-    
+
     initial_board_cards = board.get_all_cards()
     remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt) - initial_board_cards
 
@@ -189,7 +194,7 @@ def test_ai_avoids_obvious_foul(agent_short_time):
     for card_int, row, idx in placement_info['placements']:
         final_board.add_card(card_int, row, idx)
         placed_cards_in_move_ints.add(card_int)
-    
+
     if not final_board.is_complete():
         current_remaining_deck_list = list(remaining_deck - placed_cards_in_move_ints)
         if placement_info.get('discarded') is not None:
@@ -199,13 +204,13 @@ def test_ai_avoids_obvious_foul(agent_short_time):
                     if d_card in current_remaining_deck_list: current_remaining_deck_list.remove(d_card)
             elif discarded_val in current_remaining_deck_list:
                 current_remaining_deck_list.remove(discarded_val)
-        
+
         random.shuffle(current_remaining_deck_list)
         slots_to_fill = final_board.get_available_slots()
         for i, (r, s_idx) in enumerate(slots_to_fill):
             if i < len(current_remaining_deck_list): final_board.add_card(current_remaining_deck_list[i], r, s_idx)
-            else: break 
-    
+            else: break
+
     if final_board.is_complete():
         assert not check_board_foul(final_board), "AI made a move that leads to a foul"
     elif final_board.get_total_cards() >= 8: # Если хотя бы топ и мидл заполнены
@@ -220,7 +225,7 @@ def test_ai_correct_discard_choice_not_first_street(agent_very_short_time):
     board.add_card(Card.from_str('7h'), 'bottom', 0); board.add_card(Card.from_str('8h'), 'bottom', 1)
     board.add_card(Card.from_str('9s'), 'middle', 0); board.add_card(Card.from_str('Ts'), 'middle', 1)
     board.add_card(Card.from_str('Jc'), 'top', 0) # 5 карт на доске
-    
+
     cards_dealt = hand_to_int(['As', 'Ks', '2c']) # Очевидный сброс 2c
     initial_board_cards = board.get_all_cards()
     remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt) - initial_board_cards
@@ -228,7 +233,7 @@ def test_ai_correct_discard_choice_not_first_street(agent_very_short_time):
     placement_info = agent_very_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
     assert placement_info is not None, "AI did not return a placement"
     assert placement_info.get('discarded') is not None, "AI did not discard a card"
-    
+
     discarded_card_str = Card.to_str(placement_info['discarded'])
     assert discarded_card_str == '2c', f"AI discarded {discarded_card_str}, expected 2c"
     placed_card_ints = {p[0] for p in placement_info['placements']}
@@ -263,15 +268,15 @@ def test_ai_handles_unknown_cards_conservatively(agent_short_time):
     # Рука: 4 карты на флеш + одна карта для пары
     # Ah Kh Qh Jh 2d (4 червы + двойка бубен)
     cards_dealt = hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', '2d'])
-    
+
     # Сценарий 1: Мало "?" карт
     remaining_deck_few_q = Deck.FULL_DECK_CARDS - set(cards_dealt)
     # Убедимся, что в колоде много черв для флеша
     # (Deck.FULL_DECK_CARDS уже содержит все карты)
-    
+
     placement_few_q = agent_short_time.choose_placement(board.copy(), cards_dealt, remaining_deck_few_q, num_unknown_removed_cards=1)
     assert placement_few_q is not None
-    
+
     board_after_few_q = PlayerBoard()
     for c,r,i in placement_few_q['placements']: board_after_few_q.add_card(c,r,i)
     # Ожидаем, что ИИ пойдет на флеш (например, 4 червы на боттом)
@@ -281,7 +286,7 @@ def test_ai_handles_unknown_cards_conservatively(agent_short_time):
         suits_bottom = Counter(Card.get_suit_int(c) for c in bottom_cards_few_q)
         if any(count >= 4 for count in suits_bottom.values()):
             is_flush_attempt_few_q = True
-    
+
     # Сценарий 2: Много "?" карт (например, 15)
     # Колода та же, но ИИ знает, что много карт удалено неизвестно как
     placement_many_q = agent_short_time.choose_placement(board.copy(), cards_dealt, remaining_deck_few_q, num_unknown_removed_cards=15)
