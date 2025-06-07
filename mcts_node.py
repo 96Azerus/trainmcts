@@ -125,9 +125,14 @@ ROW_HIGH_CARD_WEIGHT = 0.1
 class MCTSNode:
     @staticmethod
     def _get_dynamic_weights(cards_placed_on_board: int, num_unknown_removed: int) -> Dict[str, float]:
+        # ИСПРАВЛЕНИЕ: Значительно увеличены бонусы за Фантазию.
+        # Причина: ИИ не стремился к Фантазии, так как бонусы были слишком малы по сравнению
+        # с другими эвристиками. Теперь Фантазия - явный приоритет.
         weights = {
-            'fantasy_qq_bonus_abs': 25.0, 'fantasy_kk_bonus_abs': 35.0,
-            'fantasy_aa_bonus_abs': 50.0, 'fantasy_trips_bonus_abs': 70.0,
+            'fantasy_qq_bonus_abs': 75.0,   # было 25.0
+            'fantasy_kk_bonus_abs': 90.0,   # было 35.0
+            'fantasy_aa_bonus_abs': 110.0,  # было 50.0
+            'fantasy_trips_bonus_abs': 140.0, # было 70.0
             'fantasy_draw_multiplier_vs_abs_bonus': 0.15,
             'fantasy_draw_multiplier_vs_abs_bonus_2cards': 0.08,
             'strong_hand_on_bottom_bonus': 50.0, 'discard_low_card_bonus': 5.0,
@@ -146,7 +151,7 @@ class MCTSNode:
             'out_to_full_house_from_two_pair_score': 2.2,
             'out_to_pair_score': 0.6, 'out_to_pair_score_needing_two': 0.3,
             'royalty_base_multiplier': 2.5,
-            'draw_completion_factor_late': 0.35, 
+            'draw_completion_factor_late': 0.35,
             'draw_completion_factor_mid': 0.65,
         }
         progress = cards_placed_on_board / PlayerBoard.TOTAL_CAPACITY if PlayerBoard.TOTAL_CAPACITY > 0 else 0
@@ -207,7 +212,7 @@ class MCTSNode:
         else:
             num_to_discard = 1 if num_dealt > 1 else 0
             num_to_place_on_board = min(num_dealt - num_to_discard, available_slots_count)
-        
+
         if num_to_place_on_board <= 0 and num_dealt > 0:
             discard_info = tuple(sorted(cards_just_dealt)) if len(cards_just_dealt) > 1 else cards_just_dealt[0]
             action_key = (tuple(), discard_info)
@@ -218,11 +223,11 @@ class MCTSNode:
         elif num_to_place_on_board <= 0 and num_dealt == 0: return []
 
         logger.debug(f"GenStates: Board {num_cards_on_board}, Dealt {num_dealt}, Avail {available_slots_count}. Will place {num_to_place_on_board}.")
-        
+
         possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
             self.board, cards_just_dealt, self.remaining_deck, num_to_place_on_board, self.num_unknown_removed_cards
         )
-        
+
         for p_info_dict in possible_placement_infos:
             new_board_state = self.board.copy()
             current_placements = p_info_dict.get('placements', [])
@@ -237,7 +242,7 @@ class MCTSNode:
             action_key = (placements_tuples, action_key_discard)
             generated_states_for_pw.append((new_board_state, discarded_card_result))
             self._generated_states_for_expand[action_key] = (new_board_state, discarded_card_result, p_info_dict)
-        
+
         logger.debug(f"Generated {len(self._generated_states_for_expand)} unique placement actions.")
         return generated_states_for_pw
 
@@ -247,7 +252,7 @@ class MCTSNode:
         for key_candidate in self._generated_states_for_expand.keys():
             if key_candidate not in self.children: next_action_key_to_expand = key_candidate; break
         if next_action_key_to_expand is None: return None
-        
+
         board_after_action, discarded_info, placement_info_for_child = self._generated_states_for_expand[next_action_key_to_expand]
         new_deck_for_child = self.remaining_deck.copy()
         for card_int_placed, _, _ in placement_info_for_child.get('placements', []):
@@ -257,7 +262,7 @@ class MCTSNode:
                 for dc_card in discarded_info:
                     if dc_card in new_deck_for_child: new_deck_for_child.remove(dc_card)
             elif discarded_info in new_deck_for_child: new_deck_for_child.remove(discarded_info)
-        
+
         child_node = MCTSNode(board_after_action.copy(), new_deck_for_child, parent=self,
                               placement_info=placement_info_for_child,
                               num_unknown_removed_cards=self.num_unknown_removed_cards)
@@ -275,20 +280,20 @@ class MCTSNode:
 
         for child_node in self.children.values():
             if child_node.visits == 0: logger.error("UCT: Child with 0 visits after FPU. Should not happen."); return child_node
-            
+
             q_value = child_node.total_reward / child_node.visits
             ucb_exploration_term = exploration_constant * math.sqrt(parent_visits_log / child_node.visits)
-            
+
             rave_q_value = 0.0; alpha_rave = 0.0
             if child_node.rave_visits_count > 0:
-                alpha_rave = RAVE_K / (RAVE_K + child_node.visits) 
+                alpha_rave = RAVE_K / (RAVE_K + child_node.visits)
                 rave_q_value = child_node.rave_total_reward / child_node.rave_visits_count
                 score = (1 - alpha_rave) * q_value + alpha_rave * rave_q_value + ucb_exploration_term
             else: score = q_value + ucb_exploration_term
 
             if score > best_score: best_score = score; best_children = [child_node]
             elif score == best_score: best_children.append(child_node)
-            
+
         return random.choice(best_children) if best_children else None
 
     @staticmethod
@@ -350,7 +355,7 @@ class MCTSNode:
 
         if 0 < len(mid_cards) < 5 : score += MCTSNode._estimate_row_potential(mid_cards, deck_snapshot, num_unknown_removed, original_deck_size_for_snapshot, weights) * weights['draw_potential_multiplier'] * 0.7 * factor
         if 0 < len(bot_cards) < 5: score += MCTSNode._estimate_row_potential(bot_cards, deck_snapshot, num_unknown_removed, original_deck_size_for_snapshot, weights) * weights['draw_potential_multiplier'] * 1.0 * factor
-        
+
         if cards_on_b >= 8:
             r_t, c_t, _ = get_hand_rank_safe(top_cards); r_m, c_m, _ = get_hand_rank_safe(mid_cards); r_b, c_b, _ = get_hand_rank_safe(bot_cards)
             is_foul_already = False
@@ -560,7 +565,7 @@ class MCTSNode:
         num_on_board = current_board.get_total_cards(); num_dealt = len(cards_to_act_on)
         dynamic_weights = MCTSNode._get_dynamic_weights(num_on_board, num_unknown_removed_cards)
         available_slots = current_board.get_available_slots(); is_first_street = (num_on_board == 0 and num_to_place_on_board == 5)
-        
+
         cards_to_place_options: List[List[int]] = []; cards_to_discard_options: List[Any] = []
 
         if num_to_place_on_board == 0 and num_dealt > 0:
@@ -594,7 +599,7 @@ class MCTSNode:
             if actual_slots_to_fill < num_to_place_on_board : continue
             slot_perms = list(itertools.permutations(available_slots, actual_slots_to_fill))
             if len(slot_perms) > slot_perms_limit: slot_perms = random.sample(slot_perms, slot_perms_limit)
-                
+
             for p_cards_tuple_perm in card_perms:
                 p_cards_list_perm = list(p_cards_tuple_perm)
                 for p_slots_tuple_perm in slot_perms:
@@ -616,7 +621,7 @@ class MCTSNode:
                             if all(dr < pr_v for pr_v in prs): h_score += dynamic_weights['discard_low_card_bonus']
                         candidate_actions.append({'score': h_score, 'placements': placements_list, 'discarded': current_discard_info})
                     except ValueError: continue
-        
+
         if not candidate_actions: return []
         candidate_actions.sort(key=lambda x: x['score'], reverse=True)
         return candidate_actions[:(15 if not is_first_street else 10)]
