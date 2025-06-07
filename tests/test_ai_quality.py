@@ -7,7 +7,8 @@
 import pytest
 from unittest.mock import ANY
 import random
-import logging # ИСПРАВЛЕНИЕ: Добавлен импорт logging
+import logging
+from collections import Counter # ИСПРАВЛЕНИЕ: Добавлен импорт Counter
 
 try:
     from mcts_agent import MCTSAgent
