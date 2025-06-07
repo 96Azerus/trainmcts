@@ -113,14 +113,10 @@ MAX_PERMUTATIONS_SLOTS_STREET_1: int = 30
 MAX_PERMUTATIONS_STREET_N: int = 20
 
 HEURISTIC_FOUL_PENALTY = -1000.0
-# ИСПРАВЛЕНИЕ: Упрощенные и более мощные бонусы для новой эвристики
-FANTASY_QUALIFY_BONUS = 500.0 # Огромный бонус за любую Фантазию
-ROYALTY_MULTIPLIER = 5.0 # Множитель для обычных роялти
+FANTASY_QUALIFY_BONUS = 500.0
+ROYALTY_MULTIPLIER = 5.0
 
 class MCTSNode:
-    # ИСПРАВЛЕНИЕ: Функция _get_dynamic_weights больше не нужна, так как новая эвристика
-    # не использует сложную систему весов. Удаляем ее.
-
     def __init__(self, board: PlayerBoard, remaining_deck: Set[int],
                  parent: Optional['MCTSNode'] = None,
                  placement_info: Optional[Dict[str, Any]] = None,
@@ -249,7 +245,7 @@ class MCTSNode:
         if board.is_complete() and check_board_foul(board):
             return HEURISTIC_FOUL_PENALTY
 
-        # Приоритет 2: Получить Фантазию
+        # Приоритет 2: Получить "Фантазию"
         top_cards = board.get_row_cards('top')
         is_fantasy_qualified = False
         if len(top_cards) == 3:
@@ -350,9 +346,8 @@ class MCTSNode:
                             elif current_discard_info in deck_after_action: deck_after_action.remove(current_discard_info)
                         h_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street, num_unknown_removed_cards, len(current_deck))
                         if current_discard_info and isinstance(current_discard_info, int) and num_dealt > num_to_place_on_board:
-                            # Этот бонус за сброс можно оставить, он не конфликтует с основной логикой
                             dr = Card.get_rank_int(current_discard_info); prs = [Card.get_rank_int(p[0]) for p in placements_list]
-                            if all(dr < pr_v for pr_v in prs): h_score += 5.0 # Небольшой фиксированный бонус
+                            if all(dr < pr_v for pr_v in prs): h_score += 5.0
                         candidate_actions.append({'score': h_score, 'placements': placements_list, 'discarded': current_discard_info})
                     except ValueError: continue
 
