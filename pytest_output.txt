@@ -2,8 +2,11 @@
 platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-utils/venvs/pytest/bin/python
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
-plugins: anyio-4.9.0
-collecting ... collected 117 items / 1 skipped
+plugins: cov-6.1.1, anyio-4.9.0
+collecting ... 2025-06-07 20:24:32,473 - app - INFO - [app:50] - --- Flask App Initialization (v2.5) ---
+2025-06-07 20:24:32,474 - app - INFO - [app:52] - Production mode: False
+2025-06-07 20:24:32,474 - app - INFO - [app:104] - Defining Flask routes...
+collected 128 items
 
 tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly FAILED
 tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10] FAILED
@@ -13,7 +16,72 @@ tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fant
 tests/test_ai_quality.py::test_ai_avoids_obvious_foul FAILED
 tests/test_ai_quality.py::test_ai_correct_discard_choice_not_first_street PASSED
 tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom FAILED
-tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively FAILED
+tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively PASSED
+tests/test_app.py::test_index_route 2025-06-07 20:24:38,016 - app - INFO - [app:107] - Route / called (GET)
+PASSED
+tests/test_app.py::test_ai_move_valid_request 2025-06-07 20:24:38,024 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,024 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(3) - KnownDiscard(2) = 47 cards.
+2025-06-07 20:24:38,024 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-07 20:24:38,024 - app - INFO - [app:175] - Starting MCTS for 3 cards (board has 0)...
+2025-06-07 20:24:38,024 - app - INFO - [app:184] - AI move in 0.001s. Placement: {'placements': [(268442665, 'top', 0), (134224677, 'middle', 0)], 'discarded': 67115551}
+PASSED
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-06-07 20:24:38,026 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,026 - app - INFO - [app:141] - No valid cards provided by user to place by AI, and board is not full.
+PASSED
+tests/test_app.py::test_ai_move_invalid_json 2025-06-07 20:24:38,027 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,027 - app - WARNING - [app:119] - Request not JSON
+PASSED
+tests/test_app.py::test_ai_move_missing_data 2025-06-07 20:24:38,029 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,029 - app - WARNING - [app:129] - Missing 'selected_cards' or 'board' data
+PASSED
+tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-06-07 20:24:38,030 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,030 - app - WARNING - [app:153] - Duplicates hand-board: ['As']
+PASSED
+tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-06-07 20:24:38,032 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,032 - app - WARNING - [app:153] - Duplicates hand-known_discard: ['As']
+PASSED
+tests/test_app.py::test_ai_move_agent_returns_none 2025-06-07 20:24:38,034 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,034 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-07 20:24:38,034 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-07 20:24:38,034 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-07 20:24:38,034 - app - WARNING - [app:223] - AI agent did not return a placement after 0.001s.
+PASSED
+tests/test_app.py::test_ai_move_internal_error 2025-06-07 20:24:38,036 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-07 20:24:38,036 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-07 20:24:38,036 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-07 20:24:38,036 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-07 20:24:38,036 - app - ERROR - [app:227] - Unexpected Error during /ai_move: Unexpected MCTS crash
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/app.py", line 177, in get_ai_move
+    best_placement_info = agent.choose_placement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+Exception: Unexpected MCTS crash
+PASSED
+tests/test_app.py::test_calculate_score_valid_board 2025-06-07 20:24:38,039 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-07 20:24:38,039 - app - INFO - [app:248] - Foul check: False
+2025-06-07 20:24:38,039 - app - INFO - [app:258] - Royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
+2025-06-07 20:24:38,039 - app - INFO - [app:259] - Score calc in 0.000s.
+PASSED
+tests/test_app.py::test_calculate_score_foul_board 2025-06-07 20:24:38,041 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-07 20:24:38,041 - app - INFO - [app:248] - Foul check: True
+PASSED
+tests/test_app.py::test_calculate_score_incomplete_board 2025-06-07 20:24:38,042 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-07 20:24:38,042 - app - WARNING - [app:245] - Score for incomplete board (3/13).
+PASSED
+tests/test_app.py::test_calculate_score_missing_board 2025-06-07 20:24:38,043 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-07 20:24:38,043 - app - WARNING - [app:240] - Missing 'board' data
+PASSED
+tests/test_app.py::test_update_state PASSED
+tests/test_app.py::test_reset_game_state 2025-06-07 20:24:38,046 - app - INFO - [app:277] - Route /reset_game_state called (POST)
+PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str0-1-Trips-AAA] PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str1-2-Trips-KKK] PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str2-13-Trips-222] PASSED
@@ -80,12 +148,18 @@ tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input8] PASSED
 tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input9] PASSED
 tests/test_evaluators.py::test_get_hand_rank_safe_invalid[cards_input10] PASSED
 tests/test_mcts_agent.py::test_mcts_agent_init_defaults PASSED
-tests/test_mcts_agent.py::test_mcts_agent_init_custom FAILED
+tests/test_mcts_agent.py::test_mcts_agent_init_custom PASSED
 tests/test_mcts_agent.py::test_choose_placement_basic_run_and_selection PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_cards PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_available_slots PASSED
 tests/test_mcts_agent.py::test_choose_placement_mcts_loop_flow PASSED
-tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule PASSED
+tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule 2025-06-07 20:24:38,610 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-07 20:24:38,611 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-07 20:24:38,611 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-07 20:24:38,616 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-07 20:24:38,620 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-07 20:24:38,620 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+PASSED
 tests/test_mcts_agent.py::test_backpropagate_rave_updates_child_stats PASSED
 tests/test_ofc_logic.py::test_card_from_str_valid[As-A-s] PASSED
 tests/test_ofc_logic.py::test_card_from_str_valid[Kc-K-c] PASSED
@@ -118,15 +192,11 @@ tests/test_ofc_logic.py::test_check_board_foul_logic[top_hand3-middle_hand3-bott
 tests/test_ofc_logic.py::test_check_board_foul_logic[top_hand4-middle_hand4-bottom_hand4-False] PASSED
 tests/test_ofc_logic.py::test_check_board_foul_logic[top_hand5-middle_hand5-bottom_hand5-False] PASSED
 tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
-tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_count_specific_outs FAILED
-tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_get_dynamic_weights_uncertainty FAILED
-tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_estimate_row_potential_uncertainty FAILED
-tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_calculate_heuristic_score_uncertainty FAILED
 
 =================================== FAILURES ===================================
 __________________ test_ai_handles_11_plus_3_cards_correctly ___________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc0f5640>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7c18a93825a0>
 
     def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
         """
@@ -173,17 +243,29 @@ agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc0f5640>
         assert num_discarded_by_ai == 1, f"AI should discard 1 card, but discarded {num_discarded_by_ai} ({discarded_ai})"
     
         # Проверяем, что сброшена наименее ценная карта (в данном случае 2c)
->       assert Card.to_str(placement_info['discarded']) == '2c', f"AI discarded {Card.to_str(placement_info['discarded'])}, expected 2c"
-E       AssertionError: AI discarded Kh, expected 2c
-E       assert 'Kh' == '2c'
-E         
-E         - 2c
-E         + Kh
+        assert Card.to_str(placement_info['discarded']) == '2c', f"AI discarded {Card.to_str(placement_info['discarded'])}, expected 2c"
+    
+        # Проверяем, что размещенные карты - это Ah и Kh
+        placed_by_ai_ints = {p[0] for p in placement_info['placements']}
+        expected_placed_ints = {Card.from_str('Ah'), Card.from_str('Kh')}
+        assert placed_by_ai_ints == expected_placed_ints, \
+            f"AI placed {[Card.to_str(c) for c in placed_by_ai_ints]}, expected {[Card.to_str(c) for c in expected_placed_ints]}"
+    
+        # Проверяем, что доска после хода ИИ не фол
+        board_after_ai = board.copy()
+        for card_int, row, idx in placement_info['placements']:
+            board_after_ai.add_card(card_int, row, idx)
+    
+        assert board_after_ai.get_total_cards() == 13, "Board should have 13 cards after AI move"
+>       assert not check_board_foul(board_after_ai), "AI made a move that resulted in a foul"
+E       AssertionError: AI made a move that resulted in a foul
+E       assert not True
+E        +  where True = check_board_foul(PlayerBoard(Cards=13, Foul=True))
 
-tests/test_ai_quality.py:80: AssertionError
+tests/test_ai_quality.py:99: AssertionError
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc233770>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7c18a9380cb0>
 fantasy_hand_str = ['Qs', 'Qd', 'As', 'Ks', 'Ts'], target_rank_int = 10
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -216,13 +298,14 @@ fantasy_hand_str = ['Qs', 'Qd', 'As', 'Ks', 'Ts'], target_rank_int = 10
                 _, type_top, _ = evaluate_3_card_ofc(top_row_cards[0], top_row_cards[1], top_row_cards[2])
                 if type_top == HAND_TYPE_TRIPS_3:
                     fantasy_achieved = True
->               elif type_top == HAND_TYPE_PAIR_3:
-E               NameError: name 'HAND_TYPE_PAIR_3' is not defined
+                elif type_top == HAND_TYPE_PAIR_3:
+>                   ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
+E                   NameError: name 'Counter' is not defined
 
-tests/test_ai_quality.py:127: NameError
+tests/test_ai_quality.py:133: NameError
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str1-11] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc3d7f20>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7c18a9382720>
 fantasy_hand_str = ['Ks', 'Kd', 'As', 'Qs', 'Ts'], target_rank_int = 11
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -285,10 +368,10 @@ fantasy_hand_str = ['Ks', 'Kd', 'As', 'Qs', 'Ts'], target_rank_int = 11
 E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['Ks', 'Kd', 'As', 'Qs', 'Ts']).
 E               assert not True
 
-tests/test_ai_quality.py:153: AssertionError
+tests/test_ai_quality.py:158: AssertionError
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc3d5be0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7c18a9382c90>
 fantasy_hand_str = ['As', 'Ad', 'Ks', 'Qs', 'Ts'], target_rank_int = 12
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -321,13 +404,40 @@ fantasy_hand_str = ['As', 'Ad', 'Ks', 'Qs', 'Ts'], target_rank_int = 12
                 _, type_top, _ = evaluate_3_card_ofc(top_row_cards[0], top_row_cards[1], top_row_cards[2])
                 if type_top == HAND_TYPE_TRIPS_3:
                     fantasy_achieved = True
->               elif type_top == HAND_TYPE_PAIR_3:
-E               NameError: name 'HAND_TYPE_PAIR_3' is not defined
+                elif type_top == HAND_TYPE_PAIR_3:
+                    ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
+                    pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
+                    if pair_rank_top >= RANK_QUEEN: # QQ, KK, AA
+                        fantasy_achieved = True
+            except ValueError: # Если рука на топе невалидна (например, не 3 карты)
+                pass
+    
+        # Заполняем доску до конца случайными картами для полной проверки на фол
+        if not board_after_ai_move.is_complete():
+            current_board_all_cards = board_after_ai_move.get_all_cards()
+            deck_list_for_completion = list(remaining_deck - current_board_all_cards)
+            random.shuffle(deck_list_for_completion)
+            slots_to_fill = board_after_ai_move.get_available_slots()
+            for i, (r, s_idx) in enumerate(slots_to_fill):
+                if i < len(deck_list_for_completion):
+                    board_after_ai_move.add_card(deck_list_for_completion[i], r, s_idx)
+                else: break
+    
+        if board_after_ai_move.is_complete():
+            is_foul = check_board_foul(board_after_ai_move)
+            if fantasy_achieved:
+                assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
+            else:
+                # Если Фантазия не достигнута, но могла быть, это сложнее.
+                # Для этого теста, если ФЛ не достигнут, но и фола нет, тест проходит.
+>               assert not is_foul, f"AI made a move that leads to a foul in fantasy attempt scenario ({fantasy_hand_str})."
+E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['As', 'Ad', 'Ks', 'Qs', 'Ts']).
+E               assert not True
 
-tests/test_ai_quality.py:127: NameError
+tests/test_ai_quality.py:158: AssertionError
 ____ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc0f5280>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7c18a9333ad0>
 fantasy_hand_str = ['7s', '7d', '7c', 'Ks', 'Qs'], target_rank_int = 5
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -390,10 +500,10 @@ fantasy_hand_str = ['7s', '7d', '7c', 'Ks', 'Qs'], target_rank_int = 5
 E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['7s', '7d', '7c', 'Ks', 'Qs']).
 E               assert not True
 
-tests/test_ai_quality.py:153: AssertionError
+tests/test_ai_quality.py:158: AssertionError
 _________________________ test_ai_avoids_obvious_foul __________________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc0f4080>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7c18a9313e00>
 
     def test_ai_avoids_obvious_foul(agent_short_time):
         """
@@ -444,10 +554,10 @@ E           AssertionError: AI made a move that leads to a foul
 E           assert not True
 E            +  where True = check_board_foul(PlayerBoard(Cards=13, Foul=True))
 
-tests/test_ai_quality.py:210: AssertionError
+tests/test_ai_quality.py:215: AssertionError
 __________________ test_ai_first_street_strong_hand_to_bottom __________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc3d70b0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7c18a9365a00>
 
     def test_ai_first_street_strong_hand_to_bottom(agent_short_time):
         """
@@ -463,180 +573,10 @@ agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc3d70b0>
         bottom_cards = [p[0] for p in placement_info['placements'] if p[1] == 'bottom']
 >       assert len(bottom_cards) == 5, "AI did not place all 5 cards of RF on bottom"
 E       AssertionError: AI did not place all 5 cards of RF on bottom
-E       assert 3 == 5
-E        +  where 3 = len([268442665, 134224677, 16783383])
+E       assert 1 == 5
+E        +  where 1 = len([16783383])
 
-tests/test_ai_quality.py:251: AssertionError
-_________________ test_ai_handles_unknown_cards_conservatively _________________
-
-agent_short_time = <mcts_agent.MCTSAgent object at 0x72c6cc3d54c0>
-
-    def test_ai_handles_unknown_cards_conservatively(agent_short_time):
-        """
-        Тест: При большом количестве "?" карт, ИИ должен быть более консервативен
-        в отношении дро, зависящих от многих аутов.
-        Сценарий: Две опции - рискованное флеш-дро (много аутов, но много "?")
-                     или менее ценная, но более надежная пара.
-        """
-        board = PlayerBoard() # Пустая доска
-        # Рука: 4 карты на флеш + одна карта для пары
-        # Ah Kh Qh Jh 2d (4 червы + двойка бубен)
-        cards_dealt = hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', '2d'])
-    
-        # Сценарий 1: Мало "?" карт
-        remaining_deck_few_q = Deck.FULL_DECK_CARDS - set(cards_dealt)
-        # Убедимся, что в колоде много черв для флеша
-        # (Deck.FULL_DECK_CARDS уже содержит все карты)
-    
-        placement_few_q = agent_short_time.choose_placement(board.copy(), cards_dealt, remaining_deck_few_q, num_unknown_removed_cards=1)
-        assert placement_few_q is not None
-    
-        board_after_few_q = PlayerBoard()
-        for c,r,i in placement_few_q['placements']: board_after_few_q.add_card(c,r,i)
-        # Ожидаем, что ИИ пойдет на флеш (например, 4 червы на боттом)
-        bottom_cards_few_q = board_after_few_q.get_row_cards('bottom')
-        is_flush_attempt_few_q = False
-        if len(bottom_cards_few_q) >= 4:
-            suits_bottom = Counter(Card.get_suit_int(c) for c in bottom_cards_few_q)
-            if any(count >= 4 for count in suits_bottom.values()):
-                is_flush_attempt_few_q = True
-    
-        # Сценарий 2: Много "?" карт (например, 15)
-        # Колода та же, но ИИ знает, что много карт удалено неизвестно как
-        placement_many_q = agent_short_time.choose_placement(board.copy(), cards_dealt, remaining_deck_few_q, num_unknown_removed_cards=15)
-        assert placement_many_q is not None
-    
-        board_after_many_q = PlayerBoard()
-        for c,r,i in placement_many_q['placements']: board_after_many_q.add_card(c,r,i)
-        bottom_cards_many_q = board_after_many_q.get_row_cards('bottom')
-        is_flush_attempt_many_q = False
-        if len(bottom_cards_many_q) >= 4:
-            suits_bottom = Counter(Card.get_suit_int(c) for c in bottom_cards_many_q)
-            if any(count >= 4 for count in suits_bottom.values()):
-                is_flush_attempt_many_q = True
-    
-        # Ожидаем, что при малом "?" ИИ может пойти на флеш,
-        # а при большом "?" может предпочесть более безопасную игру (например, пару 22 на мидл/топ, а AKQJ на боттом).
-        # Этот тест сложен для точного ассерта, т.к. зависит от многих факторов.
-        # Пока что проверим, что ходы разные или что оценка флеша ниже при многих "?".
-        # Если is_flush_attempt_few_q == True, то ожидаем, что is_flush_attempt_many_q может быть False.
-        if is_flush_attempt_few_q and not is_flush_attempt_many_q:
-            logger.info("AI correctly became more conservative with flush draw due to many '?' cards.")
-            pass # Это ожидаемое поведение
-        elif is_flush_attempt_few_q and is_flush_attempt_many_q:
-            logger.warning("AI still attempted flush draw with many '?' cards. Review conservatism.")
-            # Это не обязательно ошибка, но требует внимания.
-        elif not is_flush_attempt_few_q and is_flush_attempt_many_q:
-            logger.warning("AI attempted flush draw ONLY with many '?' cards. Unexpected.")
-        else: # Оба не пошли на флеш
->           logger.info("AI did not attempt flush draw in either '?' scenario for this hand.")
-E           NameError: name 'logger' is not defined
-
-tests/test_ai_quality.py:313: NameError
-_________________________ test_mcts_agent_init_custom __________________________
-
-    def test_mcts_agent_init_custom():
-        agent = MCTSAgent(exploration=2.0, time_limit_ms=1000, num_workers=4, rollouts_per_leaf=5)
-        assert agent.exploration == 2.0; assert agent.time_limit == 1.0
->       assert agent.num_workers == 4; assert agent.rollouts_per_leaf == 5
-E       assert 2 == 4
-E        +  where 2 = <mcts_agent.MCTSAgent object at 0x72c6cc0f6d80>.num_workers
-
-tests/test_mcts_agent.py:36: AssertionError
-_______________ TestUncertaintyHandling.test_count_specific_outs _______________
-
-self = <tests.test_uncertainty_handling.TestUncertaintyHandling object at 0x72c6cc0f7d10>
-
-    def test_count_specific_outs(self):
-        # 5 spades + 5 hearts = 10 cards in this specific deck portion being evaluated
-        deck_cards = {
-            Card.from_str('As'), Card.from_str('Ks'), Card.from_str('Qs'), Card.from_str('Js'), Card.from_str('Ts'),
-            Card.from_str('Ah'), Card.from_str('Kh'), Card.from_str('Qh'), Card.from_str('Jh'), Card.from_str('Th')
-        }
-        check_spade = lambda card_int: Card.get_suit_int(card_int) == SUIT_SPADES
-        visible_spades = sum(1 for card in deck_cards if check_spade(card)) # Should be 5
-    
-        # Scenario 1: No unknowns, original_deck_size is the actual size of deck_cards
-        # This tests the case where the 'deck' passed to _count_specific_outs is the full conceptual remaining deck.
->       eff_outs_1 = MCTSNode._count_specific_outs(deck_cards, check_spade, 0, len(deck_cards))
-E       AttributeError: type object 'MCTSNode' has no attribute '_count_specific_outs'
-
-tests/test_uncertainty_handling.py:32: AttributeError
-_________ TestUncertaintyHandling.test_get_dynamic_weights_uncertainty _________
-
-self = <tests.test_uncertainty_handling.TestUncertaintyHandling object at 0x72c6cc0f7410>
-
-    def test_get_dynamic_weights_uncertainty(self):
-        cards_on_board_mid_game = 7
->       weights_low_unk = MCTSNode._get_dynamic_weights(cards_placed_on_board=cards_on_board_mid_game, num_unknown_removed=0)
-E       AttributeError: type object 'MCTSNode' has no attribute '_get_dynamic_weights'
-
-tests/test_uncertainty_handling.py:75: AttributeError
-_______ TestUncertaintyHandling.test_estimate_row_potential_uncertainty ________
-
-self = <tests.test_uncertainty_handling.TestUncertaintyHandling object at 0x72c6cc0f7050>
-
-    def test_estimate_row_potential_uncertainty(self):
-        cards_placed_for_dw = 8 # For _get_dynamic_weights call, represents cards on ENTIRE board
-    
-        current_row_cards = hand_to_int(['As', 'Ks', 'Qs', 'Js']) # 4 spades in row
-    
-        # deck_node_remaining is the set of cards NOT on the board and NOT in current_row_cards,
-        # but notionally includes all cards that *could* be drawn.
-        # For this test, it's the conceptual remaining deck for the MCTSNode.
-        deck_node_remaining = {Card.from_str('Ts')} # The spade out for flush
-        for i in range(20): # Add 20 non-spade cards
-            suit = SUIT_HEARTS if i % 2 == 0 else SUIT_CLUBS
-            rank_char = INT_RANK_TO_CHAR.get(i % 13, '2') # Cycle through ranks - CORRECTED ACCESS
-            if rank_char == 'A' and suit == SUIT_SPADES: continue # Avoid duplicate As
-            deck_node_remaining.add(Card.from_str(f"{rank_char}{INT_SUIT_TO_CHAR[suit]}")) # CORRECTED ACCESS & USAGE
-    
-        original_deck_size_in_node = len(deck_node_remaining)
-    
-        # Low uncertainty
->       weights_low_unk = MCTSNode._get_dynamic_weights(cards_placed_for_dw, 0)
-E       AttributeError: type object 'MCTSNode' has no attribute '_get_dynamic_weights'
-
-tests/test_uncertainty_handling.py:109: AttributeError
-______ TestUncertaintyHandling.test_calculate_heuristic_score_uncertainty ______
-
-self = <tests.test_uncertainty_handling.TestUncertaintyHandling object at 0x72c6cc0f49e0>
-
-    def test_calculate_heuristic_score_uncertainty(self):
-        board = PlayerBoard()
-        # Setup a board where a draw is prominent
-        board.add_card(Card.from_str('As'), 'bottom', 0)
-        board.add_card(Card.from_str('Ks'), 'bottom', 1)
-        board.add_card(Card.from_str('Qs'), 'bottom', 2)
-        board.add_card(Card.from_str('Js'), 'bottom', 3) # 4 spades on bottom
-        cards_placed_on_board = board.get_total_cards() # Should be 4
-    
-        # deck_snapshot is MCTSNode.remaining_deck: cards not on board.
-        deck_snapshot = {Card.from_str('Ts')} # The spade out for bottom
-        for i in range(20): # Add 20 non-spade cards
-            suit = SUIT_HEARTS if i % 2 == 0 else SUIT_CLUBS
-            rank_char = INT_RANK_TO_CHAR.get(i % 13, '2') # CORRECTED ACCESS
-            if rank_char == 'T' and suit == SUIT_SPADES: continue
-            deck_snapshot.add(Card.from_str(f"{rank_char}{INT_SUIT_TO_CHAR[suit]}")) # CORRECTED ACCESS & USAGE
-    
-        original_deck_size_for_snapshot = len(deck_snapshot)
-    
-        # Low uncertainty
-        score_low_unk = MCTSNode._calculate_heuristic_score_v2(
-            board, deck_snapshot, False, 0, original_deck_size_for_snapshot
-        )
-    
-        # High uncertainty
-        num_high_unknowns = 10
-        score_high_unk = MCTSNode._calculate_heuristic_score_v2(
-            board, deck_snapshot, False, num_high_unknowns, original_deck_size_for_snapshot
-        )
-    
->       assert score_high_unk < score_low_unk, "Heuristic score with high uncertainty should be lower"
-E       AssertionError: Heuristic score with high uncertainty should be lower
-E       assert 1.8 < 1.8
-
-tests/test_uncertainty_handling.py:152: AssertionError
+tests/test_ai_quality.py:256: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly - ...
 FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10]
@@ -645,10 +585,4 @@ FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressi
 FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5]
 FAILED tests/test_ai_quality.py::test_ai_avoids_obvious_foul - AssertionError...
 FAILED tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom
-FAILED tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively
-FAILED tests/test_mcts_agent.py::test_mcts_agent_init_custom - assert 2 == 4
-FAILED tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_count_specific_outs
-FAILED tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_get_dynamic_weights_uncertainty
-FAILED tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_estimate_row_potential_uncertainty
-FAILED tests/test_uncertainty_handling.py::TestUncertaintyHandling::test_calculate_heuristic_score_uncertainty
-================== 13 failed, 104 passed, 1 skipped in 14.18s ==================
+======================== 7 failed, 121 passed in 6.46s =========================
