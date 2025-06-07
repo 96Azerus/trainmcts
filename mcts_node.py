@@ -125,16 +125,16 @@ ROW_HIGH_CARD_WEIGHT = 0.1
 class MCTSNode:
     @staticmethod
     def _get_dynamic_weights(cards_placed_on_board: int, num_unknown_removed: int) -> Dict[str, float]:
-        # ИСПРАВЛЕНИЕ: Значительно увеличены бонусы за Фантазию.
-        # Причина: ИИ не стремился к Фантазии, так как бонусы были слишком малы по сравнению
-        # с другими эвристиками. Теперь Фантазия - явный приоритет.
+        # ИСПРАВЛЕНИЕ 2: Еще раз значительно увеличены бонусы за Фантазию.
+        # Причина: Предыдущего увеличения было недостаточно. Теперь бонусы должны
+        # перевешивать почти любую другую эвристику, делая Фантазию главным приоритетом.
         weights = {
-            'fantasy_qq_bonus_abs': 75.0,   # было 25.0
-            'fantasy_kk_bonus_abs': 90.0,   # было 35.0
-            'fantasy_aa_bonus_abs': 110.0,  # было 50.0
-            'fantasy_trips_bonus_abs': 140.0, # было 70.0
-            'fantasy_draw_multiplier_vs_abs_bonus': 0.15,
-            'fantasy_draw_multiplier_vs_abs_bonus_2cards': 0.08,
+            'fantasy_qq_bonus_abs': 200.0,  # было 75.0
+            'fantasy_kk_bonus_abs': 250.0,  # было 90.0
+            'fantasy_aa_bonus_abs': 300.0,  # было 110.0
+            'fantasy_trips_bonus_abs': 400.0, # было 140.0
+            'fantasy_draw_multiplier_vs_abs_bonus': 0.25, # Увеличен множитель для дро
+            'fantasy_draw_multiplier_vs_abs_bonus_2cards': 0.15,
             'strong_hand_on_bottom_bonus': 50.0, 'discard_low_card_bonus': 5.0,
             'draw_potential_multiplier': 1.0, 'foul_penalty': HEURISTIC_FOUL_PENALTY,
             'almost_foul_penalty': -15.0,
@@ -174,6 +174,9 @@ class MCTSNode:
             weights['draw_potential_multiplier'] *= uncertainty_factor
             weights['flush_draw_score_per_out'] *= uncertainty_factor
             weights['open_ended_draw_score_per_out'] *= uncertainty_factor
+            # ИСПРАВЛЕНИЕ: Добавлен недостающий параметр для корректной работы теста неопределенности.
+            # Причина: Этот параметр не был включен в список изменяемых, что приводило к провалу теста.
+            weights['gutshot_draw_score_per_out'] *= uncertainty_factor
             weights['fantasy_draw_multiplier_vs_abs_bonus'] *= uncertainty_factor
             weights['fantasy_draw_multiplier_vs_abs_bonus_2cards'] *= uncertainty_factor
         return weights
