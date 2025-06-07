@@ -86,7 +86,6 @@ except ImportError:
     def card_to_str(c):return "??" # type: ignore
     def get_hand_rank_safe(*a): return 9999,9,"Inv" # type: ignore
     WORST_RANK=9999;WORST_CLASS=9 # type: ignore
-    # FIX: Исправлен синтаксис, определения функций на разных строках
     def check_board_foul(*a): return False
     def get_row_royalty(*a):return 0 # type: ignore
     def calculate_total_royalty_for_board(*a):return 0; ROYALTY_TOP_PAIRS={} # type: ignore
@@ -237,15 +236,22 @@ class MCTSNode:
 
     @staticmethod
     def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
-        # ИСПРАВЛЕНИЕ: Полностью переписанная, более простая и надежная эвристика.
-        # Причина: Предыдущая сложная система весов была нестабильной. Новая логика
-        # основана на четких приоритетах, что должно исправить все тесты качества.
+        # ИСПРАВЛЕНИЕ: Финальная версия эвристики, основанная на приоритетах.
+        # Причина: Предыдущие версии были либо слишком простыми, либо слишком сложными.
+        # Эта версия находит баланс, чтобы пройти все тесты качества.
 
-        # Приоритет 1: Избежать фола
-        if board.is_complete() and check_board_foul(board):
-            return HEURISTIC_FOUL_PENALTY
+        # Приоритет 1: Избежать немедленного фола, если доска полная
+        if board.is_complete():
+            if check_board_foul(board):
+                return HEURISTIC_FOUL_PENALTY
+            else:
+                # Для полной доски оценка - это просто роялти
+                return float(calculate_total_royalty_for_board(board))
 
-        # Приоритет 2: Получить "Фантазию"
+        # Для неполных досок:
+        score = 0.0
+
+        # Приоритет 2: Оценить бонус за Фантазию, если она уже собрана
         top_cards = board.get_row_cards('top')
         is_fantasy_qualified = False
         if len(top_cards) == 3:
@@ -259,30 +265,30 @@ class MCTSNode:
                     if pair_rank_top >= RANK_QUEEN:
                         is_fantasy_qualified = True
             except (ValueError, TypeError):
-                pass # Невалидная рука на топе
+                pass
 
-        if is_fantasy_qualified and not check_board_foul(board):
-            # Даем огромный бонус за Фантазию + роялти
-            total_royalty = calculate_total_royalty_for_board(board)
-            return FANTASY_QUALIFY_BONUS + total_royalty
+        # Добавляем бонус за Фантазию, только если рука НЕ фол на данный момент
+        if is_fantasy_qualified:
+            # Проверяем на фол с текущими картами
+            temp_board_for_foul_check = board.copy()
+            # "Заполняем" оставшиеся слоты худшими картами, чтобы check_board_foul сработал
+            # Это грубая проверка, но она поможет избежать очевидных фолов ради фантазии
+            if not temp_board_for_foul_check.is_complete():
+                remaining_deck_list = sorted(list(deck_snapshot), key=lambda c: Card.get_rank_int(c))
+                slots_to_fill = temp_board_for_foul_check.get_available_slots()
+                for i, (r, s_idx) in enumerate(slots_to_fill):
+                    if i < len(remaining_deck_list):
+                        temp_board_for_foul_check.add_card(remaining_deck_list[i], r, s_idx)
 
-        # Приоритет 3: Максимизировать роялти для полной доски
-        if board.is_complete():
-            return float(calculate_total_royalty_for_board(board))
+            if not check_board_foul(temp_board_for_foul_check):
+                score += FANTASY_QUALIFY_BONUS
 
-        # Приоритет 4: Оценить потенциал неполной доски (упрощенная версия)
-        # Просто суммируем роялти за уже собранные линии и добавляем небольшой бонус за сильные карты
-        score = 0.0
-        for row_name in PlayerBoard.ROW_NAMES:
-            row_cards = board.get_row_cards(row_name)
-            if row_cards:
-                # Роялти за уже готовые линии
-                score += get_row_royalty(row_cards, row_name) * ROYALTY_MULTIPLIER
-                # Простой бонус за старшие карты
-                for card in row_cards:
-                    rank = Card.get_rank_int(card)
-                    if rank > RANK_MAP['8']:
-                        score += (rank - RANK_MAP['8']) * 0.1
+        # Приоритет 3: Оценить текущие роялти и потенциал
+        score += calculate_total_royalty_for_board(board) * ROYALTY_MULTIPLIER
+
+        # Добавляем простую оценку ценности карт на доске
+        for card_int in board.get_all_cards():
+            score += Card.get_rank_int(card_int) * 0.1 # Небольшой бонус за старшие карты
 
         return score
 
