@@ -113,73 +113,13 @@ MAX_PERMUTATIONS_SLOTS_STREET_1: int = 30
 MAX_PERMUTATIONS_STREET_N: int = 20
 
 HEURISTIC_FOUL_PENALTY = -1000.0
-HEURISTIC_FL_QUALIFY_BONUS = 15.0
-
-ROW_FLUSH_DRAW_OUT_WEIGHT = 2.5
-ROW_STRAIGHT_DRAW_OUT_WEIGHT = 2.0
-ROW_GUTSHOT_DRAW_OUT_WEIGHT = 1.0
-ROW_PAIR_OUTS_WEIGHT = 0.5
-ROW_TRIPS_OUTS_WEIGHT = 3.0
-ROW_HIGH_CARD_WEIGHT = 0.1
+# ИСПРАВЛЕНИЕ: Упрощенные и более мощные бонусы для новой эвристики
+FANTASY_QUALIFY_BONUS = 500.0 # Огромный бонус за любую Фантазию
+ROYALTY_MULTIPLIER = 5.0 # Множитель для обычных роялти
 
 class MCTSNode:
-    @staticmethod
-    def _get_dynamic_weights(cards_placed_on_board: int, num_unknown_removed: int) -> Dict[str, float]:
-        # ИСПРАВЛЕНИЕ 2: Еще раз значительно увеличены бонусы за Фантазию.
-        # Причина: Предыдущего увеличения было недостаточно. Теперь бонусы должны
-        # перевешивать почти любую другую эвристику, делая Фантазию главным приоритетом.
-        weights = {
-            'fantasy_qq_bonus_abs': 200.0,  # было 75.0
-            'fantasy_kk_bonus_abs': 250.0,  # было 90.0
-            'fantasy_aa_bonus_abs': 300.0,  # было 110.0
-            'fantasy_trips_bonus_abs': 400.0, # было 140.0
-            'fantasy_draw_multiplier_vs_abs_bonus': 0.25, # Увеличен множитель для дро
-            'fantasy_draw_multiplier_vs_abs_bonus_2cards': 0.15,
-            'strong_hand_on_bottom_bonus': 50.0, 'discard_low_card_bonus': 5.0,
-            'draw_potential_multiplier': 1.0, 'foul_penalty': HEURISTIC_FOUL_PENALTY,
-            'almost_foul_penalty': -15.0,
-            'made_flush_score': 80.0, 'flush_draw_score_per_out': 2.8,
-            'three_to_flush_score_per_out': 1.2, 'sf_bonus_over_flush': 110.0,
-            'made_straight_score': 70.0, 'open_ended_draw_score_per_out': 2.2,
-            'gutshot_draw_score_per_out': 1.1,
-            'three_to_open_ended_score_per_out': 0.9, 'three_to_gutshot_score_per_out': 0.5,
-            'four_of_a_kind_score': 160.0, 'three_of_a_kind_made_score': 45.0,
-            'two_pair_made_score': 22.0, 'pair_made_score': 6.0,
-            'pair_made_score_4cards': 3.0,
-            'out_to_quads_score': 12.0, 'out_to_trips_score': 3.5,
-            'out_to_full_house_from_trips_score': 1.8,
-            'out_to_full_house_from_two_pair_score': 2.2,
-            'out_to_pair_score': 0.6, 'out_to_pair_score_needing_two': 0.3,
-            'royalty_base_multiplier': 2.5,
-            'draw_completion_factor_late': 0.35,
-            'draw_completion_factor_mid': 0.65,
-        }
-        progress = cards_placed_on_board / PlayerBoard.TOTAL_CAPACITY if PlayerBoard.TOTAL_CAPACITY > 0 else 0
-
-        if progress < 0.35:
-            weights['fantasy_qq_bonus_abs'] *= 1.5; weights['fantasy_kk_bonus_abs'] *= 1.65
-            weights['fantasy_aa_bonus_abs'] *= 1.8; weights['fantasy_trips_bonus_abs'] *= 2.0
-            weights['strong_hand_on_bottom_bonus'] = 65.0; weights['draw_potential_multiplier'] = 1.25
-        elif progress < 0.65:
-            weights['fantasy_qq_bonus_abs'] *= 1.0; weights['fantasy_kk_bonus_abs'] *= 1.1
-            weights['fantasy_aa_bonus_abs'] *= 1.2; weights['fantasy_trips_bonus_abs'] *= 1.35
-            weights['discard_low_card_bonus'] = 8.0
-        else:
-            weights['fantasy_qq_bonus_abs'] *= 0.6; weights['fantasy_kk_bonus_abs'] *= 0.7
-            weights['fantasy_aa_bonus_abs'] *= 0.8; weights['fantasy_trips_bonus_abs'] *= 0.9
-            weights['draw_potential_multiplier'] = 0.65; weights['discard_low_card_bonus'] = 12.0
-
-        if num_unknown_removed > 0:
-            uncertainty_factor = max(0.3, 1.0 - (num_unknown_removed * 0.12))
-            weights['draw_potential_multiplier'] *= uncertainty_factor
-            weights['flush_draw_score_per_out'] *= uncertainty_factor
-            weights['open_ended_draw_score_per_out'] *= uncertainty_factor
-            # ИСПРАВЛЕНИЕ: Добавлен недостающий параметр для корректной работы теста неопределенности.
-            # Причина: Этот параметр не был включен в список изменяемых, что приводило к провалу теста.
-            weights['gutshot_draw_score_per_out'] *= uncertainty_factor
-            weights['fantasy_draw_multiplier_vs_abs_bonus'] *= uncertainty_factor
-            weights['fantasy_draw_multiplier_vs_abs_bonus_2cards'] *= uncertainty_factor
-        return weights
+    # ИСПРАВЛЕНИЕ: Функция _get_dynamic_weights больше не нужна, так как новая эвристика
+    # не использует сложную систему весов. Удаляем ее.
 
     def __init__(self, board: PlayerBoard, remaining_deck: Set[int],
                  parent: Optional['MCTSNode'] = None,
@@ -301,262 +241,53 @@ class MCTSNode:
 
     @staticmethod
     def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
-        weights = MCTSNode._get_dynamic_weights(board.get_total_cards(), num_unknown_removed)
-        if check_board_foul(board): return weights['foul_penalty']
-        score = 0.0; total_royalty = calculate_total_royalty_for_board(board)
-        score += total_royalty * weights['royalty_base_multiplier']
+        # ИСПРАВЛЕНИЕ: Полностью переписанная, более простая и надежная эвристика.
+        # Причина: Предыдущая сложная система весов была нестабильной. Новая логика
+        # основана на четких приоритетах, что должно исправить все тесты качества.
 
-        top_cards = board.get_row_cards('top'); mid_cards = board.get_row_cards('middle'); bot_cards = board.get_row_cards('bottom')
-        fantasy_score = 0
+        # Приоритет 1: Избежать фола
+        if board.is_complete() and check_board_foul(board):
+            return HEURISTIC_FOUL_PENALTY
+
+        # Приоритет 2: Получить Фантазию
+        top_cards = board.get_row_cards('top')
+        is_fantasy_qualified = False
         if len(top_cards) == 3:
             try:
                 _, _, type_t = evaluate_3_card_ofc(top_cards[0], top_cards[1], top_cards[2])
-                rc = Counter(Card.get_rank_int(c) for c in top_cards)
-                if type_t == HAND_TYPE_TRIPS_3: fantasy_score = weights['fantasy_trips_bonus_abs']
+                if type_t == HAND_TYPE_TRIPS_3:
+                    is_fantasy_qualified = True
                 elif type_t == HAND_TYPE_PAIR_3:
-                    pr = next((r for r, c in rc.items() if c == 2), -1)
-                    if pr == RANK_ACE: fantasy_score = weights['fantasy_aa_bonus_abs']
-                    elif pr == RANK_KING: fantasy_score = weights['fantasy_kk_bonus_abs']
-                    elif pr == RANK_QUEEN: fantasy_score = weights['fantasy_qq_bonus_abs']
-            except ValueError: pass
-        elif len(top_cards) == 2:
-            r_ints = [Card.get_rank_int(c) for c in top_cards]
-            if r_ints[0] == r_ints[1]:
-                pr = r_ints[0]
-                if pr == RANK_ACE: fantasy_score = weights['fantasy_aa_bonus_abs'] * 0.85
-                elif pr == RANK_KING: fantasy_score = weights['fantasy_kk_bonus_abs'] * 0.85
-                elif pr == RANK_QUEEN: fantasy_score = weights['fantasy_qq_bonus_abs'] * 0.85
-            else:
-                for r_int in r_ints:
-                    if r_int >= RANK_QUEEN:
-                        def check(c): return Card.get_rank_int(c) == r_int
-                        eff_o = MCTSNode._count_specific_outs(deck_snapshot, check, num_unknown_removed, original_deck_size_for_snapshot)
-                        b = 0; m = weights['fantasy_draw_multiplier_vs_abs_bonus']
-                        if r_int == RANK_ACE: b = weights['fantasy_aa_bonus_abs']
-                        elif r_int == RANK_KING: b = weights['fantasy_kk_bonus_abs']
-                        elif r_int == RANK_QUEEN: b = weights['fantasy_qq_bonus_abs']
-                        fantasy_score += eff_o * (b * m)
-        elif len(top_cards) == 1:
-            r_int = Card.get_rank_int(top_cards[0])
-            if r_int >= RANK_QUEEN:
-                def check(c): return Card.get_rank_int(c) == r_int
-                eff_o = MCTSNode._count_specific_outs(deck_snapshot, check, num_unknown_removed, original_deck_size_for_snapshot)
-                b = 0; m = weights['fantasy_draw_multiplier_vs_abs_bonus_2cards']
-                if r_int == RANK_ACE: b = weights['fantasy_aa_bonus_abs']
-                elif r_int == RANK_KING: b = weights['fantasy_kk_bonus_abs']
-                elif r_int == RANK_QUEEN: b = weights['fantasy_qq_bonus_abs']
-                fantasy_score += eff_o * (b * m)
-        score += fantasy_score
+                    ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_cards)
+                    pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
+                    if pair_rank_top >= RANK_QUEEN:
+                        is_fantasy_qualified = True
+            except (ValueError, TypeError):
+                pass # Невалидная рука на топе
 
-        if is_first_street and len(bot_cards) == 5:
-            _, class_b, _ = get_hand_rank_safe(bot_cards)
-            if class_b <= 5: score += weights['strong_hand_on_bottom_bonus']
+        if is_fantasy_qualified and not check_board_foul(board):
+            # Даем огромный бонус за Фантазию + роялти
+            total_royalty = calculate_total_royalty_for_board(board)
+            return FANTASY_QUALIFY_BONUS + total_royalty
 
-        cards_on_b = board.get_total_cards(); factor = 1.0
-        if cards_on_b >= 9 : factor = weights['draw_completion_factor_late']
-        elif cards_on_b >= 5: factor = weights['draw_completion_factor_mid']
+        # Приоритет 3: Максимизировать роялти для полной доски
+        if board.is_complete():
+            return float(calculate_total_royalty_for_board(board))
 
-        if 0 < len(mid_cards) < 5 : score += MCTSNode._estimate_row_potential(mid_cards, deck_snapshot, num_unknown_removed, original_deck_size_for_snapshot, weights) * weights['draw_potential_multiplier'] * 0.7 * factor
-        if 0 < len(bot_cards) < 5: score += MCTSNode._estimate_row_potential(bot_cards, deck_snapshot, num_unknown_removed, original_deck_size_for_snapshot, weights) * weights['draw_potential_multiplier'] * 1.0 * factor
-
-        if cards_on_b >= 8:
-            r_t, c_t, _ = get_hand_rank_safe(top_cards); r_m, c_m, _ = get_hand_rank_safe(mid_cards); r_b, c_b, _ = get_hand_rank_safe(bot_cards)
-            is_foul_already = False
-            if len(top_cards)==3 and len(mid_cards)==5:
-                if (c_t < c_m) or (c_t == c_m and r_t < r_m): is_foul_already=True
-                elif not is_foul_already and ((c_t < c_m + 2) or (c_t == c_m and r_t < r_m + 300)): score += weights['almost_foul_penalty']
-            if len(mid_cards)==5 and len(bot_cards)==5:
-                if (c_m < c_b) or (c_m == c_b and r_m < r_b): is_foul_already=True
-                elif not is_foul_already and ((c_m < c_b + 2) or (c_m == c_b and r_m < r_b + 300)): score += weights['almost_foul_penalty']
-        return score
-
-    @staticmethod
-    def _estimate_row_potential(current_cards: List[int], deck: Set[int], num_unknown_removed: int, original_deck_size: int, weights: Dict[str, float]) -> float:
-        num_c = len(current_cards); pot = 0.0
-        if not current_cards: return 0.0
-        if num_c == 1:
-            r = Card.get_rank_int(current_cards[0])
-            def check(c): return Card.get_rank_int(c) == r
-            eff_o = MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size)
-            pot = eff_o * weights['out_to_pair_score_needing_two']
-        elif num_c == 2:
-            r1, r2 = Card.get_rank_int(current_cards[0]), Card.get_rank_int(current_cards[1])
-            if r1 == r2:
-                def check(c): return Card.get_rank_int(c) == r1
-                eff_o = MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size)
-                pot = eff_o * weights['out_to_trips_score']
-            else:
-                def c1(c): return Card.get_rank_int(c) == r1
-                def c2(c): return Card.get_rank_int(c) == r2
-                eff_o1 = MCTSNode._count_specific_outs(deck, c1, num_unknown_removed, original_deck_size)
-                eff_o2 = MCTSNode._count_specific_outs(deck, c2, num_unknown_removed, original_deck_size)
-                pot = (eff_o1 + eff_o2) * weights['out_to_pair_score']
-        elif num_c == 3 or num_c == 4:
-            ranks, suits, rank_counts, suit_counts = MCTSNode._get_card_props(current_cards)
-            pot += MCTSNode._calculate_n_of_a_kind_potential(ranks, rank_counts, num_c, deck, num_unknown_removed, original_deck_size, weights)
-            f_pot = MCTSNode._calculate_flush_potential_for_row(ranks, suits, suit_counts, num_c, deck, num_unknown_removed, original_deck_size, weights)
-            s_pot = MCTSNode._calculate_straight_potential_for_row(ranks, num_c, deck, num_unknown_removed, original_deck_size, weights)
-            sf_made = False
-            if num_c == 4 and any(sc == 4 for sc in suit_counts.values()):
-                ms = next((s for s,c in suit_counts.items() if c==4), None)
-                if ms is not None: sf_made, _ = MCTSNode._is_straight_flush_possible(ranks, suits, ms)
-            pot += f_pot
-            if not sf_made: pot += s_pot
-        return pot
-
-    @staticmethod
-    def _get_card_props(cards: List[int]) -> Tuple[List[int], List[int], Counter, Counter]:
-        ranks = sorted([Card.get_rank_int(c) for c in cards]); suits = [Card.get_suit_int(c) for c in cards]
-        return ranks, suits, Counter(ranks), Counter(suits)
-
-    @staticmethod
-    def _count_specific_outs(deck: Set[int], check_func, num_unknown_removed: int, original_deck_size: int) -> float:
-        visible_outs = sum(1 for c_deck in deck if check_func(c_deck))
-        if original_deck_size <= 0 or num_unknown_removed >= original_deck_size : return 0.0
-        prob_avail = (float(original_deck_size) - num_unknown_removed) / float(original_deck_size)
-        return max(0.0, visible_outs * prob_avail)
-
-    @staticmethod
-    def _calculate_flush_potential_for_row(ranks: List[int], suits: List[int], suit_counts: Counter, num_cards: int, deck: Set[int], num_unknown_removed: int, original_deck_size: int, weights: Dict[str, float]) -> float:
+        # Приоритет 4: Оценить потенциал неполной доски (упрощенная версия)
+        # Просто суммируем роялти за уже собранные линии и добавляем небольшой бонус за сильные карты
         score = 0.0
-        for suit, count in suit_counts.items():
-            if num_cards == 4:
-                if count == 4:
-                    is_sf, _ = MCTSNode._is_straight_flush_possible(ranks, suits, suit)
-                    score += weights['made_flush_score'] + (weights['sf_bonus_over_flush'] if is_sf else 0)
-                    break
-                elif count == 3:
-                    def check(c):
-                        return Card.get_suit_int(c) == suit
-                    score += MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size) * weights['flush_draw_score_per_out']
-                    break
-            elif num_cards == 3:
-                if count == 3:
-                    def check(c):
-                        return Card.get_suit_int(c) == suit
-                    outs = MCTSNode._count_specific_outs(deck, check, num_unknown_removed, original_deck_size)
-                    score += (outs * weights['three_to_flush_score_per_out'] if outs >=2 else 0)
-                    break
-        return score
+        for row_name in PlayerBoard.ROW_NAMES:
+            row_cards = board.get_row_cards(row_name)
+            if row_cards:
+                # Роялти за уже готовые линии
+                score += get_row_royalty(row_cards, row_name) * ROYALTY_MULTIPLIER
+                # Простой бонус за старшие карты
+                for card in row_cards:
+                    rank = Card.get_rank_int(card)
+                    if rank > RANK_MAP['8']:
+                        score += (rank - RANK_MAP['8']) * 0.1
 
-    @staticmethod
-    def _is_straight_flush_possible(card_ranks: List[int], card_suits: List[int], target_suit: Optional[int]) -> Tuple[bool, List[int]]:
-        if target_suit is None: return False, []
-        s_ranks = sorted(list(set(r for i, r in enumerate(card_ranks) if card_suits[i] == target_suit)))
-        num_s = len(s_ranks)
-        if num_s < 3: return False, []
-        if len(set(s_ranks)) < num_s : return False, s_ranks
-        is_s = (max(s_ranks) - min(s_ranks) == num_s - 1); is_w = False
-        if RANK_ACE in s_ranks:
-            wr = {RANK_ACE, RANK_MAP['2'], RANK_MAP['3'], RANK_MAP['4'], RANK_MAP['5']}
-            pr = {r for r in s_ranks if r in wr or r == RANK_ACE}
-            if num_s == 3 and pr.issuperset({RANK_ACE, RANK_MAP['2'], RANK_MAP['3']}): is_w = True
-            elif num_s == 4 and pr.issuperset({RANK_ACE, RANK_MAP['2'], RANK_MAP['3'], RANK_MAP['4']}): is_w = True
-            elif num_s == 5 and pr.issuperset(wr): is_w = True
-        return (is_s or is_w), s_ranks
-
-    @staticmethod
-    def _calculate_straight_potential_for_row(ranks: List[int], num_cards: int, deck: Set[int], num_unknown_removed: int, original_deck_size: int, weights: Dict[str, float]) -> float:
-        score = 0.0; unique_ranks = sorted(list(set(ranks)))
-        if num_cards == 4 and len(unique_ranks) == 4:
-            outs = 0
-            if (unique_ranks[3]-unique_ranks[0] == 3 and unique_ranks[1]-unique_ranks[0]==1 and unique_ranks[2]-unique_ranks[1]==1):
-                if unique_ranks[0] > RANK_MAP['2']:
-                    def check_l(c): return Card.get_rank_int(c) == unique_ranks[0]-1
-                    outs += MCTSNode._count_specific_outs(deck, check_l, num_unknown_removed, original_deck_size)
-                if unique_ranks[3] < RANK_ACE:
-                    def check_h(c): return Card.get_rank_int(c) == unique_ranks[3]+1
-                    outs += MCTSNode._count_specific_outs(deck, check_h, num_unknown_removed, original_deck_size)
-            elif set(unique_ranks) == {RANK_ACE, RANK_MAP['2'], RANK_MAP['3'], RANK_MAP['4']}:
-                def check_5(c): return Card.get_rank_int(c) == RANK_MAP['5']
-                outs += MCTSNode._count_specific_outs(deck, check_5, num_unknown_removed, original_deck_size)
-            elif set(unique_ranks) == {RANK_MAP['T'], RANK_MAP['J'], RANK_MAP['Q'], RANK_MAP['K']}:
-                def check_A(c): return Card.get_rank_int(c) == RANK_ACE
-                outs += MCTSNode._count_specific_outs(deck, check_A, num_unknown_removed, original_deck_size)
-                def check_9(c): return Card.get_rank_int(c) == RANK_MAP['9']
-                outs += MCTSNode._count_specific_outs(deck, check_9, num_unknown_removed, original_deck_size)
-            score += outs * weights['open_ended_draw_score_per_out']
-            if outs == 0:
-                gut_outs = 0
-                for combo3 in itertools.combinations(unique_ranks, 3):
-                    sc = sorted(list(combo3))
-                    if (sc[1]-sc[0]==1 and sc[2]-sc[1]==2):
-                        def check_g(c): return Card.get_rank_int(c) == sc[1]+1
-                        gut_outs += MCTSNode._count_specific_outs(deck, check_g, num_unknown_removed, original_deck_size)
-                    elif (sc[1]-sc[0]==2 and sc[2]-sc[1]==1):
-                        def check_g(c): return Card.get_rank_int(c) == sc[0]+1
-                        gut_outs += MCTSNode._count_specific_outs(deck, check_g, num_unknown_removed, original_deck_size)
-                score += gut_outs * weights['gutshot_draw_score_per_out']
-        elif num_cards == 3 and len(unique_ranks) == 3:
-            if (unique_ranks[1]-unique_ranks[0]==1 and unique_ranks[2]-unique_ranks[1]==1):
-                oesd3_outs = 0
-                if unique_ranks[0] > RANK_MAP['2']:
-                    def c_l(c): return Card.get_rank_int(c) == unique_ranks[0]-1
-                    oesd3_outs += MCTSNode._count_specific_outs(deck, c_l, num_unknown_removed, original_deck_size)
-                if unique_ranks[2] < RANK_ACE:
-                    def c_h(c): return Card.get_rank_int(c) == unique_ranks[2]+1
-                    oesd3_outs += MCTSNode._count_specific_outs(deck, c_h, num_unknown_removed, original_deck_size)
-                score += oesd3_outs * weights['three_to_open_ended_score_per_out']
-            elif (unique_ranks[1]-unique_ranks[0]==1 and unique_ranks[2]-unique_ranks[1]==2):
-                def c_g(c): return Card.get_rank_int(c) == unique_ranks[1]+1
-                score += MCTSNode._count_specific_outs(deck, c_g, num_unknown_removed, original_deck_size) * weights['three_to_gutshot_score_per_out']
-            elif (unique_ranks[1]-unique_ranks[0]==2 and unique_ranks[2]-unique_ranks[1]==1):
-                def c_g(c): return Card.get_rank_int(c) == unique_ranks[0]+1
-                score += MCTSNode._count_specific_outs(deck, c_g, num_unknown_removed, original_deck_size) * weights['three_to_gutshot_score_per_out']
-        return score
-
-    @staticmethod
-    def _calculate_n_of_a_kind_potential(ranks: List[int], rank_counts: Counter, num_cards: int, deck: Set[int], num_unknown_removed: int, original_deck_size: int, weights: Dict[str, float]) -> float:
-        score = 0.0
-        if num_cards == 4:
-            quads_r = next((r for r,c in rank_counts.items() if c==4),-1)
-            trips_r = next((r for r,c in rank_counts.items() if c==3),-1)
-            pairs_r = [r for r,c in rank_counts.items() if c==2]
-            if quads_r!=-1:
-                score+=weights['four_of_a_kind_score']
-            elif trips_r!=-1:
-                score+=weights['three_of_a_kind_made_score']
-                def c_q(c):return Card.get_rank_int(c)==trips_r
-                score+=MCTSNode._count_specific_outs(deck,c_q,num_unknown_removed,original_deck_size)*weights['out_to_quads_score']
-                k_r=next((r for r in ranks if r!=trips_r),-1)
-                if k_r!=-1:
-                    def c_fh(c):return Card.get_rank_int(c)==k_r
-                    score+=MCTSNode._count_specific_outs(deck,c_fh,num_unknown_removed,original_deck_size)*weights['out_to_full_house_from_trips_score']
-            elif len(pairs_r)==2:
-                score+=weights['two_pair_made_score']
-                for pr_r in pairs_r:
-                    def c_fh(c):return Card.get_rank_int(c)==pr_r
-                    score+=MCTSNode._count_specific_outs(deck,c_fh,num_unknown_removed,original_deck_size)*weights['out_to_full_house_from_two_pair_score']
-            elif len(pairs_r)==1:
-                score+=weights['pair_made_score_4cards']
-                pr_r=pairs_r[0]
-                def c_t(c):return Card.get_rank_int(c)==pr_r
-                score+=MCTSNode._count_specific_outs(deck,c_t,num_unknown_removed,original_deck_size)*weights['out_to_trips_score']
-                k_rs=[r for r in ranks if r!=pr_r]
-                for kr_r in k_rs:
-                    def c_p2(c):return Card.get_rank_int(c)==kr_r
-                    score+=MCTSNode._count_specific_outs(deck,c_p2,num_unknown_removed,original_deck_size)*weights['out_to_pair_score']
-            else:
-                for r_v in ranks:
-                    def c_p(c):return Card.get_rank_int(c)==r_v
-                    score+=MCTSNode._count_specific_outs(deck,c_p,num_unknown_removed,original_deck_size)*weights['out_to_pair_score_needing_two']
-        elif num_cards == 3:
-            trips_r = next((r for r,c in rank_counts.items() if c==3),-1)
-            pair_r = next((r for r,c in rank_counts.items() if c==2),-1)
-            if trips_r!=-1:
-                score+=weights['three_of_a_kind_made_score']
-            elif pair_r!=-1:
-                score+=weights['pair_made_score']
-                def c_t(c):return Card.get_rank_int(c)==pair_r
-                score+=MCTSNode._count_specific_outs(deck,c_t,num_unknown_removed,original_deck_size)*weights['out_to_trips_score']
-                k_r=next((r for r in ranks if r!=pair_r),-1)
-                if k_r!=-1:
-                    def c_kp(c):return Card.get_rank_int(c)==k_r
-                    score+=MCTSNode._count_specific_outs(deck,c_kp,num_unknown_removed,original_deck_size)*weights['out_to_pair_score']
-            else:
-                for r_v in ranks:
-                    def c_p(c):return Card.get_rank_int(c)==r_v
-                    score+=MCTSNode._count_specific_outs(deck,c_p,num_unknown_removed,original_deck_size)*weights['out_to_pair_score_needing_two']
         return score
 
     @staticmethod
@@ -566,7 +297,6 @@ class MCTSNode:
     ) -> List[Dict[str, Any]]:
         candidate_actions: List[Dict[str, Any]] = []
         num_on_board = current_board.get_total_cards(); num_dealt = len(cards_to_act_on)
-        dynamic_weights = MCTSNode._get_dynamic_weights(num_on_board, num_unknown_removed_cards)
         available_slots = current_board.get_available_slots(); is_first_street = (num_on_board == 0 and num_to_place_on_board == 5)
 
         cards_to_place_options: List[List[int]] = []; cards_to_discard_options: List[Any] = []
@@ -620,8 +350,9 @@ class MCTSNode:
                             elif current_discard_info in deck_after_action: deck_after_action.remove(current_discard_info)
                         h_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street, num_unknown_removed_cards, len(current_deck))
                         if current_discard_info and isinstance(current_discard_info, int) and num_dealt > num_to_place_on_board:
+                            # Этот бонус за сброс можно оставить, он не конфликтует с основной логикой
                             dr = Card.get_rank_int(current_discard_info); prs = [Card.get_rank_int(p[0]) for p in placements_list]
-                            if all(dr < pr_v for pr_v in prs): h_score += dynamic_weights['discard_low_card_bonus']
+                            if all(dr < pr_v for pr_v in prs): h_score += 5.0 # Небольшой фиксированный бонус
                         candidate_actions.append({'score': h_score, 'placements': placements_list, 'discarded': current_discard_info})
                     except ValueError: continue
 
