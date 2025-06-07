@@ -38,8 +38,6 @@ def test_mcts_agent_init_custom():
 @patch('mcts_agent.MCTSNode')
 @patch('mcts_agent.multiprocessing.Pool')
 def test_choose_placement_basic_run_and_selection(MockPool, MockMCTSNode, agent_default):
-    # ИСПРАВЛЕНИЕ: Добавляем карту на доску, чтобы тест не считался "первой улицей".
-    # Причина: Это делает расчет num_expected_to_place внутри агента корректным для этого тестового случая.
     initial_board = PlayerBoard()
     initial_board.add_card(Card.from_str('2c'), 'bottom', 0)
 
@@ -52,7 +50,6 @@ def test_choose_placement_basic_run_and_selection(MockPool, MockMCTSNode, agent_
     mock_root.num_unknown_removed_cards = 0
 
     card_as = Card.from_str('As'); card_ks = Card.from_str('Ks')
-    # p_info1: avg_reward = 5.0. p_info2: avg_reward = 6.0. Ожидаем p_info2.
     p_info1 = {'placements': [(card_as, 'top', 0)], 'discarded': card_ks, 'score': 50}
     p_info2 = {'placements': [(card_ks, 'middle', 0)], 'discarded': card_as, 'score': 60}
 
@@ -64,18 +61,17 @@ def test_choose_placement_basic_run_and_selection(MockPool, MockMCTSNode, agent_
     mock_child2.rave_visits_count = 8; mock_child2.rave_total_reward = 40.0
     mock_child2.placement_info = p_info2; mock_child2.num_unknown_removed_cards = 0
 
-    # Ключи для children должны соответствовать формату (tuple_of_placements, discarded)
     key1_pl = tuple(sorted([(int(p[0]), str(p[1]), int(p[2])) for p in p_info1['placements']]))
     key1 = (key1_pl, p_info1['discarded'])
     key2_pl = tuple(sorted([(int(p[0]), str(p[1]), int(p[2])) for p in p_info2['placements']]))
     key2 = (key2_pl, p_info2['discarded'])
     mock_root.children = {key1: mock_child1, key2: mock_child2}
 
-    MockMCTSNode.return_value = mock_root # Конструктор MCTSNode вернет наш мок
+    MockMCTSNode.return_value = mock_root
 
     with patch('mcts_agent.run_parallel_rollout', return_value=(1.0, [])):
         agent_instance = MCTSAgent(time_limit_ms=10, num_workers=1, rollouts_per_leaf=1)
-        with patch.object(agent_instance, '_select', return_value=([mock_root], mock_root)): # _select возвращает корень для выбора
+        with patch.object(agent_instance, '_select', return_value=([mock_root], mock_root)):
             with patch.object(agent_instance, '_backpropagate_standard'):
                 with patch.object(agent_instance, '_backpropagate_rave'):
                     cards_dealt = hand_to_int(['Ac', 'Kc'])
@@ -99,7 +95,6 @@ def test_choose_placement_no_cards(agent_default):
 def test_choose_placement_no_available_slots(agent_default):
     board = PlayerBoard()
     all_cards_list = list(Deck.FULL_DECK_CARDS)
-    # Заполняем доску полностью
     full_board_cards = set()
     for i in range(PlayerBoard.TOTAL_CAPACITY):
         card_to_add = all_cards_list[i]
@@ -109,13 +104,12 @@ def test_choose_placement_no_available_slots(agent_default):
         else: board.add_card(card_to_add, 'bottom', i - 8)
 
     assert board.is_complete()
-    cards_dealt = [all_cards_list[13], all_cards_list[14]] # Еще карты
+    cards_dealt = [all_cards_list[13], all_cards_list[14]]
     remaining_deck = Deck.FULL_DECK_CARDS.copy() - full_board_cards - set(cards_dealt)
     result = agent_default.choose_placement(board, cards_dealt, remaining_deck, 0)
     assert result is not None
     assert result['placements'] == []
     assert result['discarded'] == tuple(sorted(cards_dealt))
-    # ИСПРАВЛЕНИЕ: Ожидаемый текст сообщения изменен для соответствия исправленному коду.
     assert result['reason'] == "No slots available, discarding all dealt cards."
 
 
@@ -150,6 +144,9 @@ def test_choose_placement_mcts_loop_flow(MockMCTSNode, mock_rollout_func, agent_
     mock_child1.is_terminal.return_value = False; mock_child1.untried_next_states = None
     mock_child1.placement_info = p_info1; mock_child1.num_unknown_removed_cards = num_unknown
     mock_child1._generate_next_states.return_value = []
+    # ИСПРАВЛЕНИЕ: Добавляем недостающий атрибут 'children' к моку.
+    # Причина: Тест падал с AttributeError, так как MCTS-цикл пытался получить доступ к этому атрибуту у мока.
+    mock_child1.children = {}
 
     mock_root.expand.return_value = mock_child1
     mock_child1.expand.return_value = None
@@ -162,8 +159,6 @@ def test_choose_placement_mcts_loop_flow(MockMCTSNode, mock_rollout_func, agent_
             return [node], node
         return [node, mock_child1], mock_child1
 
-    # ИСПРАВЛЕНИЕ: Создаем экземпляр агента с 1 воркером, чтобы избежать проблем с multiprocessing.
-    # Причина: Тест падал из-за ошибки сериализации (pickling) MagicMock объектов при использовании Pool.
     agent_instance = MCTSAgent(time_limit_ms=10, num_workers=1, rollouts_per_leaf=1)
     agent_instance._select = MagicMock(side_effect=select_effect)
     agent_instance._backpropagate_standard = MagicMock()
