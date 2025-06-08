@@ -3,9 +3,9 @@ platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-uti
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: cov-6.1.1, anyio-4.9.0
-collecting ... 2025-06-08 00:06:31,922 - app - INFO - [app:50] - --- Flask App Initialization (v2.5) ---
-2025-06-08 00:06:31,922 - app - INFO - [app:52] - Production mode: False
-2025-06-08 00:06:31,922 - app - INFO - [app:104] - Defining Flask routes...
+collecting ... 2025-06-08 00:18:43,343 - app - INFO - [app:50] - --- Flask App Initialization (v2.5) ---
+2025-06-08 00:18:43,343 - app - INFO - [app:52] - Production mode: False
+2025-06-08 00:18:43,344 - app - INFO - [app:104] - Defining Flask routes...
 collected 128 items
 
 tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly FAILED
@@ -17,40 +17,40 @@ tests/test_ai_quality.py::test_ai_avoids_obvious_foul FAILED
 tests/test_ai_quality.py::test_ai_correct_discard_choice_not_first_street PASSED
 tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom FAILED
 tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively PASSED
-tests/test_app.py::test_index_route 2025-06-08 00:06:41,969 - app - INFO - [app:107] - Route / called (GET)
+tests/test_app.py::test_index_route 2025-06-08 00:18:53,344 - app - INFO - [app:107] - Route / called (GET)
 PASSED
-tests/test_app.py::test_ai_move_valid_request 2025-06-08 00:06:41,977 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,978 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(3) - KnownDiscard(2) = 47 cards.
-2025-06-08 00:06:41,978 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-08 00:06:41,978 - app - INFO - [app:175] - Starting MCTS for 3 cards (board has 0)...
-2025-06-08 00:06:41,978 - app - INFO - [app:184] - AI move in 0.001s. Placement: {'placements': [(268442665, 'top', 0), (134224677, 'middle', 0)], 'discarded': 67115551}
+tests/test_app.py::test_ai_move_valid_request 2025-06-08 00:18:53,352 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,352 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(3) - KnownDiscard(2) = 47 cards.
+2025-06-08 00:18:53,352 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-08 00:18:53,352 - app - INFO - [app:175] - Starting MCTS for 3 cards (board has 0)...
+2025-06-08 00:18:53,353 - app - INFO - [app:184] - AI move in 0.001s. Placement: {'placements': [(268442665, 'top', 0), (134224677, 'middle', 0)], 'discarded': 67115551}
 PASSED
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-06-08 00:06:41,979 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,980 - app - INFO - [app:141] - No valid cards provided by user to place by AI, and board is not full.
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-06-08 00:18:53,354 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,354 - app - INFO - [app:141] - No valid cards provided by user to place by AI, and board is not full.
 PASSED
-tests/test_app.py::test_ai_move_invalid_json 2025-06-08 00:06:41,981 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,981 - app - WARNING - [app:119] - Request not JSON
+tests/test_app.py::test_ai_move_invalid_json 2025-06-08 00:18:53,356 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,356 - app - WARNING - [app:119] - Request not JSON
 PASSED
-tests/test_app.py::test_ai_move_missing_data 2025-06-08 00:06:41,982 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,983 - app - WARNING - [app:129] - Missing 'selected_cards' or 'board' data
+tests/test_app.py::test_ai_move_missing_data 2025-06-08 00:18:53,357 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,357 - app - WARNING - [app:129] - Missing 'selected_cards' or 'board' data
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-06-08 00:06:41,984 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,984 - app - WARNING - [app:153] - Duplicates hand-board: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-06-08 00:18:53,358 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,359 - app - WARNING - [app:153] - Duplicates hand-board: ['As']
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-06-08 00:06:41,985 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,986 - app - WARNING - [app:153] - Duplicates hand-known_discard: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-06-08 00:18:53,360 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,360 - app - WARNING - [app:153] - Duplicates hand-known_discard: ['As']
 PASSED
-tests/test_app.py::test_ai_move_agent_returns_none 2025-06-08 00:06:41,988 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,988 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
-2025-06-08 00:06:41,988 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-08 00:06:41,988 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
-2025-06-08 00:06:41,988 - app - WARNING - [app:223] - AI agent did not return a placement after 0.001s.
+tests/test_app.py::test_ai_move_agent_returns_none 2025-06-08 00:18:53,362 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,362 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-08 00:18:53,362 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-08 00:18:53,362 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-08 00:18:53,363 - app - WARNING - [app:223] - AI agent did not return a placement after 0.001s.
 PASSED
-tests/test_app.py::test_ai_move_internal_error 2025-06-08 00:06:41,990 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:06:41,990 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
-2025-06-08 00:06:41,990 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-08 00:06:41,990 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
-2025-06-08 00:06:41,990 - app - ERROR - [app:227] - Unexpected Error during /ai_move: Unexpected MCTS crash
+tests/test_app.py::test_ai_move_internal_error 2025-06-08 00:18:53,364 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:18:53,364 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-08 00:18:53,364 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-08 00:18:53,365 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-08 00:18:53,365 - app - ERROR - [app:227] - Unexpected Error during /ai_move: Unexpected MCTS crash
 Traceback (most recent call last):
   File "/workspaces/trainmcts/app.py", line 177, in get_ai_move
     best_placement_info = agent.choose_placement(
@@ -65,22 +65,22 @@ Traceback (most recent call last):
     raise effect
 Exception: Unexpected MCTS crash
 PASSED
-tests/test_app.py::test_calculate_score_valid_board 2025-06-08 00:06:41,993 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:06:41,993 - app - INFO - [app:248] - Foul check: False
-2025-06-08 00:06:41,993 - app - INFO - [app:258] - Royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
-2025-06-08 00:06:41,993 - app - INFO - [app:259] - Score calc in 0.000s.
+tests/test_app.py::test_calculate_score_valid_board 2025-06-08 00:18:53,367 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:18:53,367 - app - INFO - [app:248] - Foul check: False
+2025-06-08 00:18:53,367 - app - INFO - [app:258] - Royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
+2025-06-08 00:18:53,367 - app - INFO - [app:259] - Score calc in 0.000s.
 PASSED
-tests/test_app.py::test_calculate_score_foul_board 2025-06-08 00:06:41,995 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:06:41,995 - app - INFO - [app:248] - Foul check: True
+tests/test_app.py::test_calculate_score_foul_board 2025-06-08 00:18:53,369 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:18:53,369 - app - INFO - [app:248] - Foul check: True
 PASSED
-tests/test_app.py::test_calculate_score_incomplete_board 2025-06-08 00:06:41,996 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:06:41,996 - app - WARNING - [app:245] - Score for incomplete board (3/13).
+tests/test_app.py::test_calculate_score_incomplete_board 2025-06-08 00:18:53,370 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:18:53,370 - app - WARNING - [app:245] - Score for incomplete board (3/13).
 PASSED
-tests/test_app.py::test_calculate_score_missing_board 2025-06-08 00:06:41,997 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:06:41,997 - app - WARNING - [app:240] - Missing 'board' data
+tests/test_app.py::test_calculate_score_missing_board 2025-06-08 00:18:53,371 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:18:53,372 - app - WARNING - [app:240] - Missing 'board' data
 PASSED
 tests/test_app.py::test_update_state PASSED
-tests/test_app.py::test_reset_game_state 2025-06-08 00:06:42,000 - app - INFO - [app:277] - Route /reset_game_state called (POST)
+tests/test_app.py::test_reset_game_state 2025-06-08 00:18:53,374 - app - INFO - [app:277] - Route /reset_game_state called (POST)
 PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str0-1-Trips-AAA] PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str1-2-Trips-KKK] PASSED
@@ -153,12 +153,12 @@ tests/test_mcts_agent.py::test_choose_placement_basic_run_and_selection PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_cards PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_available_slots PASSED
 tests/test_mcts_agent.py::test_choose_placement_mcts_loop_flow PASSED
-tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule 2025-06-08 00:06:42,632 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-08 00:06:42,633 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-08 00:06:42,633 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-08 00:06:42,638 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-08 00:06:42,642 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-08 00:06:42,643 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule 2025-06-08 00:18:54,030 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-08 00:18:54,031 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-08 00:18:54,031 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-08 00:18:54,036 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-08 00:18:54,041 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-08 00:18:54,041 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 PASSED
 tests/test_mcts_agent.py::test_backpropagate_rave_updates_child_stats PASSED
 tests/test_ofc_logic.py::test_card_from_str_valid[As-A-s] PASSED
@@ -196,7 +196,7 @@ tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
 =================================== FAILURES ===================================
 __________________ test_ai_handles_11_plus_3_cards_correctly ___________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x7406154c8770>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x735912975a60>
 
     def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
         """
@@ -265,14 +265,14 @@ E        +  where True = check_board_foul(PlayerBoard(Cards=13, Foul=True))
 tests/test_ai_quality.py:100: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 5 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=810   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@bottom[4], Ah@middle[4]          (D: 2c)   
-WARNING  mcts_agent:mcts_agent.py:357   #2: V=810   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@middle[4], Kh@bottom[4]          (D: Ah)   
-WARNING  mcts_agent:mcts_agent.py:357   #3: V=795   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@middle[4], Ah@bottom[4]          (D: 2c)   
-WARNING  mcts_agent:mcts_agent.py:357   #4: V=795   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@bottom[4], Ah@middle[4]          (D: Kh)   
-WARNING  mcts_agent:mcts_agent.py:357   #5: V=795   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@middle[4], Ah@bottom[4]          (D: Kh)
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@bottom[4], Ah@middle[4]          (D: 2c)   
+WARNING  mcts_agent:mcts_agent.py:357   #2: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@middle[4], Ah@bottom[4]          (D: 2c)   
+WARNING  mcts_agent:mcts_agent.py:357   #3: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@bottom[4], Ah@middle[4]          (D: Kh)   
+WARNING  mcts_agent:mcts_agent.py:357   #4: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@middle[4], Ah@bottom[4]          (D: Kh)   
+WARNING  mcts_agent:mcts_agent.py:357   #5: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@bottom[4], Kh@middle[4]          (D: Ah)
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x74061553c530>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x735913345d30>
 fantasy_hand_str = ['Qs', 'Qd', 'As', 'Ks', 'Ts'], target_rank_int = 10
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -334,10 +334,10 @@ E               assert not True
 tests/test_ai_quality.py:155: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-865.07 | RV=0     RaveR=-865.07 -> Qs@top[2], As@middle[2], Qd@top[1], Ks@top[0], Ts@bottom[4]
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Qs@top[0], As@bottom[2], Ks@middle[0], Qd@top[1], Ts@top[2]
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str1-11] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x74061553d4f0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7359133478f0>
 fantasy_hand_str = ['Ks', 'Kd', 'As', 'Qs', 'Ts'], target_rank_int = 11
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -399,10 +399,10 @@ E               assert not True
 tests/test_ai_quality.py:155: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> As@bottom[0], Qs@middle[1], Ks@top[2], Kd@top[0], Ts@top[1]
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-932.20 | RV=0     RaveR=-932.20 -> Ks@top[0], Kd@top[1], As@bottom[0], Qs@top[2], Ts@middle[0]
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x74061553ec30>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x73591214db80>
 fantasy_hand_str = ['As', 'Ad', 'Ks', 'Qs', 'Ts'], target_rank_int = 12
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -468,10 +468,10 @@ E               assert not True
 tests/test_ai_quality.py:159: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-600.00 | RV=0     RaveR=-600.00 -> As@middle[3], Ad@top[1], Ts@top[2], Ks@middle[1], Qs@middle[2]
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-866.67 | RV=0     RaveR=-866.67 -> Ad@top[0], As@middle[2], Ts@top[2], Ks@middle[4], Qs@middle[3]
 ____ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x74061553bfb0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x73591214eb10>
 fantasy_hand_str = ['7s', '7d', '7c', 'Ks', 'Qs'], target_rank_int = 5
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -537,10 +537,10 @@ E               assert not True
 tests/test_ai_quality.py:159: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-865.60 | RV=0     RaveR=-865.60 -> 7s@middle[2], 7d@middle[1], 7c@middle[3], Ks@top[1], Qs@top[0]
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-732.00 | RV=0     RaveR=-732.00 -> 7s@bottom[0], 7d@bottom[3], 7c@bottom[4], Ks@top[0], Qs@middle[0]
 _________________________ test_ai_avoids_obvious_foul __________________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x74061551e8d0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7359120f3cb0>
 
     def test_ai_avoids_obvious_foul(agent_short_time):
         """
@@ -594,11 +594,11 @@ E            +  where True = check_board_foul(PlayerBoard(Cards=13, Foul=True))
 tests/test_ai_quality.py:216: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 2 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-861.47 | RV=0     RaveR=-861.47 -> Ah@bottom[0], Ad@bottom[4]          (D: Ac)   
-WARNING  mcts_agent:mcts_agent.py:357   #2: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Ah@bottom[1], Ad@bottom[2]          (D: Ac)
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Ah@bottom[0], Ad@bottom[2]          (D: Ac)   
+WARNING  mcts_agent:mcts_agent.py:357   #2: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Ah@bottom[3], Ad@bottom[0]          (D: Ac)
 __________________ test_ai_first_street_strong_hand_to_bottom __________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x74061556c620>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x73591214fef0>
 
     def test_ai_first_street_strong_hand_to_bottom(agent_short_time):
         """
@@ -614,13 +614,13 @@ agent_short_time = <mcts_agent.MCTSAgent object at 0x74061556c620>
         bottom_cards = [p[0] for p in placement_info['placements'] if p[1] == 'bottom']
 >       assert len(bottom_cards) == 5, "AI did not place all 5 cards of RF on bottom"
 E       AssertionError: AI did not place all 5 cards of RF on bottom
-E       assert 0 == 5
-E        +  where 0 = len([])
+E       assert 1 == 5
+E        +  where 1 = len([134224677])
 
 tests/test_ai_quality.py:257: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-533.07 | RV=0     RaveR=-533.07 -> As@top[2], Ks@top[0], Js@middle[4], Qs@top[1], Ts@middle[3]
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-600.00 | RV=0     RaveR=-600.00 -> As@middle[4], Ks@bottom[2], Qs@top[0], Js@top[2], Ts@top[1]
 =========================== short test summary info ============================
 FAILED tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly - ...
 FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10]
@@ -629,4 +629,4 @@ FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressi
 FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5]
 FAILED tests/test_ai_quality.py::test_ai_avoids_obvious_foul - AssertionError...
 FAILED tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom
-======================== 7 failed, 121 passed in 11.10s ========================
+======================== 7 failed, 121 passed in 11.00s ========================
