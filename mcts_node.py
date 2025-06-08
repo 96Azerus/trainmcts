@@ -112,16 +112,16 @@ MAX_PERMUTATIONS_SLOTS_STREET_1: int = 30
 MAX_PERMUTATIONS_STREET_N: int = 20
 
 HEURISTIC_FOUL_PENALTY = -1000.0
-FANTASY_QUALIFY_BONUS = 500.0
-ROYALTY_MULTIPLIER = 5.0
+FANTASY_QUALIFY_BONUS = 250.0 # Снижен, чтобы не перевешивать риск фола
+ROYALTY_MULTIPLIER = 10.0 # Увеличен для большей ценности готовых рук
 
-# ИСПРАВЛЕНИЕ: Новые константы для сбалансированной эвристики
+# Веса для оценки потенциала неполных рук
 POTENTIAL_WEIGHTS = {
-    'FLUSH_DRAW_4': 30.0, 'FLUSH_DRAW_3': 5.0,
-    'STRAIGHT_DRAW_OPEN_4': 25.0, 'STRAIGHT_DRAW_GUTSHOT_4': 12.0,
-    'STRAIGHT_DRAW_OPEN_3': 8.0, 'STRAIGHT_DRAW_GUTSHOT_3': 4.0,
-    'TRIPS_POTENTIAL': 15.0, 'TWO_PAIR_POTENTIAL': 10.0,
-    'PAIR_POTENTIAL': 2.0
+    'FLUSH_DRAW_4': 40.0, 'FLUSH_DRAW_3': 8.0,
+    'STRAIGHT_DRAW_OPEN_4': 35.0, 'STRAIGHT_DRAW_GUTSHOT_4': 15.0,
+    'STRAIGHT_DRAW_OPEN_3': 10.0, 'STRAIGHT_DRAW_GUTSHOT_3': 5.0,
+    'TRIPS_POTENTIAL': 20.0, 'TWO_PAIR_POTENTIAL': 12.0,
+    'PAIR_POTENTIAL': 4.0, 'HIGH_CARD': 0.1
 }
 
 class MCTSNode:
@@ -249,8 +249,7 @@ class MCTSNode:
         return ranks, suits, Counter(ranks), Counter(suits)
 
     @staticmethod
-    def _estimate_row_potential(cards: List[int], deck: Set[int]) -> float:
-        """Оценивает потенциал неполной руки."""
+    def _estimate_row_potential(cards: List[int]) -> float:
         n = len(cards)
         if n == 0 or n >= 5:
             return 0.0
@@ -266,13 +265,10 @@ class MCTSNode:
 
         # Потенциал на стрит
         if len(unique_ranks) >= 3:
-            # Двустороннее стрит-дро
             if len(unique_ranks) == 4 and (unique_ranks[3] - unique_ranks[0] == 3):
                 potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_OPEN_4']
-            # Гатшот
             elif len(unique_ranks) == 4 and (unique_ranks[3] - unique_ranks[0] == 4):
                 potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_GUTSHOT_4']
-            # 3 карты для стрита
             elif len(unique_ranks) == 3:
                 if unique_ranks[2] - unique_ranks[0] == 2:
                     potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_OPEN_3']
@@ -283,6 +279,10 @@ class MCTSNode:
         if 3 in rank_counts.values(): potential += POTENTIAL_WEIGHTS['TRIPS_POTENTIAL']
         elif list(rank_counts.values()).count(2) == 2: potential += POTENTIAL_WEIGHTS['TWO_PAIR_POTENTIAL']
         elif 2 in rank_counts.values(): potential += POTENTIAL_WEIGHTS['PAIR_POTENTIAL']
+
+        # Бонус за старшие карты
+        for rank in ranks:
+            potential += rank * POTENTIAL_WEIGHTS['HIGH_CARD']
 
         return potential
 
@@ -313,15 +313,13 @@ class MCTSNode:
             score += get_row_royalty(bot_cards, 'bottom') * ROYALTY_MULTIPLIER
 
         # 2. Оценка потенциала неполных рук
-        score += MCTSNode._estimate_row_potential(top_cards, deck_snapshot)
-        score += MCTSNode._estimate_row_potential(mid_cards, deck_snapshot)
-        score += MCTSNode._estimate_row_potential(bot_cards, deck_snapshot)
+        score += MCTSNode._estimate_row_potential(top_cards)
+        score += MCTSNode._estimate_row_potential(mid_cards)
+        score += MCTSNode._estimate_row_potential(bot_cards)
 
         # 3. Проверка на фол и бонус за Фантазию
-        # Создаем "худший" сценарий заполнения доски, чтобы проверить на фол
         temp_board_for_foul_check = board.copy()
         if not temp_board_for_foul_check.is_complete():
-            # Заполняем оставшиеся слоты самыми слабыми картами из колоды
             remaining_deck_list = sorted(list(deck_snapshot), key=lambda c: Card.get_rank_int(c))
             slots_to_fill = temp_board_for_foul_check.get_available_slots()
             for i, (r, s_idx) in enumerate(slots_to_fill):
@@ -329,9 +327,9 @@ class MCTSNode:
                     temp_board_for_foul_check.add_card(remaining_deck_list[i], r, s_idx)
 
         if check_board_foul(temp_board_for_foul_check):
-            score += HEURISTIC_FOUL_PENALTY # Применяем штраф, если даже худший сценарий ведет к фолу
+            score = HEURISTIC_FOUL_PENALTY # Если есть риск фола, все остальное неважно
         elif is_fantasy_qualified:
-            score += FANTASY_QUALIFY_BONUS # Даем бонус, только если рука не фол
+            score += FANTASY_QUALIFY_BONUS
 
         return score
 
