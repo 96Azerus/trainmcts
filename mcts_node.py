@@ -115,9 +115,11 @@ MAX_PERMUTATIONS_SLOTS_STREET_1: int = 5040
 MAX_PERMUTATIONS_SLOTS_STREET_N: int = 120
 
 HEURISTIC_FOUL_PENALTY = -1000.0
+SIMULATION_FOUL_PENALTY = -2000.0
 FANTASY_QUALIFY_BONUS = 300.0
 ROYALTY_MULTIPLIER = 1.0 # Множитель для EV, не для готовых роялти
 MADE_HAND_BONUS = 100.0
+FIRST_STREET_STRONG_HAND_BOTTOM_BONUS = 50.0
 
 class MCTSNode:
     def __init__(self, board: PlayerBoard, remaining_deck: Set[int],
@@ -295,6 +297,14 @@ class MCTSNode:
         score += MCTSNode._estimate_row_potential_v2(bot_cards, 'bottom', deck_snapshot, cards_on_board)
         # >>> КОНЕЦ ИЗМЕНЕНИЯ <<<
 
+        if is_first_street:
+            # Check for strong hand in bottom row on first street
+            # bot_cards variable is already defined and populated earlier in this function
+            if len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']: # Should be 5 for first street bottom placement
+                # bot_rank, bot_class are also already defined and populated
+                if bot_class <= 5 and bot_rank != WORST_RANK: # Straight or better
+                    score += FIRST_STREET_STRONG_HAND_BOTTOM_BONUS
+
         return score
 
     @staticmethod
@@ -419,7 +429,7 @@ class MCTSNode:
                         
                         if current_discard_info and isinstance(current_discard_info, int) and num_dealt > num_to_place_on_board:
                             discarded_rank = Card.get_rank_int(current_discard_info)
-                            h_score += (12 - discarded_rank) * 0.1 
+                            h_score += (12 - discarded_rank) * 1.0
 
                         candidate_actions.append({'score': h_score, 'placements': placements_list, 'discarded': current_discard_info})
                     except ValueError: continue
@@ -476,10 +486,44 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list_initial: List[in
                 actions_hist.append(best_act)
             else:
                 break
-        final_score = float(calculate_total_royalty_for_board(current_board)) if not check_board_foul(current_board) else HEURISTIC_FOUL_PENALTY
+
+        # Score determination at the end of simulation
+        if current_board.is_complete():
+            if check_board_foul(current_board):
+                final_score = SIMULATION_FOUL_PENALTY
+            else: # Complete and not a foul
+                final_score = float(calculate_total_royalty_for_board(current_board))
+        else: # Board is NOT complete (simulation ended prematurely)
+            is_foul_incomplete = False
+            top_cards = current_board.get_row_cards('top')
+            mid_cards = current_board.get_row_cards('middle')
+            bot_cards = current_board.get_row_cards('bottom')
+
+            if len(top_cards) == PlayerBoard.ROW_CAPACITY['top'] and \
+               len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle']:
+                top_rank, top_class, _ = get_hand_rank_safe(top_cards)
+                mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
+                if mid_class != WORST_CLASS: # Only check if middle is a valid hand
+                    if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
+                        is_foul_incomplete = True
+
+            if not is_foul_incomplete and \
+               len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle'] and \
+               len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']:
+                mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
+                bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
+                if bot_class != WORST_CLASS: # Only check if bottom is a valid hand
+                    if (mid_class < bot_class) or (mid_class == mid_class and mid_rank < bot_rank):
+                        is_foul_incomplete = True
+
+            if is_foul_incomplete:
+                final_score = HEURISTIC_FOUL_PENALTY
+            else:
+                final_score = float(calculate_total_royalty_for_board(current_board))
+
     except Exception as e:
         logger.error(f"Rollout error: {e}", exc_info=True)
-        final_score = HEURISTIC_FOUL_PENALTY - 50.0
+        final_score = SIMULATION_FOUL_PENALTY - 50.0 # Use the new harsher penalty for exceptions
     return final_score, actions_hist
 
 def run_parallel_rollout(board_dict: Dict, deck_list: List[int], num_unknown_removed_cards: int) -> Tuple[float, List[Dict[str, Any]]]:
