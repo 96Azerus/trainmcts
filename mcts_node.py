@@ -108,21 +108,13 @@ PW_C: float = 2.0
 PW_ALPHA: float = 0.5
 
 MAX_PERMUTATIONS_STREET_1: int = 120
-MAX_PERMUTATIONS_SLOTS_STREET_1: int = 30
-MAX_PERMUTATIONS_STREET_N: int = 20
+# ИСПРАВЛЕНИЕ: Увеличено количество перестановок для сложных сценариев на поздних улицах
+MAX_PERMUTATIONS_STREET_N: int = 40 # было 20
 
 HEURISTIC_FOUL_PENALTY = -1000.0
-FANTASY_QUALIFY_BONUS = 250.0 # Снижен, чтобы не перевешивать риск фола
-ROYALTY_MULTIPLIER = 10.0 # Увеличен для большей ценности готовых рук
-
-# Веса для оценки потенциала неполных рук
-POTENTIAL_WEIGHTS = {
-    'FLUSH_DRAW_4': 40.0, 'FLUSH_DRAW_3': 8.0,
-    'STRAIGHT_DRAW_OPEN_4': 35.0, 'STRAIGHT_DRAW_GUTSHOT_4': 15.0,
-    'STRAIGHT_DRAW_OPEN_3': 10.0, 'STRAIGHT_DRAW_GUTSHOT_3': 5.0,
-    'TRIPS_POTENTIAL': 20.0, 'TWO_PAIR_POTENTIAL': 12.0,
-    'PAIR_POTENTIAL': 4.0, 'HIGH_CARD': 0.1
-}
+FANTASY_QUALIFY_BONUS = 300.0
+ROYALTY_MULTIPLIER = 20.0 # Радикально увеличен, чтобы ценить готовые руки
+MADE_HAND_BONUS = 100.0 # Бонус за любую готовую сильную руку (стрит и лучше)
 
 class MCTSNode:
     def __init__(self, board: PlayerBoard, remaining_deck: Set[int],
@@ -244,9 +236,55 @@ class MCTSNode:
         return random.choice(best_children) if best_children else None
 
     @staticmethod
-    def _get_card_props(cards: List[int]) -> Tuple[List[int], List[int], Counter, Counter]:
-        ranks = sorted([Card.get_rank_int(c) for c in cards]); suits = [Card.get_suit_int(c) for c in cards]
-        return ranks, suits, Counter(ranks), Counter(suits)
+    def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
+        # ФИНАЛЬНАЯ ВЕРСИЯ ЭВРИСТИКИ V3.0
+        if board.is_complete():
+            if check_board_foul(board):
+                return HEURISTIC_FOUL_PENALTY
+            return float(calculate_total_royalty_for_board(board))
+
+        score = 0.0
+        top_cards = board.get_row_cards('top')
+        mid_cards = board.get_row_cards('middle')
+        bot_cards = board.get_row_cards('bottom')
+
+        # 1. Оценка готовых рук и их роялти
+        top_rank, top_class, _ = get_hand_rank_safe(top_cards)
+        mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
+        bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
+
+        # Штраф за очевидный риск фола
+        if len(top_cards) == 3 and len(mid_cards) == 5 and ((top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank)):
+            return HEURISTIC_FOUL_PENALTY
+        if len(mid_cards) == 5 and len(bot_cards) == 5 and ((mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank)):
+            return HEURISTIC_FOUL_PENALTY
+
+        # Бонус за готовые сильные руки
+        if bot_class < 9: score += MADE_HAND_BONUS
+        if mid_class < 9: score += MADE_HAND_BONUS
+        
+        # 2. Оценка роялти и Фантазии
+        is_fantasy_qualified = False
+        if len(top_cards) == 3:
+            royalty = get_row_royalty(top_cards, 'top')
+            if royalty > 0:
+                score += royalty * ROYALTY_MULTIPLIER
+                if royalty >= 10: # QQ+ или трипс
+                    is_fantasy_qualified = True
+        if len(mid_cards) == 5:
+            score += get_row_royalty(mid_cards, 'middle') * ROYALTY_MULTIPLIER
+        if len(bot_cards) == 5:
+            score += get_row_royalty(bot_cards, 'bottom') * ROYALTY_MULTIPLIER
+
+        if is_fantasy_qualified:
+            score += FANTASY_QUALIFY_BONUS
+
+        # 3. Оценка потенциала неполных рук
+        score += MCTSNode._estimate_row_potential(top_cards)
+        score += MCTSNode._estimate_row_potential(mid_cards)
+        score += MCTSNode._estimate_row_potential(bot_cards)
+
+        return score
 
     @staticmethod
     def _estimate_row_potential(cards: List[int]) -> float:
@@ -285,53 +323,6 @@ class MCTSNode:
             potential += rank * POTENTIAL_WEIGHTS['HIGH_CARD']
 
         return potential
-
-    @staticmethod
-    def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed_cards: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
-        # ФИНАЛЬНАЯ ВЕРСИЯ ЭВРИСТИКИ
-        if board.is_complete():
-            if check_board_foul(board):
-                return HEURISTIC_FOUL_PENALTY
-            return float(calculate_total_royalty_for_board(board))
-
-        score = 0.0
-        top_cards = board.get_row_cards('top')
-        mid_cards = board.get_row_cards('middle')
-        bot_cards = board.get_row_cards('bottom')
-
-        # 1. Оценка готовых роялти и Фантазии
-        is_fantasy_qualified = False
-        if len(top_cards) == 3:
-            royalty = get_row_royalty(top_cards, 'top')
-            if royalty > 0:
-                score += royalty * ROYALTY_MULTIPLIER
-                if royalty >= 10: # QQ+ или трипс
-                    is_fantasy_qualified = True
-        if len(mid_cards) == 5:
-            score += get_row_royalty(mid_cards, 'middle') * ROYALTY_MULTIPLIER
-        if len(bot_cards) == 5:
-            score += get_row_royalty(bot_cards, 'bottom') * ROYALTY_MULTIPLIER
-
-        # 2. Оценка потенциала неполных рук
-        score += MCTSNode._estimate_row_potential(top_cards)
-        score += MCTSNode._estimate_row_potential(mid_cards)
-        score += MCTSNode._estimate_row_potential(bot_cards)
-
-        # 3. Проверка на фол и бонус за Фантазию
-        temp_board_for_foul_check = board.copy()
-        if not temp_board_for_foul_check.is_complete():
-            remaining_deck_list = sorted(list(deck_snapshot), key=lambda c: Card.get_rank_int(c))
-            slots_to_fill = temp_board_for_foul_check.get_available_slots()
-            for i, (r, s_idx) in enumerate(slots_to_fill):
-                if i < len(remaining_deck_list):
-                    temp_board_for_foul_check.add_card(remaining_deck_list[i], r, s_idx)
-
-        if check_board_foul(temp_board_for_foul_check):
-            score = HEURISTIC_FOUL_PENALTY # Если есть риск фола, все остальное неважно
-        elif is_fantasy_qualified:
-            score += FANTASY_QUALIFY_BONUS
-
-        return score
 
     @staticmethod
     def _choose_best_heuristic_placement_v2(
