@@ -3,9 +3,9 @@ platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-uti
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: cov-6.1.1, anyio-4.9.0
-collecting ... 2025-06-08 00:18:43,343 - app - INFO - [app:50] - --- Flask App Initialization (v2.5) ---
-2025-06-08 00:18:43,343 - app - INFO - [app:52] - Production mode: False
-2025-06-08 00:18:43,344 - app - INFO - [app:104] - Defining Flask routes...
+collecting ... 2025-06-08 00:29:05,091 - app - INFO - [app:50] - --- Flask App Initialization (v2.5) ---
+2025-06-08 00:29:05,091 - app - INFO - [app:52] - Production mode: False
+2025-06-08 00:29:05,092 - app - INFO - [app:104] - Defining Flask routes...
 collected 128 items
 
 tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly FAILED
@@ -14,43 +14,43 @@ tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fant
 tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12] FAILED
 tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5] FAILED
 tests/test_ai_quality.py::test_ai_avoids_obvious_foul FAILED
-tests/test_ai_quality.py::test_ai_correct_discard_choice_not_first_street PASSED
+tests/test_ai_quality.py::test_ai_correct_discard_choice_not_first_street FAILED
 tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom FAILED
-tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively PASSED
-tests/test_app.py::test_index_route 2025-06-08 00:18:53,344 - app - INFO - [app:107] - Route / called (GET)
+tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively FAILED
+tests/test_app.py::test_index_route 2025-06-08 00:29:05,759 - app - INFO - [app:107] - Route / called (GET)
 PASSED
-tests/test_app.py::test_ai_move_valid_request 2025-06-08 00:18:53,352 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,352 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(3) - KnownDiscard(2) = 47 cards.
-2025-06-08 00:18:53,352 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-08 00:18:53,352 - app - INFO - [app:175] - Starting MCTS for 3 cards (board has 0)...
-2025-06-08 00:18:53,353 - app - INFO - [app:184] - AI move in 0.001s. Placement: {'placements': [(268442665, 'top', 0), (134224677, 'middle', 0)], 'discarded': 67115551}
+tests/test_app.py::test_ai_move_valid_request 2025-06-08 00:29:05,767 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,767 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(3) - KnownDiscard(2) = 47 cards.
+2025-06-08 00:29:05,767 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-08 00:29:05,767 - app - INFO - [app:175] - Starting MCTS for 3 cards (board has 0)...
+2025-06-08 00:29:05,767 - app - INFO - [app:184] - AI move in 0.001s. Placement: {'placements': [(268442665, 'top', 0), (134224677, 'middle', 0)], 'discarded': 67115551}
 PASSED
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-06-08 00:18:53,354 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,354 - app - INFO - [app:141] - No valid cards provided by user to place by AI, and board is not full.
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-06-08 00:29:05,769 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,769 - app - INFO - [app:141] - No valid cards provided by user to place by AI, and board is not full.
 PASSED
-tests/test_app.py::test_ai_move_invalid_json 2025-06-08 00:18:53,356 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,356 - app - WARNING - [app:119] - Request not JSON
+tests/test_app.py::test_ai_move_invalid_json 2025-06-08 00:29:05,771 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,771 - app - WARNING - [app:119] - Request not JSON
 PASSED
-tests/test_app.py::test_ai_move_missing_data 2025-06-08 00:18:53,357 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,357 - app - WARNING - [app:129] - Missing 'selected_cards' or 'board' data
+tests/test_app.py::test_ai_move_missing_data 2025-06-08 00:29:05,772 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,772 - app - WARNING - [app:129] - Missing 'selected_cards' or 'board' data
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-06-08 00:18:53,358 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,359 - app - WARNING - [app:153] - Duplicates hand-board: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-06-08 00:29:05,773 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,773 - app - WARNING - [app:153] - Duplicates hand-board: ['As']
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-06-08 00:18:53,360 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,360 - app - WARNING - [app:153] - Duplicates hand-known_discard: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-06-08 00:29:05,775 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,775 - app - WARNING - [app:153] - Duplicates hand-known_discard: ['As']
 PASSED
-tests/test_app.py::test_ai_move_agent_returns_none 2025-06-08 00:18:53,362 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,362 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
-2025-06-08 00:18:53,362 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-08 00:18:53,362 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
-2025-06-08 00:18:53,363 - app - WARNING - [app:223] - AI agent did not return a placement after 0.001s.
+tests/test_app.py::test_ai_move_agent_returns_none 2025-06-08 00:29:05,777 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,777 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-08 00:29:05,778 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-08 00:29:05,778 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-08 00:29:05,778 - app - WARNING - [app:223] - AI agent did not return a placement after 0.001s.
 PASSED
-tests/test_app.py::test_ai_move_internal_error 2025-06-08 00:18:53,364 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-08 00:18:53,364 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
-2025-06-08 00:18:53,364 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-08 00:18:53,365 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
-2025-06-08 00:18:53,365 - app - ERROR - [app:227] - Unexpected Error during /ai_move: Unexpected MCTS crash
+tests/test_app.py::test_ai_move_internal_error 2025-06-08 00:29:05,779 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-08 00:29:05,780 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-08 00:29:05,780 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-08 00:29:05,780 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-08 00:29:05,780 - app - ERROR - [app:227] - Unexpected Error during /ai_move: Unexpected MCTS crash
 Traceback (most recent call last):
   File "/workspaces/trainmcts/app.py", line 177, in get_ai_move
     best_placement_info = agent.choose_placement(
@@ -65,22 +65,22 @@ Traceback (most recent call last):
     raise effect
 Exception: Unexpected MCTS crash
 PASSED
-tests/test_app.py::test_calculate_score_valid_board 2025-06-08 00:18:53,367 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:18:53,367 - app - INFO - [app:248] - Foul check: False
-2025-06-08 00:18:53,367 - app - INFO - [app:258] - Royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
-2025-06-08 00:18:53,367 - app - INFO - [app:259] - Score calc in 0.000s.
+tests/test_app.py::test_calculate_score_valid_board 2025-06-08 00:29:05,782 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:29:05,782 - app - INFO - [app:248] - Foul check: False
+2025-06-08 00:29:05,783 - app - INFO - [app:258] - Royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
+2025-06-08 00:29:05,783 - app - INFO - [app:259] - Score calc in 0.000s.
 PASSED
-tests/test_app.py::test_calculate_score_foul_board 2025-06-08 00:18:53,369 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:18:53,369 - app - INFO - [app:248] - Foul check: True
+tests/test_app.py::test_calculate_score_foul_board 2025-06-08 00:29:05,784 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:29:05,784 - app - INFO - [app:248] - Foul check: True
 PASSED
-tests/test_app.py::test_calculate_score_incomplete_board 2025-06-08 00:18:53,370 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:18:53,370 - app - WARNING - [app:245] - Score for incomplete board (3/13).
+tests/test_app.py::test_calculate_score_incomplete_board 2025-06-08 00:29:05,786 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:29:05,786 - app - WARNING - [app:245] - Score for incomplete board (3/13).
 PASSED
-tests/test_app.py::test_calculate_score_missing_board 2025-06-08 00:18:53,371 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-08 00:18:53,372 - app - WARNING - [app:240] - Missing 'board' data
+tests/test_app.py::test_calculate_score_missing_board 2025-06-08 00:29:05,787 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-08 00:29:05,787 - app - WARNING - [app:240] - Missing 'board' data
 PASSED
 tests/test_app.py::test_update_state PASSED
-tests/test_app.py::test_reset_game_state 2025-06-08 00:18:53,374 - app - INFO - [app:277] - Route /reset_game_state called (POST)
+tests/test_app.py::test_reset_game_state 2025-06-08 00:29:05,789 - app - INFO - [app:277] - Route /reset_game_state called (POST)
 PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str0-1-Trips-AAA] PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str1-2-Trips-KKK] PASSED
@@ -153,13 +153,7 @@ tests/test_mcts_agent.py::test_choose_placement_basic_run_and_selection PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_cards PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_available_slots PASSED
 tests/test_mcts_agent.py::test_choose_placement_mcts_loop_flow PASSED
-tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule 2025-06-08 00:18:54,030 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-08 00:18:54,031 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-08 00:18:54,031 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-08 00:18:54,036 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-08 00:18:54,041 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-08 00:18:54,041 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-PASSED
+tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule FAILED
 tests/test_mcts_agent.py::test_backpropagate_rave_updates_child_stats PASSED
 tests/test_ofc_logic.py::test_card_from_str_valid[As-A-s] PASSED
 tests/test_ofc_logic.py::test_card_from_str_valid[Kc-K-c] PASSED
@@ -196,7 +190,7 @@ tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
 =================================== FAILURES ===================================
 __________________ test_ai_handles_11_plus_3_cards_correctly ___________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x735912975a60>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7976728d22d0>
 
     def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
         """
@@ -265,14 +259,14 @@ E        +  where True = check_board_foul(PlayerBoard(Cards=13, Foul=True))
 tests/test_ai_quality.py:100: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:352 Top 5 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@bottom[4], Ah@middle[4]          (D: 2c)   
-WARNING  mcts_agent:mcts_agent.py:357   #2: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@middle[4], Ah@bottom[4]          (D: 2c)   
-WARNING  mcts_agent:mcts_agent.py:357   #3: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@bottom[4], Ah@middle[4]          (D: Kh)   
-WARNING  mcts_agent:mcts_agent.py:357   #4: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@middle[4], Ah@bottom[4]          (D: Kh)   
-WARNING  mcts_agent:mcts_agent.py:357   #5: V=675   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@bottom[4], Kh@middle[4]          (D: Ah)
+WARNING  mcts_agent:mcts_agent.py:357   #1: V=765   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@bottom[4], Ah@middle[4]          (D: 2c)   
+WARNING  mcts_agent:mcts_agent.py:357   #2: V=765   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@middle[4], Ah@bottom[4]          (D: Kh)   
+WARNING  mcts_agent:mcts_agent.py:357   #3: V=750   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Kh@middle[4], Ah@bottom[4]          (D: 2c)   
+WARNING  mcts_agent:mcts_agent.py:357   #4: V=750   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@bottom[4], Ah@middle[4]          (D: Kh)   
+WARNING  mcts_agent:mcts_agent.py:357   #5: V=750   AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> 2c@bottom[4], Kh@middle[4]          (D: Ah)
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x735913345d30>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x79767304a360>
 fantasy_hand_str = ['Qs', 'Qd', 'As', 'Ks', 'Ts'], target_rank_int = 10
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -290,54 +284,30 @@ fantasy_hand_str = ['Qs', 'Qd', 'As', 'Ks', 'Ts'], target_rank_int = 10
         remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
     
         placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
-        assert placement_info is not None, "AI did not return a placement"
-    
-        board_after_ai_move = board.copy()
-        for card_int, row, idx in placement_info['placements']:
-            board_after_ai_move.add_card(card_int, row, idx)
-    
-        top_row_cards = board_after_ai_move.get_row_cards('top')
-    
-        fantasy_achieved = False
-        if len(top_row_cards) == 3:
-            from ofc_evaluator_3card import evaluate_3_card_ofc # Локальный импорт для теста
-            try:
-                _, type_top, _ = evaluate_3_card_ofc(top_row_cards[0], top_row_cards[1], top_row_cards[2])
-                if type_top == HAND_TYPE_TRIPS_3:
-                    fantasy_achieved = True
-                elif type_top == HAND_TYPE_PAIR_3:
-                    ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
-                    pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
-                    if pair_rank_top >= RANK_QUEEN: # QQ, KK, AA
-                        fantasy_achieved = True
-            except ValueError: # Если рука на топе невалидна (например, не 3 карты)
-                pass
-    
-        # Заполняем доску до конца случайными картами для полной проверки на фол
-        if not board_after_ai_move.is_complete():
-            current_board_all_cards = board_after_ai_move.get_all_cards()
-            deck_list_for_completion = list(remaining_deck - current_board_all_cards)
-            random.shuffle(deck_list_for_completion)
-            slots_to_fill = board_after_ai_move.get_available_slots()
-            for i, (r, s_idx) in enumerate(slots_to_fill):
-                if i < len(deck_list_for_completion):
-                    board_after_ai_move.add_card(deck_list_for_completion[i], r, s_idx)
-                else: break
-    
-        if board_after_ai_move.is_complete():
-            is_foul = check_board_foul(board_after_ai_move)
-            if fantasy_achieved:
->               assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
-E               AssertionError: AI aimed for Fantasyland (['Qs', 'Qd', 'As', 'Ks', 'Ts']) but fouled.
-E               assert not True
+>       assert placement_info is not None, "AI did not return a placement"
+E       AssertionError: AI did not return a placement
+E       assert None is not None
 
-tests/test_ai_quality.py:155: AssertionError
+tests/test_ai_quality.py:118: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Qs@top[0], As@bottom[2], Ks@middle[0], Qd@top[1], Ts@top[2]
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 359, in _choose_best_heuristic_placement_v2
+    slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined. Did you mean: 'MAX_PERMUTATIONS_STREET_1'?
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str1-11] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x7359133478f0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7976739d8ce0>
 fantasy_hand_str = ['Ks', 'Kd', 'As', 'Qs', 'Ts'], target_rank_int = 11
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -355,54 +325,30 @@ fantasy_hand_str = ['Ks', 'Kd', 'As', 'Qs', 'Ts'], target_rank_int = 11
         remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
     
         placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
-        assert placement_info is not None, "AI did not return a placement"
-    
-        board_after_ai_move = board.copy()
-        for card_int, row, idx in placement_info['placements']:
-            board_after_ai_move.add_card(card_int, row, idx)
-    
-        top_row_cards = board_after_ai_move.get_row_cards('top')
-    
-        fantasy_achieved = False
-        if len(top_row_cards) == 3:
-            from ofc_evaluator_3card import evaluate_3_card_ofc # Локальный импорт для теста
-            try:
-                _, type_top, _ = evaluate_3_card_ofc(top_row_cards[0], top_row_cards[1], top_row_cards[2])
-                if type_top == HAND_TYPE_TRIPS_3:
-                    fantasy_achieved = True
-                elif type_top == HAND_TYPE_PAIR_3:
-                    ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
-                    pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
-                    if pair_rank_top >= RANK_QUEEN: # QQ, KK, AA
-                        fantasy_achieved = True
-            except ValueError: # Если рука на топе невалидна (например, не 3 карты)
-                pass
-    
-        # Заполняем доску до конца случайными картами для полной проверки на фол
-        if not board_after_ai_move.is_complete():
-            current_board_all_cards = board_after_ai_move.get_all_cards()
-            deck_list_for_completion = list(remaining_deck - current_board_all_cards)
-            random.shuffle(deck_list_for_completion)
-            slots_to_fill = board_after_ai_move.get_available_slots()
-            for i, (r, s_idx) in enumerate(slots_to_fill):
-                if i < len(deck_list_for_completion):
-                    board_after_ai_move.add_card(deck_list_for_completion[i], r, s_idx)
-                else: break
-    
-        if board_after_ai_move.is_complete():
-            is_foul = check_board_foul(board_after_ai_move)
-            if fantasy_achieved:
->               assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
-E               AssertionError: AI aimed for Fantasyland (['Ks', 'Kd', 'As', 'Qs', 'Ts']) but fouled.
-E               assert not True
+>       assert placement_info is not None, "AI did not return a placement"
+E       AssertionError: AI did not return a placement
+E       assert None is not None
 
-tests/test_ai_quality.py:155: AssertionError
+tests/test_ai_quality.py:118: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-932.20 | RV=0     RaveR=-932.20 -> Ks@top[0], Kd@top[1], As@bottom[0], Qs@top[2], Ts@middle[0]
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 359, in _choose_best_heuristic_placement_v2
+    slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined. Did you mean: 'MAX_PERMUTATIONS_STREET_1'?
 ___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x73591214db80>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7976727de3c0>
 fantasy_hand_str = ['As', 'Ad', 'Ks', 'Qs', 'Ts'], target_rank_int = 12
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -420,58 +366,30 @@ fantasy_hand_str = ['As', 'Ad', 'Ks', 'Qs', 'Ts'], target_rank_int = 12
         remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
     
         placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
-        assert placement_info is not None, "AI did not return a placement"
-    
-        board_after_ai_move = board.copy()
-        for card_int, row, idx in placement_info['placements']:
-            board_after_ai_move.add_card(card_int, row, idx)
-    
-        top_row_cards = board_after_ai_move.get_row_cards('top')
-    
-        fantasy_achieved = False
-        if len(top_row_cards) == 3:
-            from ofc_evaluator_3card import evaluate_3_card_ofc # Локальный импорт для теста
-            try:
-                _, type_top, _ = evaluate_3_card_ofc(top_row_cards[0], top_row_cards[1], top_row_cards[2])
-                if type_top == HAND_TYPE_TRIPS_3:
-                    fantasy_achieved = True
-                elif type_top == HAND_TYPE_PAIR_3:
-                    ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
-                    pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
-                    if pair_rank_top >= RANK_QUEEN: # QQ, KK, AA
-                        fantasy_achieved = True
-            except ValueError: # Если рука на топе невалидна (например, не 3 карты)
-                pass
-    
-        # Заполняем доску до конца случайными картами для полной проверки на фол
-        if not board_after_ai_move.is_complete():
-            current_board_all_cards = board_after_ai_move.get_all_cards()
-            deck_list_for_completion = list(remaining_deck - current_board_all_cards)
-            random.shuffle(deck_list_for_completion)
-            slots_to_fill = board_after_ai_move.get_available_slots()
-            for i, (r, s_idx) in enumerate(slots_to_fill):
-                if i < len(deck_list_for_completion):
-                    board_after_ai_move.add_card(deck_list_for_completion[i], r, s_idx)
-                else: break
-    
-        if board_after_ai_move.is_complete():
-            is_foul = check_board_foul(board_after_ai_move)
-            if fantasy_achieved:
-                assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
-            else:
-                # Если Фантазия не достигнута, но могла быть, это сложнее.
-                # Для этого теста, если ФЛ не достигнут, но и фола нет, тест проходит.
->               assert not is_foul, f"AI made a move that leads to a foul in fantasy attempt scenario ({fantasy_hand_str})."
-E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['As', 'Ad', 'Ks', 'Qs', 'Ts']).
-E               assert not True
+>       assert placement_info is not None, "AI did not return a placement"
+E       AssertionError: AI did not return a placement
+E       assert None is not None
 
-tests/test_ai_quality.py:159: AssertionError
+tests/test_ai_quality.py:118: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-866.67 | RV=0     RaveR=-866.67 -> Ad@top[0], As@middle[2], Ts@top[2], Ks@middle[4], Qs@middle[3]
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 359, in _choose_best_heuristic_placement_v2
+    slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined. Did you mean: 'MAX_PERMUTATIONS_STREET_1'?
 ____ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x73591214eb10>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7976727de1b0>
 fantasy_hand_str = ['7s', '7d', '7c', 'Ks', 'Qs'], target_rank_int = 5
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
@@ -489,58 +407,30 @@ fantasy_hand_str = ['7s', '7d', '7c', 'Ks', 'Qs'], target_rank_int = 5
         remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
     
         placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
-        assert placement_info is not None, "AI did not return a placement"
-    
-        board_after_ai_move = board.copy()
-        for card_int, row, idx in placement_info['placements']:
-            board_after_ai_move.add_card(card_int, row, idx)
-    
-        top_row_cards = board_after_ai_move.get_row_cards('top')
-    
-        fantasy_achieved = False
-        if len(top_row_cards) == 3:
-            from ofc_evaluator_3card import evaluate_3_card_ofc # Локальный импорт для теста
-            try:
-                _, type_top, _ = evaluate_3_card_ofc(top_row_cards[0], top_row_cards[1], top_row_cards[2])
-                if type_top == HAND_TYPE_TRIPS_3:
-                    fantasy_achieved = True
-                elif type_top == HAND_TYPE_PAIR_3:
-                    ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
-                    pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
-                    if pair_rank_top >= RANK_QUEEN: # QQ, KK, AA
-                        fantasy_achieved = True
-            except ValueError: # Если рука на топе невалидна (например, не 3 карты)
-                pass
-    
-        # Заполняем доску до конца случайными картами для полной проверки на фол
-        if not board_after_ai_move.is_complete():
-            current_board_all_cards = board_after_ai_move.get_all_cards()
-            deck_list_for_completion = list(remaining_deck - current_board_all_cards)
-            random.shuffle(deck_list_for_completion)
-            slots_to_fill = board_after_ai_move.get_available_slots()
-            for i, (r, s_idx) in enumerate(slots_to_fill):
-                if i < len(deck_list_for_completion):
-                    board_after_ai_move.add_card(deck_list_for_completion[i], r, s_idx)
-                else: break
-    
-        if board_after_ai_move.is_complete():
-            is_foul = check_board_foul(board_after_ai_move)
-            if fantasy_achieved:
-                assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
-            else:
-                # Если Фантазия не достигнута, но могла быть, это сложнее.
-                # Для этого теста, если ФЛ не достигнут, но и фола нет, тест проходит.
->               assert not is_foul, f"AI made a move that leads to a foul in fantasy attempt scenario ({fantasy_hand_str})."
-E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['7s', '7d', '7c', 'Ks', 'Qs']).
-E               assert not True
+>       assert placement_info is not None, "AI did not return a placement"
+E       AssertionError: AI did not return a placement
+E       assert None is not None
 
-tests/test_ai_quality.py:159: AssertionError
+tests/test_ai_quality.py:118: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-732.00 | RV=0     RaveR=-732.00 -> 7s@bottom[0], 7d@bottom[3], 7c@bottom[4], Ks@top[0], Qs@middle[0]
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 359, in _choose_best_heuristic_placement_v2
+    slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined. Did you mean: 'MAX_PERMUTATIONS_STREET_1'?
 _________________________ test_ai_avoids_obvious_foul __________________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x7359120f3cb0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7976727de7b0>
 
     def test_ai_avoids_obvious_foul(agent_short_time):
         """
@@ -561,44 +451,81 @@ agent_short_time = <mcts_agent.MCTSAgent object at 0x7359120f3cb0>
         remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt) - initial_board_cards
     
         placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
-        assert placement_info is not None, "AI did not return a placement"
-    
-        final_board = board.copy()
-        placed_cards_in_move_ints = set()
-        for card_int, row, idx in placement_info['placements']:
-            final_board.add_card(card_int, row, idx)
-            placed_cards_in_move_ints.add(card_int)
-    
-        if not final_board.is_complete():
-            current_remaining_deck_list = list(remaining_deck - placed_cards_in_move_ints)
-            if placement_info.get('discarded') is not None:
-                discarded_val = placement_info['discarded']
-                if isinstance(discarded_val, tuple):
-                    for d_card in discarded_val:
-                        if d_card in current_remaining_deck_list: current_remaining_deck_list.remove(d_card)
-                elif discarded_val in current_remaining_deck_list:
-                    current_remaining_deck_list.remove(discarded_val)
-    
-            random.shuffle(current_remaining_deck_list)
-            slots_to_fill = final_board.get_available_slots()
-            for i, (r, s_idx) in enumerate(slots_to_fill):
-                if i < len(current_remaining_deck_list): final_board.add_card(current_remaining_deck_list[i], r, s_idx)
-                else: break
-    
-        if final_board.is_complete():
->           assert not check_board_foul(final_board), "AI made a move that leads to a foul"
-E           AssertionError: AI made a move that leads to a foul
-E           assert not True
-E            +  where True = check_board_foul(PlayerBoard(Cards=13, Foul=True))
+>       assert placement_info is not None, "AI did not return a placement"
+E       AssertionError: AI did not return a placement
+E       assert None is not None
 
-tests/test_ai_quality.py:216: AssertionError
+tests/test_ai_quality.py:191: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:352 Top 2 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Ah@bottom[0], Ad@bottom[2]          (D: Ac)   
-WARNING  mcts_agent:mcts_agent.py:357   #2: V=15    AvgR=-1000.00 | RV=0     RaveR=-1000.00 -> Ah@bottom[3], Ad@bottom[0]          (D: Ac)
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: type object 'MCTSNode' has no attribute '_get_card_props'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 385, in _choose_best_heuristic_placement_v2
+    h_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street, num_unknown_removed_cards, len(current_deck))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 283, in _calculate_heuristic_score_v2
+    score += MCTSNode._estimate_row_potential(top_cards)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 296, in _estimate_row_potential
+    ranks, suits, rank_counts, suit_counts = MCTSNode._get_card_props(cards)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'MCTSNode' has no attribute '_get_card_props'
+_______________ test_ai_correct_discard_choice_not_first_street ________________
+
+agent_very_short_time = <mcts_agent.MCTSAgent object at 0x7976727de840>
+
+    def test_ai_correct_discard_choice_not_first_street(agent_very_short_time):
+        """
+        Тест: ИИ должен делать очевидный выбор сброса (не первая улица).
+        """
+        board = PlayerBoard()
+        board.add_card(Card.from_str('7h'), 'bottom', 0); board.add_card(Card.from_str('8h'), 'bottom', 1)
+        board.add_card(Card.from_str('9s'), 'middle', 0); board.add_card(Card.from_str('Ts'), 'middle', 1)
+        board.add_card(Card.from_str('Jc'), 'top', 0) # 5 карт на доске
+    
+        cards_dealt = hand_to_int(['As', 'Ks', '2c']) # Очевидный сброс 2c
+        initial_board_cards = board.get_all_cards()
+        remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt) - initial_board_cards
+    
+        placement_info = agent_very_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
+>       assert placement_info is not None, "AI did not return a placement"
+E       AssertionError: AI did not return a placement
+E       assert None is not None
+
+tests/test_ai_quality.py:235: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: type object 'MCTSNode' has no attribute '_get_card_props'
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 385, in _choose_best_heuristic_placement_v2
+    h_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street, num_unknown_removed_cards, len(current_deck))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 283, in _calculate_heuristic_score_v2
+    score += MCTSNode._estimate_row_potential(top_cards)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 296, in _estimate_row_potential
+    ranks, suits, rank_counts, suit_counts = MCTSNode._get_card_props(cards)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'MCTSNode' has no attribute '_get_card_props'
 __________________ test_ai_first_street_strong_hand_to_bottom __________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x73591214fef0>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7976727dfad0>
 
     def test_ai_first_street_strong_hand_to_bottom(agent_short_time):
         """
@@ -609,18 +536,99 @@ agent_short_time = <mcts_agent.MCTSAgent object at 0x73591214fef0>
         remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
     
         placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
-        assert placement_info is not None and len(placement_info['placements']) == 5
-    
-        bottom_cards = [p[0] for p in placement_info['placements'] if p[1] == 'bottom']
->       assert len(bottom_cards) == 5, "AI did not place all 5 cards of RF on bottom"
-E       AssertionError: AI did not place all 5 cards of RF on bottom
-E       assert 1 == 5
-E        +  where 1 = len([134224677])
+>       assert placement_info is not None and len(placement_info['placements']) == 5
+E       assert (None is not None)
 
-tests/test_ai_quality.py:257: AssertionError
+tests/test_ai_quality.py:254: AssertionError
 ------------------------------ Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:352 Top 1 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:357   #1: V=15    AvgR=-600.00 | RV=0     RaveR=-600.00 -> As@middle[4], Ks@bottom[2], Qs@top[0], Js@top[2], Ts@top[1]
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 359, in _choose_best_heuristic_placement_v2
+    slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined. Did you mean: 'MAX_PERMUTATIONS_STREET_1'?
+_________________ test_ai_handles_unknown_cards_conservatively _________________
+
+agent_short_time = <mcts_agent.MCTSAgent object at 0x797672671bb0>
+
+    def test_ai_handles_unknown_cards_conservatively(agent_short_time):
+        """
+        Тест: При большом количестве "?" карт, ИИ должен быть более консервативен
+        в отношении дро, зависящих от многих аутов.
+        Сценарий: Две опции - рискованное флеш-дро (много аутов, но много "?")
+                     или менее ценная, но более надежная пара.
+        """
+        board = PlayerBoard() # Пустая доска
+        # Рука: 4 карты на флеш + одна карта для пары
+        # Ah Kh Qh Jh 2d (4 червы + двойка бубен)
+        cards_dealt = hand_to_int(['Ah', 'Kh', 'Qh', 'Jh', '2d'])
+    
+        # Сценарий 1: Мало "?" карт
+        remaining_deck_few_q = Deck.FULL_DECK_CARDS - set(cards_dealt)
+        # Убедимся, что в колоде много черв для флеша
+        # (Deck.FULL_DECK_CARDS уже содержит все карты)
+    
+        placement_few_q = agent_short_time.choose_placement(board.copy(), cards_dealt, remaining_deck_few_q, num_unknown_removed_cards=1)
+>       assert placement_few_q is not None
+E       assert None is not None
+
+tests/test_ai_quality.py:279: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 359, in _choose_best_heuristic_placement_v2
+    slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined. Did you mean: 'MAX_PERMUTATIONS_STREET_1'?
+__________________ test_choose_placement_no_trip_on_top_rule ___________________
+
+agent_default = <mcts_agent.MCTSAgent object at 0x797671629940>
+
+    def test_choose_placement_no_trip_on_top_rule(agent_default):
+        board = PlayerBoard()
+        cards_dealt = hand_to_int(['As', 'Ad', 'Ac', 'Ks', 'Qh']) # Три туза
+        remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
+        agent_default.time_limit = 0.2; agent_default.rollouts_per_leaf = 5
+    
+        placement_info = agent_default.choose_placement(board, cards_dealt, remaining_deck, 0)
+>       assert placement_info is not None
+E       assert None is not None
+
+tests/test_mcts_agent.py:186: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    mcts_agent:mcts_agent.py:210 Critical MCTS error: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined
+Traceback (most recent call last):
+  File "/workspaces/trainmcts/mcts_agent.py", line 166, in choose_placement
+    path, leaf_node = self._select(root_node, actual_cards_to_consider_for_root)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_agent.py", line 259, in _select
+    current_node.untried_next_states = current_node._generate_next_states(cards_to_generate_for)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 166, in _generate_next_states
+    possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/trainmcts/mcts_node.py", line 359, in _choose_best_heuristic_placement_v2
+    slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'MAX_PERMUTATIONS_SLOTS_STREET_1' is not defined. Did you mean: 'MAX_PERMUTATIONS_STREET_1'?
 =========================== short test summary info ============================
 FAILED tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly - ...
 FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10]
@@ -628,5 +636,8 @@ FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressi
 FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12]
 FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5]
 FAILED tests/test_ai_quality.py::test_ai_avoids_obvious_foul - AssertionError...
+FAILED tests/test_ai_quality.py::test_ai_correct_discard_choice_not_first_street
 FAILED tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom
-======================== 7 failed, 121 passed in 11.00s ========================
+FAILED tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively
+FAILED tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule - ...
+======================== 10 failed, 118 passed in 1.14s ========================
