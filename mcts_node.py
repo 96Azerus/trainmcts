@@ -107,9 +107,9 @@ RAVE_K: float = 500.0
 PW_C: float = 2.0
 PW_ALPHA: float = 0.5
 
-MAX_PERMUTATIONS_STREET_1: int = 120
+MAX_PERMUTATIONS_STREET_1: int = 999999
 # ИСПРАВЛЕНИЕ: Увеличено количество перестановок для сложных сценариев на поздних улицах
-MAX_PERMUTATIONS_STREET_N: int = 40 # было 20
+MAX_PERMUTATIONS_STREET_N: int = 999999 # было 20
 
 HEURISTIC_FOUL_PENALTY = -1000.0
 FANTASY_QUALIFY_BONUS = 300.0
