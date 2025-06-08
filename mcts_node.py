@@ -1,11 +1,10 @@
-# mcts_node.py v2.12 (Syntax fix in except block)
+# mcts_node.py v2.14 (Advanced Heuristic with Risk Assessment)
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
-- Улучшены эвристики для стремления к Фантазии (с учетом прогрессивной Фантазии).
-- Улучшен учет "?" карт (num_unknown_removed_cards) в оценках потенциала.
-- Динамические веса (weights) передаются и используются во всех функциях оценки потенциала.
-- Доработана оценка потенциала для рядов с 1-2 картами.
-- Уточнена логика определения количества размещаемых/сбрасываемых карт.
+- ЭВРИСТИКА УЛУЧШЕНА: Вместо немедленного штрафа за фол, теперь применяется
+  штраф за РИСК фола, что позволяет ИИ принимать оправданные стратегические
+  риски (например, ставить сильную пару на топ при большом потенциале на нижних улицах).
+- Сохранен бонус за сброс слабой карты.
 """
 import random
 import math
@@ -108,15 +107,11 @@ PW_C: float = 2.0
 PW_ALPHA: float = 0.5
 
 MAX_PERMUTATIONS_STREET_1: int = 999999
-# ИСПРАВЛЕНИЕ: Увеличено количество перестановок для сложных сценариев на поздних улицах
-MAX_PERMUTATIONS_STREET_N: int = 999999 # было 20
+MAX_PERMUTATIONS_STREET_N: int = 999999
 
-# >>> НАЧАЛО ИСПРАВЛЕНИЯ 1 <<<
-MAX_PERMUTATIONS_SLOTS_STREET_1: int = 5040 # 7! - разумный предел для слотов на 1-й улице
-MAX_PERMUTATIONS_SLOTS_STREET_N: int = 120  # 5! - для последующих
-# >>> КОНЕЦ ИСПРАВЛЕНИЯ 1 <<<
+MAX_PERMUTATIONS_SLOTS_STREET_1: int = 5040
+MAX_PERMUTATIONS_SLOTS_STREET_N: int = 120
 
-# >>> НАЧАЛО ИСПРАВЛЕНИЯ 2.1 <<<
 POTENTIAL_WEIGHTS = {
     'FLUSH_DRAW_4': 60.0,
     'FLUSH_DRAW_3': 15.0,
@@ -129,12 +124,11 @@ POTENTIAL_WEIGHTS = {
     'PAIR_POTENTIAL': 15.0,
     'HIGH_CARD': 0.5
 }
-# >>> КОНЕЦ ИСПРАВЛЕНИЯ 2.1 <<<
 
 HEURISTIC_FOUL_PENALTY = -1000.0
 FANTASY_QUALIFY_BONUS = 300.0
-ROYALTY_MULTIPLIER = 20.0 # Радикально увеличен, чтобы ценить готовые руки
-MADE_HAND_BONUS = 100.0 # Бонус за любую готовую сильную руку (стрит и лучше)
+ROYALTY_MULTIPLIER = 20.0
+MADE_HAND_BONUS = 100.0
 
 class MCTSNode:
     def __init__(self, board: PlayerBoard, remaining_deck: Set[int],
@@ -152,7 +146,6 @@ class MCTSNode:
         self.untried_next_states: Optional[List[Tuple[PlayerBoard, Any]]] = None
         self._generated_states_for_expand: Dict[Tuple[Tuple[Tuple[int, str, int], ...], Any], Tuple[PlayerBoard, Any, Dict[str, Any]]] = {}
 
-    # >>> НАЧАЛО ИСПРАВЛЕНИЯ 2.2 <<<
     @staticmethod
     def _get_card_props(cards: List[int]) -> Tuple[List[int], List[int], Counter, Counter]:
         """Вспомогательный метод для получения свойств карт в руке."""
@@ -163,7 +156,6 @@ class MCTSNode:
         rank_counts = Counter(ranks)
         suit_counts = Counter(suits)
         return ranks, suits, rank_counts, suit_counts
-    # >>> КОНЕЦ ИСПРАВЛЕНИЯ 2.2 <<<
 
     def is_terminal(self) -> bool: return self.board.is_complete()
 
@@ -270,7 +262,6 @@ class MCTSNode:
 
     @staticmethod
     def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
-        # ФИНАЛЬНАЯ ВЕРСИЯ ЭВРИСТИКИ V3.0
         if board.is_complete():
             if check_board_foul(board):
                 return HEURISTIC_FOUL_PENALTY
@@ -281,28 +272,34 @@ class MCTSNode:
         mid_cards = board.get_row_cards('middle')
         bot_cards = board.get_row_cards('bottom')
 
-        # 1. Оценка готовых рук и их роялти
         top_rank, top_class, _ = get_hand_rank_safe(top_cards)
         mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
         bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
 
-        # Штраф за очевидный риск фола
-        if len(top_cards) == 3 and len(mid_cards) == 5 and ((top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank)):
-            return HEURISTIC_FOUL_PENALTY
-        if len(mid_cards) == 5 and len(bot_cards) == 5 and ((mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank)):
-            return HEURISTIC_FOUL_PENALTY
+        # >>> НАЧАЛО ИСПРАВЛЕНИЯ: Оценка риска фола <<<
+        # Вместо немедленного возврата -1000, мы вычитаем штраф за риск,
+        # позволяя потенциалу на других линиях перевесить этот риск.
+        foul_risk_penalty = 0.0
+        if len(top_cards) == PlayerBoard.ROW_CAPACITY['top'] and len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle']:
+            if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
+                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2 # Штраф в -500
+        if len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle'] and len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']:
+            if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
+                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2 # Штраф в -500
+        
+        score += foul_risk_penalty
+        # >>> КОНЕЦ ИСПРАВЛЕНИЯ: Оценка риска фола <<<
 
         # Бонус за готовые сильные руки
         if bot_class < 9: score += MADE_HAND_BONUS
         if mid_class < 9: score += MADE_HAND_BONUS
         
-        # 2. Оценка роялти и Фантазии
         is_fantasy_qualified = False
         if len(top_cards) == 3:
             royalty = get_row_royalty(top_cards, 'top')
             if royalty > 0:
                 score += royalty * ROYALTY_MULTIPLIER
-                if royalty >= 10: # QQ+ или трипс
+                if royalty >= 10: # QQ+ (10 очков) или трипс (10+ очков)
                     is_fantasy_qualified = True
         if len(mid_cards) == 5:
             score += get_row_royalty(mid_cards, 'middle') * ROYALTY_MULTIPLIER
@@ -312,7 +309,6 @@ class MCTSNode:
         if is_fantasy_qualified:
             score += FANTASY_QUALIFY_BONUS
 
-        # 3. Оценка потенциала неполных рук
         score += MCTSNode._estimate_row_potential(top_cards)
         score += MCTSNode._estimate_row_potential(mid_cards)
         score += MCTSNode._estimate_row_potential(bot_cards)
@@ -322,19 +318,17 @@ class MCTSNode:
     @staticmethod
     def _estimate_row_potential(cards: List[int]) -> float:
         n = len(cards)
-        if n == 0 or n >= 5:
-            return 0.0
+        if n == 0 or (n == 3 and len(cards) == PlayerBoard.ROW_CAPACITY['top']) or (n == 5):
+             return 0.0
 
         potential = 0.0
         ranks, suits, rank_counts, suit_counts = MCTSNode._get_card_props(cards)
         unique_ranks = sorted(rank_counts.keys())
 
-        # Потенциал на флеш
         for suit, count in suit_counts.items():
             if count == 4: potential += POTENTIAL_WEIGHTS['FLUSH_DRAW_4']
             elif count == 3: potential += POTENTIAL_WEIGHTS['FLUSH_DRAW_3']
 
-        # Потенциал на стрит
         if len(unique_ranks) >= 3:
             if len(unique_ranks) == 4 and (unique_ranks[3] - unique_ranks[0] == 3):
                 potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_OPEN_4']
@@ -346,12 +340,10 @@ class MCTSNode:
                 elif unique_ranks[2] - unique_ranks[0] <= 4:
                     potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_GUTSHOT_3']
 
-        # Потенциал на пары/сеты
         if 3 in rank_counts.values(): potential += POTENTIAL_WEIGHTS['TRIPS_POTENTIAL']
         elif list(rank_counts.values()).count(2) == 2: potential += POTENTIAL_WEIGHTS['TWO_PAIR_POTENTIAL']
         elif 2 in rank_counts.values(): potential += POTENTIAL_WEIGHTS['PAIR_POTENTIAL']
 
-        # Бонус за старшие карты
         for rank in ranks:
             potential += rank * POTENTIAL_WEIGHTS['HIGH_CARD']
 
@@ -415,10 +407,13 @@ class MCTSNode:
                         if current_discard_info is not None:
                             if isinstance(current_discard_info, tuple): [deck_after_action.discard(dc) for dc in current_discard_info if dc in deck_after_action]
                             elif current_discard_info in deck_after_action: deck_after_action.remove(current_discard_info)
+                        
                         h_score = MCTSNode._calculate_heuristic_score_v2(temp_board, deck_after_action, is_first_street, num_unknown_removed_cards, len(current_deck))
+                        
                         if current_discard_info and isinstance(current_discard_info, int) and num_dealt > num_to_place_on_board:
-                            dr = Card.get_rank_int(current_discard_info); prs = [Card.get_rank_int(p[0]) for p in placements_list]
-                            if all(dr < pr_v for pr_v in prs): h_score += 5.0
+                            discarded_rank = Card.get_rank_int(current_discard_info)
+                            h_score += (12 - discarded_rank) * 0.1 
+
                         candidate_actions.append({'score': h_score, 'placements': placements_list, 'discarded': current_discard_info})
                     except ValueError: continue
 
