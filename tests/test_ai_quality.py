@@ -43,12 +43,18 @@ def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
     ЗАДАЧА 1: На доске 11 карт, ИИ получает 3, должен разместить 2 и 1 сбросить.
     """
     board = PlayerBoard()
-    # Заполняем доску 11 картами (пример)
+    # >>> НАЧАЛО ИСПРАВЛЕНИЯ 3 <<<
+    # Заполняем доску 11 картами. Мидл теперь сильнее (пара тузов),
+    # чтобы ход ИИ не приводил к гарантированному фолу.
     initial_placements = [
-        ('As', 'bottom', 0), ('Ks', 'bottom', 1), ('Qs', 'bottom', 2), ('Js', 'bottom', 3),
-        ('Ts', 'middle', 0), ('9s', 'middle', 1), ('8s', 'middle', 2), ('7s', 'middle', 3),
+        # Bottom: 4-карточный флеш-дро
+        ('Ks', 'bottom', 0), ('Qs', 'bottom', 1), ('Js', 'bottom', 2), ('Ts', 'bottom', 3),
+        # Middle: Сильная пара тузов
+        ('Ac', 'middle', 0), ('Ad', 'middle', 1), ('2h', 'middle', 2), ('3h', 'middle', 3),
+        # Top: Заполнен
         ('6s', 'top', 0), ('5s', 'top', 1), ('4s', 'top', 2) # 11 карт
     ]
+    # >>> КОНЕЦ ИСПРАВЛЕНИЯ 3 <<<
     initial_board_cards_int = []
     for card_str, row, idx in initial_placements:
         c_int = Card.from_str(card_str)
@@ -58,7 +64,7 @@ def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
     assert board.get_total_cards() == 11
 
     # Карты для ИИ (3 штуки)
-    cards_dealt_str = ['Ah', 'Kh', '2c'] # Очевидный сброс - 2c
+    cards_dealt_str = ['As', 'Kh', '2c'] # Очевидный сброс - 2c. As закроет флеш на боттоме.
     cards_dealt_int = hand_to_int(cards_dealt_str)
 
     remaining_deck = Deck.FULL_DECK_CARDS - set(initial_board_cards_int) - set(cards_dealt_int)
@@ -85,9 +91,9 @@ def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
     # Проверяем, что сброшена наименее ценная карта (в данном случае 2c)
     assert Card.to_str(placement_info['discarded']) == '2c', f"AI discarded {Card.to_str(placement_info['discarded'])}, expected 2c"
 
-    # Проверяем, что размещенные карты - это Ah и Kh
+    # Проверяем, что размещенные карты - это As и Kh
     placed_by_ai_ints = {p[0] for p in placement_info['placements']}
-    expected_placed_ints = {Card.from_str('Ah'), Card.from_str('Kh')}
+    expected_placed_ints = {Card.from_str('As'), Card.from_str('Kh')}
     assert placed_by_ai_ints == expected_placed_ints, \
         f"AI placed {[Card.to_str(c) for c in placed_by_ai_ints]}, expected {[Card.to_str(c) for c in expected_placed_ints]}"
 
