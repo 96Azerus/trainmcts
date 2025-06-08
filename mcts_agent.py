@@ -349,12 +349,12 @@ class MCTSAgent:
         child_stats.sort(key=lambda x: (x[2], x[1], x[4]), reverse=True)
 
         LOG_TOP_N = 5
-        logger.info(f"Top {min(LOG_TOP_N, len(child_stats))} placement options by AI (Sorted by AvgR, V, RaveR):")
+        logger.warning(f"Top {min(LOG_TOP_N, len(child_stats))} placement options by AI (Sorted by AvgR, V, RaveR):")
         for i, (p_info, v, avg_r, rv, rave_r) in enumerate(child_stats[:LOG_TOP_N]):
             pl_str = ", ".join([f"{Card.to_str(p[0])}@{p[1]}[{p[2]}]" for p in p_info.get('placements', [])])
             disc_obj = p_info.get('discarded'); disc_str = ""
             if disc_obj is not None: disc_str = f"(D: {Card.to_str(disc_obj) if isinstance(disc_obj,int) else ','.join(Card.to_str(c) for c in disc_obj)})"
-            logger.info(f"  #{i+1}: V={v:<5} AvgR={avg_r:<7.2f} | RV={rv:<5} RaveR={rave_r:<7.2f} -> {pl_str:<35} {disc_str:<10}")
+            logger.warning(f"  #{i+1}: V={v:<5} AvgR={avg_r:<7.2f} | RV={rv:<5} RaveR={rave_r:<7.2f} -> {pl_str:<35} {disc_str:<10}")
 
         best_allowed_placement: Optional[Dict[str, Any]] = None
         for p_info_cand, visits_cand, avg_r_cand, _, _ in child_stats:
