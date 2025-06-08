@@ -1,10 +1,12 @@
-# mcts_node.py v2.14 (Advanced Heuristic with Risk Assessment)
+# mcts_node.py v2.15 (Advanced Potential Calculation based on Outs and EV)
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
-- ЭВРИСТИКА УЛУЧШЕНА: Вместо немедленного штрафа за фол, теперь применяется
-  штраф за РИСК фола, что позволяет ИИ принимать оправданные стратегические
-  риски (например, ставить сильную пару на топ при большом потенциале на нижних улицах).
-- Сохранен бонус за сброс слабой карты.
+- ПОЛНОСТЬЮ ПЕРЕРАБОТАНА ЭВРИСТИКА: Вместо статических весов потенциала
+  внедрена новая функция _estimate_row_potential_v2, которая:
+    - Считает реальные ауты в оставшейся колоде для улучшения руки.
+    - Оценивает ожидаемую ценность (Expected Value) от роялти.
+    - Учитывает вероятность прихода нужных карт.
+  Это позволяет ИИ принимать гораздо более осмысленные и стратегически верные риски.
 """
 import random
 import math
@@ -15,11 +17,11 @@ from collections import Counter, defaultdict
 import itertools
 
 try:
-    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, card_to_str, CARD_PLACEHOLDER, STR_RANKS, UNKNOWN_CARD_MARKER_LOGIC
+    from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, card_to_str, CARD_PLACEHOLDER, STR_RANKS, UNKNOWN_CARD_MARKER_LOGIC, RANK_ACE
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
         check_board_foul, get_row_royalty,
-        ROYALTY_TOP_PAIRS, calculate_total_royalty_for_board,
+        ROYALTY_TOP_PAIRS, ROYALTY_MIDDLE_POINTS, ROYALTY_BOTTOM_POINTS, calculate_total_royalty_for_board,
         HAND_TYPE_PAIR_3, HAND_TYPE_TRIPS_3,
         RANK_QUEEN, RANK_KING, RANK_ACE
     )
@@ -87,7 +89,7 @@ except ImportError:
     WORST_RANK=9999;WORST_CLASS=9 # type: ignore
     def check_board_foul(*a): return False
     def get_row_royalty(*a):return 0 # type: ignore
-    def calculate_total_royalty_for_board(*a):return 0; ROYALTY_TOP_PAIRS={} # type: ignore
+    def calculate_total_royalty_for_board(*a):return 0; ROYALTY_TOP_PAIRS={}; ROYALTY_MIDDLE_POINTS={}; ROYALTY_BOTTOM_POINTS={} # type: ignore
     HAND_TYPE_PAIR_3="P";HAND_TYPE_TRIPS_3="T"; RANK_QUEEN=10;RANK_KING=11;RANK_ACE=12 # type: ignore
     class Eval5: evaluate=lambda s,c:9999;get_rank_class=lambda s,r:9;class_to_string=lambda s,rc:"E" # type: ignore
     evaluator_5card=Eval5() # type: ignore
@@ -112,22 +114,9 @@ MAX_PERMUTATIONS_STREET_N: int = 999999
 MAX_PERMUTATIONS_SLOTS_STREET_1: int = 5040
 MAX_PERMUTATIONS_SLOTS_STREET_N: int = 120
 
-POTENTIAL_WEIGHTS = {
-    'FLUSH_DRAW_4': 60.0,
-    'FLUSH_DRAW_3': 15.0,
-    'STRAIGHT_DRAW_OPEN_4': 50.0,
-    'STRAIGHT_DRAW_GUTSHOT_4': 25.0,
-    'STRAIGHT_DRAW_OPEN_3': 20.0,
-    'STRAIGHT_DRAW_GUTSHOT_3': 10.0,
-    'TRIPS_POTENTIAL': 40.0,
-    'TWO_PAIR_POTENTIAL': 30.0,
-    'PAIR_POTENTIAL': 15.0,
-    'HIGH_CARD': 0.5
-}
-
 HEURISTIC_FOUL_PENALTY = -1000.0
 FANTASY_QUALIFY_BONUS = 300.0
-ROYALTY_MULTIPLIER = 20.0
+ROYALTY_MULTIPLIER = 1.0 # Множитель для EV, не для готовых роялти
 MADE_HAND_BONUS = 100.0
 
 class MCTSNode:
@@ -148,7 +137,6 @@ class MCTSNode:
 
     @staticmethod
     def _get_card_props(cards: List[int]) -> Tuple[List[int], List[int], Counter, Counter]:
-        """Вспомогательный метод для получения свойств карт в руке."""
         if not cards:
             return [], [], Counter(), Counter()
         ranks = [Card.get_rank_int(c) for c in cards]
@@ -276,76 +264,95 @@ class MCTSNode:
         mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
         bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
 
-        # >>> НАЧАЛО ИСПРАВЛЕНИЯ: Оценка риска фола <<<
-        # Вместо немедленного возврата -1000, мы вычитаем штраф за риск,
-        # позволяя потенциалу на других линиях перевесить этот риск.
         foul_risk_penalty = 0.0
-        if len(top_cards) == PlayerBoard.ROW_CAPACITY['top'] and len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle']:
+        if len(top_cards) == PlayerBoard.ROW_CAPACITY['top'] and len(mid_cards) > 0 and mid_class != WORST_CLASS:
             if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
-                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2 # Штраф в -500
-        if len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle'] and len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']:
+                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
+        if len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle'] and len(bot_cards) > 0 and bot_class != WORST_CLASS:
             if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
-                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2 # Штраф в -500
-        
+                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
         score += foul_risk_penalty
-        # >>> КОНЕЦ ИСПРАВЛЕНИЯ: Оценка риска фола <<<
 
-        # Бонус за готовые сильные руки
-        if bot_class < 9: score += MADE_HAND_BONUS
-        if mid_class < 9: score += MADE_HAND_BONUS
-        
         is_fantasy_qualified = False
         if len(top_cards) == 3:
             royalty = get_row_royalty(top_cards, 'top')
             if royalty > 0:
-                score += royalty * ROYALTY_MULTIPLIER
-                if royalty >= 10: # QQ+ (10 очков) или трипс (10+ очков)
+                score += royalty
+                if royalty >= 10:
                     is_fantasy_qualified = True
         if len(mid_cards) == 5:
-            score += get_row_royalty(mid_cards, 'middle') * ROYALTY_MULTIPLIER
+            score += get_row_royalty(mid_cards, 'middle')
         if len(bot_cards) == 5:
-            score += get_row_royalty(bot_cards, 'bottom') * ROYALTY_MULTIPLIER
+            score += get_row_royalty(bot_cards, 'bottom')
 
         if is_fantasy_qualified:
             score += FANTASY_QUALIFY_BONUS
 
-        score += MCTSNode._estimate_row_potential(top_cards)
-        score += MCTSNode._estimate_row_potential(mid_cards)
-        score += MCTSNode._estimate_row_potential(bot_cards)
+        # >>> НАЧАЛО ИЗМЕНЕНИЯ: ВЫЗОВ НОВОЙ ФУНКЦИИ ОЦЕНКИ ПОТЕНЦИАЛА <<<
+        cards_on_board = board.get_total_cards()
+        score += MCTSNode._estimate_row_potential_v2(top_cards, 'top', deck_snapshot, cards_on_board)
+        score += MCTSNode._estimate_row_potential_v2(mid_cards, 'middle', deck_snapshot, cards_on_board)
+        score += MCTSNode._estimate_row_potential_v2(bot_cards, 'bottom', deck_snapshot, cards_on_board)
+        # >>> КОНЕЦ ИЗМЕНЕНИЯ <<<
 
         return score
 
     @staticmethod
-    def _estimate_row_potential(cards: List[int]) -> float:
+    def _estimate_row_potential_v2(cards: List[int], row_name: str, deck: Set[int], cards_on_board: int) -> float:
+        """
+        Оценивает потенциал ряда на основе аутов и ожидаемого роялти (EV).
+        """
         n = len(cards)
-        if n == 0 or (n == 3 and len(cards) == PlayerBoard.ROW_CAPACITY['top']) or (n == 5):
-             return 0.0
+        capacity = PlayerBoard.ROW_CAPACITY.get(row_name, 0)
+        if n == 0 or n == capacity:
+            return 0.0
 
         potential = 0.0
         ranks, suits, rank_counts, suit_counts = MCTSNode._get_card_props(cards)
-        unique_ranks = sorted(rank_counts.keys())
+        
+        # Вероятностный множитель: чем меньше карт осталось добрать, тем выше шанс
+        cards_to_draw = PlayerBoard.TOTAL_CAPACITY - cards_on_board
+        if cards_to_draw <= 0: return 0.0
+        
+        # --- Потенциал для 5-карточных рядов (middle, bottom) ---
+        if capacity == 5:
+            # Потенциал на Флеш
+            for suit, count in suit_counts.items():
+                if count == 4: # 4 карты к флешу
+                    outs = sum(1 for c in deck if Card.get_suit_int(c) == suit)
+                    royalty = ROYALTY_MIDDLE_POINTS.get("Flush", 0) if row_name == 'middle' else ROYALTY_BOTTOM_POINTS.get("Flush", 4)
+                    potential += (outs / len(deck) if deck else 0) * royalty * ROYALTY_MULTIPLIER
+            
+            # Потенциал на Фулл-Хаус
+            if 3 in rank_counts.values() and 2 in rank_counts.values(): # Уже фулл-хаус
+                 pass # Уже оценено как готовая рука
+            elif list(rank_counts.values()).count(2) == 2: # Две пары -> ауты на фулл-хаус
+                pair_ranks = [r for r, c in rank_counts.items() if c == 2]
+                outs = sum(1 for c in deck if Card.get_rank_int(c) in pair_ranks)
+                royalty = ROYALTY_MIDDLE_POINTS.get("Full House", 0) if row_name == 'middle' else ROYALTY_BOTTOM_POINTS.get("Full House", 6)
+                potential += (outs / len(deck) if deck else 0) * royalty * ROYALTY_MULTIPLIER
+            elif 3 in rank_counts.values(): # Сет -> ауты на фулл-хаус
+                outs = sum(1 for c in deck if Card.get_rank_int(c) not in ranks) # Любая карта другого ранга для пары
+                royalty = ROYALTY_MIDDLE_POINTS.get("Full House", 0) if row_name == 'middle' else ROYALTY_BOTTOM_POINTS.get("Full House", 6)
+                potential += (outs / len(deck) if deck else 0) * royalty * ROYALTY_MULTIPLIER * 0.5 # Понижающий коэфф.
 
-        for suit, count in suit_counts.items():
-            if count == 4: potential += POTENTIAL_WEIGHTS['FLUSH_DRAW_4']
-            elif count == 3: potential += POTENTIAL_WEIGHTS['FLUSH_DRAW_3']
-
-        if len(unique_ranks) >= 3:
-            if len(unique_ranks) == 4 and (unique_ranks[3] - unique_ranks[0] == 3):
-                potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_OPEN_4']
-            elif len(unique_ranks) == 4 and (unique_ranks[3] - unique_ranks[0] == 4):
-                potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_GUTSHOT_4']
-            elif len(unique_ranks) == 3:
-                if unique_ranks[2] - unique_ranks[0] == 2:
-                    potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_OPEN_3']
-                elif unique_ranks[2] - unique_ranks[0] <= 4:
-                    potential += POTENTIAL_WEIGHTS['STRAIGHT_DRAW_GUTSHOT_3']
-
-        if 3 in rank_counts.values(): potential += POTENTIAL_WEIGHTS['TRIPS_POTENTIAL']
-        elif list(rank_counts.values()).count(2) == 2: potential += POTENTIAL_WEIGHTS['TWO_PAIR_POTENTIAL']
-        elif 2 in rank_counts.values(): potential += POTENTIAL_WEIGHTS['PAIR_POTENTIAL']
-
-        for rank in ranks:
-            potential += rank * POTENTIAL_WEIGHTS['HIGH_CARD']
+        # --- Потенциал для 3-карточного ряда (top) ---
+        if capacity == 3 and n == 2:
+            # Потенциал на пару -> трипс
+            if ranks[0] == ranks[1]:
+                pair_rank = ranks[0]
+                outs = sum(1 for c in deck if Card.get_rank_int(c) == pair_rank)
+                # Роялти за трипс на топе зависит от ранга
+                trip_royalty = get_row_royalty([cards[0], cards[1], next(c for c in deck if Card.get_rank_int(c) == pair_rank)], 'top') if outs > 0 else 0
+                potential += (outs / len(deck) if deck else 0) * trip_royalty * ROYALTY_MULTIPLIER
+            # Потенциал на пару (для Фантазии)
+            else:
+                for r in ranks:
+                    if r >= RANK_QUEEN:
+                        outs = sum(1 for c in deck if Card.get_rank_int(c) == r)
+                        pair_royalty = get_row_royalty([cards[0], cards[1], next(c for c in deck if Card.get_rank_int(c) == r)], 'top') if outs > 0 else 0
+                        if pair_royalty > 0: # Дает роялти (QQ+)
+                            potential += (outs / len(deck) if deck else 0) * pair_royalty * ROYALTY_MULTIPLIER
 
         return potential
 
