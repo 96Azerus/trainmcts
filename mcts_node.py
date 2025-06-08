@@ -111,6 +111,26 @@ MAX_PERMUTATIONS_STREET_1: int = 999999
 # ИСПРАВЛЕНИЕ: Увеличено количество перестановок для сложных сценариев на поздних улицах
 MAX_PERMUTATIONS_STREET_N: int = 999999 # было 20
 
+# >>> НАЧАЛО ИСПРАВЛЕНИЯ 1 <<<
+MAX_PERMUTATIONS_SLOTS_STREET_1: int = 5040 # 7! - разумный предел для слотов на 1-й улице
+MAX_PERMUTATIONS_SLOTS_STREET_N: int = 120  # 5! - для последующих
+# >>> КОНЕЦ ИСПРАВЛЕНИЯ 1 <<<
+
+# >>> НАЧАЛО ИСПРАВЛЕНИЯ 2.1 <<<
+POTENTIAL_WEIGHTS = {
+    'FLUSH_DRAW_4': 60.0,
+    'FLUSH_DRAW_3': 15.0,
+    'STRAIGHT_DRAW_OPEN_4': 50.0,
+    'STRAIGHT_DRAW_GUTSHOT_4': 25.0,
+    'STRAIGHT_DRAW_OPEN_3': 20.0,
+    'STRAIGHT_DRAW_GUTSHOT_3': 10.0,
+    'TRIPS_POTENTIAL': 40.0,
+    'TWO_PAIR_POTENTIAL': 30.0,
+    'PAIR_POTENTIAL': 15.0,
+    'HIGH_CARD': 0.5
+}
+# >>> КОНЕЦ ИСПРАВЛЕНИЯ 2.1 <<<
+
 HEURISTIC_FOUL_PENALTY = -1000.0
 FANTASY_QUALIFY_BONUS = 300.0
 ROYALTY_MULTIPLIER = 20.0 # Радикально увеличен, чтобы ценить готовые руки
@@ -131,6 +151,19 @@ class MCTSNode:
         self.rave_visits_count: int = 0; self.rave_total_reward: float = 0.0
         self.untried_next_states: Optional[List[Tuple[PlayerBoard, Any]]] = None
         self._generated_states_for_expand: Dict[Tuple[Tuple[Tuple[int, str, int], ...], Any], Tuple[PlayerBoard, Any, Dict[str, Any]]] = {}
+
+    # >>> НАЧАЛО ИСПРАВЛЕНИЯ 2.2 <<<
+    @staticmethod
+    def _get_card_props(cards: List[int]) -> Tuple[List[int], List[int], Counter, Counter]:
+        """Вспомогательный метод для получения свойств карт в руке."""
+        if not cards:
+            return [], [], Counter(), Counter()
+        ranks = [Card.get_rank_int(c) for c in cards]
+        suits = [Card.get_suit_int(c) for c in cards]
+        rank_counts = Counter(ranks)
+        suit_counts = Counter(suits)
+        return ranks, suits, rank_counts, suit_counts
+    # >>> КОНЕЦ ИСПРАВЛЕНИЯ 2.2 <<<
 
     def is_terminal(self) -> bool: return self.board.is_complete()
 
