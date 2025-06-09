@@ -1,12 +1,10 @@
-# mcts_node.py v2.16 (ULTRATHINK FIX: True Random Simulation & Enhanced Heuristic)
+# mcts_node.py v2.17 (ULTRATHINK FINAL FIX: Corrected NameError)
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
-- ULTRATHINK FIX: Полностью заменена эвристическая симуляция на стандартную
-  случайную (random rollout). Это устраняет предвзятость симуляции и позволяет
-  корректно оценивать долгосрочные риски, включая фолы.
-- ULTRATHINK FIX: Усилена эвристика (_calculate_heuristic_score_v2) для более
-  агрессивного наказания за создание очевидного дисбаланса между рядами,
-  даже на неполной доске.
+- ULTRATHINK FINAL FIX: Исправлена критическая ошибка NameError в _generate_next_states.
+  Переменная cards_to_act_on была заменена на корректную cards_just_dealt,
+  что позволяет MCTS-агенту функционировать и проходить все тесты.
+- Сохранена правильная архитектура со случайной симуляцией (random rollout).
 """
 import random
 import math
@@ -56,13 +54,12 @@ MAX_PERMUTATIONS_SLOTS_STREET_N: int = 120
 
 HEURISTIC_FOUL_PENALTY = -1000.0
 SIMULATION_FOUL_PENALTY = -2000.0
-FANTASY_QUALIFY_BONUS = 50.0 # Reduced bonus to be less tempting than a foul
+FANTASY_QUALIFY_BONUS = 50.0
 ROYALTY_MULTIPLIER = 1.0
-MADE_HAND_BONUS = 10.0 # Reduced bonus
-FIRST_STREET_STRONG_HAND_BOTTOM_BONUS = 5.0 # Reduced bonus
+MADE_HAND_BONUS = 10.0
+FIRST_STREET_STRONG_HAND_BOTTOM_BONUS = 5.0
 
 class MCTSNode:
-    # __init__ and other methods remain the same until _calculate_heuristic_score_v2
     def __init__(self, board: PlayerBoard, remaining_deck: Set[int],
                  parent: Optional['MCTSNode'] = None,
                  placement_info: Optional[Dict[str, Any]] = None,
@@ -119,8 +116,10 @@ class MCTSNode:
 
         logger.debug(f"GenStates: Board {num_cards_on_board}, Dealt {num_dealt}, Avail {available_slots_count}. Will place {num_to_place_on_board}.")
 
+        # ULTRATHINK FINAL FIX: The variable `cards_to_act_on` was not defined.
+        # The correct variable passed into this function is `cards_just_dealt`.
         possible_placement_infos = MCTSNode._choose_best_heuristic_placement_v2(
-            self.board, cards_to_act_on, self.remaining_deck, num_to_place_on_board, self.num_unknown_removed_cards
+            self.board, cards_just_dealt, self.remaining_deck, num_to_place_on_board, self.num_unknown_removed_cards
         )
 
         for p_info_dict in possible_placement_infos:
@@ -207,9 +206,7 @@ class MCTSNode:
         mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
         bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
 
-        # ULTRATHINK FIX: More aggressive foul risk assessment in the heuristic.
         foul_risk_penalty = 0.0
-        # Check for immediate foul between completed rows
         if len(top_cards) == 3 and len(mid_cards) == 5:
             if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
                 return HEURISTIC_FOUL_PENALTY
@@ -217,13 +214,12 @@ class MCTSNode:
             if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
                 return HEURISTIC_FOUL_PENALTY
         
-        # Penalize risky states even if rows aren't full
         if top_class != WORST_CLASS and mid_class != WORST_CLASS:
             if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
-                 foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2 # Heavy penalty for imbalance
+                 foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
         if mid_class != WORST_CLASS and bot_class != WORST_CLASS:
             if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
-                 foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2 # Heavy penalty for imbalance
+                 foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
         score += foul_risk_penalty
 
         is_fantasy_qualified = False
@@ -254,7 +250,7 @@ class MCTSNode:
 
         if is_first_street:
             if len(bot_cards) > 0:
-                if bot_class <= 5 and bot_rank != WORST_RANK: # Straight or better
+                if bot_class <= 5 and bot_rank != WORST_RANK:
                     score += FIRST_STREET_STRONG_HAND_BOTTOM_BONUS
 
         return score
@@ -310,8 +306,6 @@ class MCTSNode:
         current_board: PlayerBoard, cards_to_act_on: List[int], current_deck: Set[int],
         num_to_place_on_board: int, num_unknown_removed_cards: int
     ) -> List[Dict[str, Any]]:
-        # This function remains largely the same, as its job is to generate possibilities
-        # for the heuristic to score. The scoring logic itself was the problem.
         candidate_actions: List[Dict[str, Any]] = []
         num_on_board = current_board.get_total_cards(); num_dealt = len(cards_to_act_on)
         available_slots = current_board.get_available_slots(); is_first_street = (num_on_board == 0 and num_to_place_on_board == 5)
@@ -377,21 +371,14 @@ class MCTSNode:
         candidate_actions.sort(key=lambda x: x['score'], reverse=True)
         return candidate_actions[:(15 if not is_first_street else 10)]
 
-# ULTRATHINK FIX: Replaced the flawed heuristic simulation with a standard random rollout.
 def random_rollout_simulation(board_dict: Dict, deck_list_initial: List[int], num_unknown_sim: int) -> Tuple[float, List[Dict[str, Any]]]:
-    """
-    Performs a truly random rollout from the given board state.
-    This is the standard MCTS simulation approach and is more robust than a flawed heuristic one.
-    """
     sim_board = PlayerBoard()
     try:
-        # Reconstruct the board from the dictionary
         for r, c_strs in board_dict.get('rows', {}).items():
             for i, c_str in enumerate(c_strs):
                 if c_str and c_str != CARD_PLACEHOLDER:
                     sim_board.add_card(Card.from_str(c_str), r, i)
 
-        # Prepare the deck for simulation
         deck_for_sim: Set[int]
         if num_unknown_sim > 0 and len(deck_list_initial) > num_unknown_sim:
             deck_for_sim = set(random.sample(deck_list_initial, len(deck_list_initial) - num_unknown_sim))
@@ -403,7 +390,6 @@ def random_rollout_simulation(board_dict: Dict, deck_list_initial: List[int], nu
         sim_deck_list = list(deck_for_sim)
         random.shuffle(sim_deck_list)
 
-        # Fill the rest of the board randomly
         available_slots = sim_board.get_available_slots()
         cards_to_fill = sim_deck_list[:len(available_slots)]
 
@@ -411,14 +397,12 @@ def random_rollout_simulation(board_dict: Dict, deck_list_initial: List[int], nu
             if i < len(cards_to_fill):
                 sim_board.add_card(cards_to_fill[i], row, idx)
 
-        # Score the final board
         if sim_board.is_complete():
             if check_board_foul(sim_board):
                 return SIMULATION_FOUL_PENALTY, []
             else:
                 return float(calculate_total_royalty_for_board(sim_board)), []
         else:
-            # If the board isn't complete (not enough cards in deck), score it as is with a penalty
             return float(calculate_total_royalty_for_board(sim_board)) - 50.0, []
 
     except Exception as e:
@@ -427,5 +411,4 @@ def random_rollout_simulation(board_dict: Dict, deck_list_initial: List[int], nu
 
 
 def run_parallel_rollout(board_dict: Dict, deck_list: List[int], num_unknown_removed_cards: int) -> Tuple[float, List[Dict[str, Any]]]:
-    # ULTRATHINK FIX: Call the new random simulation function.
     return random_rollout_simulation(board_dict, deck_list, num_unknown_removed_cards)
