@@ -3,134 +3,134 @@ platform linux -- Python 3.12.1, pytest-8.3.5, pluggy-1.5.0 -- /usr/local/py-uti
 cachedir: .pytest_cache
 rootdir: /workspaces/trainmcts
 plugins: cov-6.1.1, anyio-4.9.0
-collecting ... 2025-06-09 01:58:18,508 - app - INFO - [app:50] - --- Flask App Initialization (v2.5) ---
-2025-06-09 01:58:18,508 - app - INFO - [app:52] - Production mode: False
-2025-06-09 01:58:18,508 - app - INFO - [app:104] - Defining Flask routes...
+collecting ... 2025-06-09 02:05:49,506 - app - INFO - [app:50] - --- Flask App Initialization (v2.5) ---
+2025-06-09 02:05:49,506 - app - INFO - [app:52] - Production mode: False
+2025-06-09 02:05:49,507 - app - INFO - [app:104] - Defining Flask routes...
 collected 128 items
 
-tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly 2025-06-09 01:58:18,746 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:18,748 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:18,756 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:18,758 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:18,808 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:18,817 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:18,825 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:18,833 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly 2025-06-09 02:05:49,735 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:49,739 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:49,745 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:05:49,750 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:05:49,759 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:49,766 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:05:49,771 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:49,778 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+PASSED
+tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10] 2025-06-09 02:05:59,774 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:59,783 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:59,784 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:05:59,792 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:05:59,797 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:59,797 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:05:59,806 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:05:59,806 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+PASSED
+tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str1-11] 2025-06-09 02:06:09,811 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:09,814 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:09,822 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:09,824 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:09,838 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:09,844 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:09,848 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:09,854 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+PASSED
+tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12] 2025-06-09 02:06:19,852 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:19,862 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:19,868 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:19,877 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:19,881 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:19,884 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:19,891 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:19,893 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 FAILED
-tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str0-10] 2025-06-09 01:58:28,806 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:28,816 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:28,824 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:28,825 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:28,830 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:28,831 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:28,835 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:28,841 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5] 2025-06-09 02:06:29,936 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:29,944 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:29,947 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:29,954 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:29,971 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:29,977 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:29,986 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:29,991 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 PASSED
-tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str1-11] 2025-06-09 01:58:38,853 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:38,855 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:38,855 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:38,863 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:38,865 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:38,867 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:38,869 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:38,875 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_ai_quality.py::test_ai_avoids_obvious_foul 2025-06-09 02:06:39,958 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:39,960 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:39,967 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:39,967 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:39,968 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:39,970 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:39,975 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:39,976 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 FAILED
-tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12] 2025-06-09 01:58:48,884 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:48,884 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:48,894 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:48,897 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:48,910 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:48,917 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:48,921 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:48,927 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_ai_quality.py::test_ai_correct_discard_choice_not_first_street 2025-06-09 02:06:50,013 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:50,014 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:50,018 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:50,020 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:50,023 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:50,024 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:50,027 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:50,029 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 PASSED
-tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5] 2025-06-09 01:58:58,945 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:58,947 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:58,955 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:58,957 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:58,957 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:58,960 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:58:58,967 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:58:58,969 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom 2025-06-09 02:06:55,052 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:55,063 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:55,063 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:55,074 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:55,079 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:55,080 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:06:55,089 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:06:55,089 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 FAILED
-tests/test_ai_quality.py::test_ai_avoids_obvious_foul 2025-06-09 01:59:08,966 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:08,971 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:08,971 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:08,976 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:08,977 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:08,981 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:08,982 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:08,986 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-FAILED
-tests/test_ai_quality.py::test_ai_correct_discard_choice_not_first_street 2025-06-09 01:59:19,008 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:19,011 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:19,019 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:19,022 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:19,023 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:19,029 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:19,032 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:19,038 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively 2025-06-09 02:07:05,091 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:05,093 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:05,101 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:05,103 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:05,113 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:05,114 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:05,122 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:05,123 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:15,122 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:15,131 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:15,133 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:15,141 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:15,146 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:15,147 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:15,152 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:15,153 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 PASSED
-tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom 2025-06-09 01:59:24,060 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:24,069 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:24,070 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:24,078 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:24,082 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:24,085 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:24,089 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:24,095 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-FAILED
-tests/test_ai_quality.py::test_ai_handles_unknown_cards_conservatively 2025-06-09 01:59:34,108 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:34,108 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:34,118 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:34,118 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:34,125 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:34,131 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:34,135 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:34,141 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:44,147 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:44,156 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:44,158 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:44,167 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:44,170 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:44,176 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
-2025-06-09 01:59:44,180 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:44,186 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_app.py::test_index_route 2025-06-09 02:07:24,962 - app - INFO - [app:107] - Route / called (GET)
 PASSED
-tests/test_app.py::test_index_route 2025-06-09 01:59:53,976 - app - INFO - [app:107] - Route / called (GET)
+tests/test_app.py::test_ai_move_valid_request 2025-06-09 02:07:24,970 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,970 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(3) - KnownDiscard(2) = 47 cards.
+2025-06-09 02:07:24,970 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-09 02:07:24,970 - app - INFO - [app:175] - Starting MCTS for 3 cards (board has 0)...
+2025-06-09 02:07:24,970 - app - INFO - [app:184] - AI move in 0.001s. Placement: {'placements': [(268442665, 'top', 0), (134224677, 'middle', 0)], 'discarded': 67115551}
 PASSED
-tests/test_app.py::test_ai_move_valid_request 2025-06-09 01:59:53,984 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,984 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(3) - KnownDiscard(2) = 47 cards.
-2025-06-09 01:59:53,984 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-09 01:59:53,984 - app - INFO - [app:175] - Starting MCTS for 3 cards (board has 0)...
-2025-06-09 01:59:53,984 - app - INFO - [app:184] - AI move in 0.001s. Placement: {'placements': [(268442665, 'top', 0), (134224677, 'middle', 0)], 'discarded': 67115551}
+tests/test_app.py::test_ai_move_no_cards_to_place 2025-06-09 02:07:24,972 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,972 - app - INFO - [app:141] - No valid cards provided by user to place by AI, and board is not full.
 PASSED
-tests/test_app.py::test_ai_move_no_cards_to_place 2025-06-09 01:59:53,986 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,986 - app - INFO - [app:141] - No valid cards provided by user to place by AI, and board is not full.
+tests/test_app.py::test_ai_move_invalid_json 2025-06-09 02:07:24,974 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,974 - app - WARNING - [app:119] - Request not JSON
 PASSED
-tests/test_app.py::test_ai_move_invalid_json 2025-06-09 01:59:53,987 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,987 - app - WARNING - [app:119] - Request not JSON
+tests/test_app.py::test_ai_move_missing_data 2025-06-09 02:07:24,975 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,975 - app - WARNING - [app:129] - Missing 'selected_cards' or 'board' data
 PASSED
-tests/test_app.py::test_ai_move_missing_data 2025-06-09 01:59:53,989 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,989 - app - WARNING - [app:129] - Missing 'selected_cards' or 'board' data
+tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-06-09 02:07:24,976 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,977 - app - WARNING - [app:153] - Duplicates hand-board: ['As']
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_board 2025-06-09 01:59:53,990 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,990 - app - WARNING - [app:153] - Duplicates hand-board: ['As']
+tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-06-09 02:07:24,978 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,978 - app - WARNING - [app:153] - Duplicates hand-known_discard: ['As']
 PASSED
-tests/test_app.py::test_ai_move_duplicate_cards_hand_discarded 2025-06-09 01:59:53,992 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,992 - app - WARNING - [app:153] - Duplicates hand-known_discard: ['As']
+tests/test_app.py::test_ai_move_agent_returns_none 2025-06-09 02:07:24,980 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,980 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-09 02:07:24,980 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-09 02:07:24,980 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-09 02:07:24,981 - app - WARNING - [app:223] - AI agent did not return a placement after 0.001s.
 PASSED
-tests/test_app.py::test_ai_move_agent_returns_none 2025-06-09 01:59:53,994 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,994 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
-2025-06-09 01:59:53,994 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-09 01:59:53,994 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
-2025-06-09 01:59:53,994 - app - WARNING - [app:223] - AI agent did not return a placement after 0.001s.
-PASSED
-tests/test_app.py::test_ai_move_internal_error 2025-06-09 01:59:53,996 - app - INFO - [app:117] - Route /ai_move called (POST)
-2025-06-09 01:59:53,996 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
-2025-06-09 01:59:53,996 - app - INFO - [app:159] - Unknown cards removed (markers): 0
-2025-06-09 01:59:53,996 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
-2025-06-09 01:59:53,996 - app - ERROR - [app:227] - Unexpected Error during /ai_move: Unexpected MCTS crash
+tests/test_app.py::test_ai_move_internal_error 2025-06-09 02:07:24,982 - app - INFO - [app:117] - Route /ai_move called (POST)
+2025-06-09 02:07:24,982 - app - INFO - [app:158] - Deck for AI: Full(52) - Board(0) - Hand(1) - KnownDiscard(0) = 51 cards.
+2025-06-09 02:07:24,982 - app - INFO - [app:159] - Unknown cards removed (markers): 0
+2025-06-09 02:07:24,982 - app - INFO - [app:175] - Starting MCTS for 1 cards (board has 0)...
+2025-06-09 02:07:24,983 - app - ERROR - [app:227] - Unexpected Error during /ai_move: Unexpected MCTS crash
 Traceback (most recent call last):
   File "/workspaces/trainmcts/app.py", line 177, in get_ai_move
     best_placement_info = agent.choose_placement(
@@ -145,22 +145,22 @@ Traceback (most recent call last):
     raise effect
 Exception: Unexpected MCTS crash
 PASSED
-tests/test_app.py::test_calculate_score_valid_board 2025-06-09 01:59:53,998 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-09 01:59:53,999 - app - INFO - [app:248] - Foul check: False
-2025-06-09 01:59:53,999 - app - INFO - [app:258] - Royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
-2025-06-09 01:59:53,999 - app - INFO - [app:259] - Score calc in 0.000s.
+tests/test_app.py::test_calculate_score_valid_board 2025-06-09 02:07:24,985 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-09 02:07:24,985 - app - INFO - [app:248] - Foul check: False
+2025-06-09 02:07:24,985 - app - INFO - [app:258] - Royalties: {'top': 9, 'middle': 8, 'bottom': 6}, Total: 23
+2025-06-09 02:07:24,986 - app - INFO - [app:259] - Score calc in 0.000s.
 PASSED
-tests/test_app.py::test_calculate_score_foul_board 2025-06-09 01:59:54,000 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-09 01:59:54,001 - app - INFO - [app:248] - Foul check: True
+tests/test_app.py::test_calculate_score_foul_board 2025-06-09 02:07:24,987 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-09 02:07:24,987 - app - INFO - [app:248] - Foul check: True
 PASSED
-tests/test_app.py::test_calculate_score_incomplete_board 2025-06-09 01:59:54,002 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-09 01:59:54,002 - app - WARNING - [app:245] - Score for incomplete board (3/13).
+tests/test_app.py::test_calculate_score_incomplete_board 2025-06-09 02:07:24,988 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-09 02:07:24,988 - app - WARNING - [app:245] - Score for incomplete board (3/13).
 PASSED
-tests/test_app.py::test_calculate_score_missing_board 2025-06-09 01:59:54,003 - app - INFO - [app:233] - Route /calculate_score called (POST)
-2025-06-09 01:59:54,003 - app - WARNING - [app:240] - Missing 'board' data
+tests/test_app.py::test_calculate_score_missing_board 2025-06-09 02:07:24,990 - app - INFO - [app:233] - Route /calculate_score called (POST)
+2025-06-09 02:07:24,990 - app - WARNING - [app:240] - Missing 'board' data
 PASSED
 tests/test_app.py::test_update_state PASSED
-tests/test_app.py::test_reset_game_state 2025-06-09 01:59:54,005 - app - INFO - [app:277] - Route /reset_game_state called (POST)
+tests/test_app.py::test_reset_game_state 2025-06-09 02:07:24,992 - app - INFO - [app:277] - Route /reset_game_state called (POST)
 PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str0-1-Trips-AAA] PASSED
 tests/test_evaluator_3card.py::test_evaluate_3_card_valid[hand_str1-2-Trips-KKK] PASSED
@@ -233,8 +233,10 @@ tests/test_mcts_agent.py::test_choose_placement_basic_run_and_selection PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_cards PASSED
 tests/test_mcts_agent.py::test_choose_placement_no_available_slots PASSED
 tests/test_mcts_agent.py::test_choose_placement_mcts_loop_flow PASSED
-tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule 2025-06-09 01:59:54,455 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
-2025-06-09 01:59:54,461 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+tests/test_mcts_agent.py::test_choose_placement_no_trip_on_top_rule 2025-06-09 02:07:25,446 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:25,457 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
+2025-06-09 02:07:25,459 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:60] - Initializing 5-card lookup tables...
+2025-06-09 02:07:25,465 - ofc_evaluator_5card - INFO - [ofc_evaluator_5card.py:64] - 5-card tables initialized. Flush: 1287, Unsuited: 6175
 PASSED
 tests/test_mcts_agent.py::test_backpropagate_rave_updates_child_stats PASSED
 tests/test_ofc_logic.py::test_card_from_str_valid[As-A-s] PASSED
@@ -270,47 +272,10 @@ tests/test_ofc_logic.py::test_check_board_foul_logic[top_hand5-middle_hand5-bott
 tests/test_ofc_logic.py::test_get_row_royalty_logic PASSED
 
 =================================== FAILURES ===================================
-__________________ test_ai_handles_11_plus_3_cards_correctly ___________________
+___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12] ____
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x79fbb3573650>
-
-    def test_ai_handles_11_plus_3_cards_correctly(agent_short_time):
-        board = PlayerBoard()
-        initial_placements = [
-            ('Ks', 'bottom', 0), ('Qs', 'bottom', 1), ('Js', 'bottom', 2), ('Ts', 'bottom', 3),
-            ('Ac', 'middle', 0), ('Ad', 'middle', 1), ('2h', 'middle', 2), ('3h', 'middle', 3),
-            ('6s', 'top', 0), ('5s', 'top', 1), ('4s', 'top', 2)
-        ]
-        initial_board_cards_int = []
-        for card_str, row, idx in initial_placements:
-            c_int = Card.from_str(card_str)
-            board.add_card(c_int, row, idx)
-            initial_board_cards_int.append(c_int)
-        assert board.get_total_cards() == 11
-        cards_dealt_str = ['As', 'Kh', '2c']
-        cards_dealt_int = hand_to_int(cards_dealt_str)
-        remaining_deck = Deck.FULL_DECK_CARDS - set(initial_board_cards_int) - set(cards_dealt_int)
-        placement_info = agent_short_time.choose_placement(board, cards_dealt_int, remaining_deck, 0)
-        assert placement_info is not None
-        assert len(placement_info['placements']) == 2
->       assert Card.to_str(placement_info['discarded']) == '2c'
-E       AssertionError: assert 'Kh' == '2c'
-E         
-E         - 2c
-E         + Kh
-
-tests/test_ai_quality.py:59: AssertionError
------------------------------- Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:350 Top 5 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:355   #1: V=23000 AvgR=25.00   | RV=0     RaveR=25.00   -> As@bottom[4], 2c@middle[4]          (D: Kh)   
-WARNING  mcts_agent:mcts_agent.py:355   #2: V=23000 AvgR=25.00   | RV=0     RaveR=25.00   -> As@bottom[4], Kh@middle[4]          (D: 2c)   
-WARNING  mcts_agent:mcts_agent.py:355   #3: V=20    AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Kh@middle[4], 2c@bottom[4]          (D: As)   
-WARNING  mcts_agent:mcts_agent.py:355   #4: V=20    AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Kh@bottom[4], 2c@middle[4]          (D: As)   
-WARNING  mcts_agent:mcts_agent.py:355   #5: V=20    AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> As@middle[4], 2c@bottom[4]          (D: Kh)
-___ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str1-11] ____
-
-agent_short_time = <mcts_agent.MCTSAgent object at 0x79fbb47bbc80>
-fantasy_hand_str = ['Ks', 'Kd', 'As', 'Qs', 'Ts'], target_rank_int = 11
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7239d16fde50>
+fantasy_hand_str = ['As', 'Ad', 'Ks', 'Qs', 'Ts'], target_rank_int = 12
 
     @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
         (['Qs', 'Qd', 'As', 'Ks', 'Ts'], RANK_QUEEN),
@@ -357,82 +322,20 @@ fantasy_hand_str = ['Ks', 'Kd', 'As', 'Qs', 'Ts'], target_rank_int = 11
                 assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
             else:
 >               assert not is_foul, f"AI made a move that leads to a foul in fantasy attempt scenario ({fantasy_hand_str})."
-E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['Ks', 'Kd', 'As', 'Qs', 'Ts']).
+E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['As', 'Ad', 'Ks', 'Qs', 'Ts']).
 E               assert not True
 
 tests/test_ai_quality.py:113: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:350 Top 5 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:355   #1: V=41860 AvgR=-31.42  | RV=0     RaveR=-31.42  -> Ks@bottom[1], Kd@bottom[2], As@top[1], Qs@top[2], Ts@middle[1]           
-WARNING  mcts_agent:mcts_agent.py:355   #2: V=40    AvgR=-1250.00 | RV=0     RaveR=-1250.00 -> Ks@bottom[3], Kd@bottom[4], As@top[0], Qs@top[2], Ts@bottom[0]           
-WARNING  mcts_agent:mcts_agent.py:355   #3: V=20    AvgR=-1500.00 | RV=0     RaveR=-1500.00 -> Ks@bottom[0], Kd@bottom[2], As@top[0], Qs@top[1], Ts@middle[4]           
-WARNING  mcts_agent:mcts_agent.py:355   #4: V=20    AvgR=-1500.00 | RV=0     RaveR=-1500.00 -> Ks@bottom[1], Kd@middle[3], As@bottom[4], Qs@top[0], Ts@top[2]           
-WARNING  mcts_agent:mcts_agent.py:355   #5: V=20    AvgR=-1600.00 | RV=0     RaveR=-1600.00 -> Ks@top[0], Kd@bottom[2], As@top[2], Qs@bottom[4], Ts@middle[3]
-____ test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5] ____
-
-agent_short_time = <mcts_agent.MCTSAgent object at 0x79fbb0f54560>
-fantasy_hand_str = ['7s', '7d', '7c', 'Ks', 'Qs'], target_rank_int = 5
-
-    @pytest.mark.parametrize("fantasy_hand_str, target_rank_int", [
-        (['Qs', 'Qd', 'As', 'Ks', 'Ts'], RANK_QUEEN),
-        (['Ks', 'Kd', 'As', 'Qs', 'Ts'], RANK_KING),
-        (['As', 'Ad', 'Ks', 'Qs', 'Ts'], RANK_ACE),
-        (['7s', '7d', '7c', 'Ks', 'Qs'], RANK_7),
-    ])
-    def test_ai_prefers_fantasy_qualification_progressive(agent_short_time, fantasy_hand_str, target_rank_int):
-        board = PlayerBoard()
-        cards_dealt = hand_to_int(fantasy_hand_str)
-        remaining_deck = Deck.FULL_DECK_CARDS - set(cards_dealt)
-        placement_info = agent_short_time.choose_placement(board, cards_dealt, remaining_deck, 0)
-        assert placement_info is not None
-        board_after_ai_move = board.copy()
-        for card_int, row, idx in placement_info['placements']:
-            board_after_ai_move.add_card(card_int, row, idx)
-        top_row_cards = board_after_ai_move.get_row_cards('top')
-        fantasy_achieved = False
-        if len(top_row_cards) == 3:
-            from ofc_evaluator_3card import evaluate_3_card_ofc
-            try:
-                _, type_top, _ = evaluate_3_card_ofc(*top_row_cards)
-                if type_top == HAND_TYPE_TRIPS_3:
-                    fantasy_achieved = True
-                elif type_top == HAND_TYPE_PAIR_3:
-                    ranks_top_counter = Counter(Card.get_rank_int(c) for c in top_row_cards)
-                    pair_rank_top = next((r for r, count in ranks_top_counter.items() if count == 2), -1)
-                    if pair_rank_top >= RANK_QUEEN:
-                        fantasy_achieved = True
-            except ValueError:
-                pass
-        if not board_after_ai_move.is_complete():
-            current_board_all_cards = board_after_ai_move.get_all_cards()
-            deck_list_for_completion = list(remaining_deck - current_board_all_cards)
-            random.shuffle(deck_list_for_completion)
-            slots_to_fill = board_after_ai_move.get_available_slots()
-            for i, (r, s_idx) in enumerate(slots_to_fill):
-                if i < len(deck_list_for_completion):
-                    board_after_ai_move.add_card(deck_list_for_completion[i], r, s_idx)
-                else: break
-        if board_after_ai_move.is_complete():
-            is_foul = check_board_foul(board_after_ai_move)
-            if fantasy_achieved:
-                assert not is_foul, f"AI aimed for Fantasyland ({fantasy_hand_str}) but fouled."
-            else:
->               assert not is_foul, f"AI made a move that leads to a foul in fantasy attempt scenario ({fantasy_hand_str})."
-E               AssertionError: AI made a move that leads to a foul in fantasy attempt scenario (['7s', '7d', '7c', 'Ks', 'Qs']).
-E               assert not True
-
-tests/test_ai_quality.py:113: AssertionError
------------------------------- Captured log call -------------------------------
-WARNING  mcts_agent:mcts_agent.py:350 Top 5 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:355   #1: V=41740 AvgR=-38.51  | RV=0     RaveR=-38.51  -> 7s@middle[4], 7d@top[1], 7c@middle[3], Ks@bottom[3], Qs@top[2]           
-WARNING  mcts_agent:mcts_agent.py:355   #2: V=20    AvgR=-1199.70 | RV=0     RaveR=-1199.70 -> 7s@bottom[0], 7d@bottom[4], 7c@bottom[3], Ks@middle[4], Qs@bottom[2]           
-WARNING  mcts_agent:mcts_agent.py:355   #3: V=20    AvgR=-1398.50 | RV=0     RaveR=-1398.50 -> 7s@bottom[3], 7d@bottom[2], 7c@bottom[0], Ks@top[2], Qs@bottom[1]           
-WARNING  mcts_agent:mcts_agent.py:355   #4: V=20    AvgR=-1399.70 | RV=0     RaveR=-1399.70 -> 7s@bottom[2], 7d@top[2], 7c@bottom[1], Ks@top[1], Qs@middle[4]           
-WARNING  mcts_agent:mcts_agent.py:355   #5: V=20    AvgR=-1399.70 | RV=0     RaveR=-1399.70 -> 7s@top[1], 7d@middle[3], 7c@middle[2], Ks@bottom[4], Qs@top[2]           
-WARNING  mcts_agent:mcts_agent.py:366 Filter: Skip trip 7 on Top: {'score': 0.6382978723404255, 'placements': [(2102541, 'middle', 4), (2114829, 'top', 1), (2131213, 'middle', 3), (134224677, 'bottom', 3), (67115551, 'top', 2)], 'discarded': None}
+WARNING  mcts_agent:mcts_agent.py:355   #1: V=40340 AvgR=-46.69  | RV=0     RaveR=-46.69  -> As@bottom[0], Ad@bottom[2], Ks@bottom[4], Qs@top[0], Ts@top[2]           
+WARNING  mcts_agent:mcts_agent.py:355   #2: V=120   AvgR=-1799.95 | RV=0     RaveR=-1799.95 -> As@middle[3], Ad@top[1], Ks@bottom[1], Qs@bottom[0], Ts@top[0]           
+WARNING  mcts_agent:mcts_agent.py:355   #3: V=40    AvgR=-1799.95 | RV=0     RaveR=-1799.95 -> As@middle[2], Ad@top[1], Ks@bottom[2], Qs@bottom[1], Ts@top[2]           
+WARNING  mcts_agent:mcts_agent.py:355   #4: V=140   AvgR=-1800.00 | RV=0     RaveR=-1800.00 -> As@top[2], Ad@bottom[4], Ks@top[0], Qs@middle[2], Ts@bottom[0]           
+WARNING  mcts_agent:mcts_agent.py:355   #5: V=100   AvgR=-1800.00 | RV=0     RaveR=-1800.00 -> As@bottom[4], Ad@top[2], Ks@top[1], Qs@bottom[3], Ts@middle[2]
 _________________________ test_ai_avoids_obvious_foul __________________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x79fbb0eb3c50>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7239d209ca10>
 
     def test_ai_avoids_obvious_foul(agent_short_time):
         board = PlayerBoard()
@@ -471,14 +374,14 @@ E            +  where True = check_board_foul(PlayerBoard(Cards=13, Foul=True))
 tests/test_ai_quality.py:149: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:350 Top 5 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:355   #1: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@middle[3], Ac@bottom[1]          (D: Ah)   
-WARNING  mcts_agent:mcts_agent.py:355   #2: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@bottom[0], Ac@middle[3]          (D: Ah)   
-WARNING  mcts_agent:mcts_agent.py:355   #3: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@bottom[2], Ac@middle[4]          (D: Ah)   
-WARNING  mcts_agent:mcts_agent.py:355   #4: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@bottom[3], Ac@middle[3]          (D: Ah)   
-WARNING  mcts_agent:mcts_agent.py:355   #5: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@bottom[4], Ac@middle[4]          (D: Ah)
+WARNING  mcts_agent:mcts_agent.py:355   #1: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@middle[3], Ac@bottom[0]          (D: Ah)   
+WARNING  mcts_agent:mcts_agent.py:355   #2: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@middle[3], Ac@bottom[1]          (D: Ah)   
+WARNING  mcts_agent:mcts_agent.py:355   #3: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@middle[3], Ac@bottom[3]          (D: Ah)   
+WARNING  mcts_agent:mcts_agent.py:355   #4: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@middle[4], Ac@bottom[4]          (D: Ah)   
+WARNING  mcts_agent:mcts_agent.py:355   #5: V=1640  AvgR=-2000.00 | RV=0     RaveR=-2000.00 -> Ad@bottom[0], Ac@middle[3]          (D: Ah)
 __________________ test_ai_first_street_strong_hand_to_bottom __________________
 
-agent_short_time = <mcts_agent.MCTSAgent object at 0x79fbb14ad460>
+agent_short_time = <mcts_agent.MCTSAgent object at 0x7239ca7c6ff0>
 
     def test_ai_first_street_strong_hand_to_bottom(agent_short_time):
         board = PlayerBoard()
@@ -489,20 +392,18 @@ agent_short_time = <mcts_agent.MCTSAgent object at 0x79fbb14ad460>
         bottom_cards = [p[0] for p in placement_info['placements'] if p[1] == 'bottom']
 >       assert len(bottom_cards) == 5
 E       assert 4 == 5
-E        +  where 4 = len([134224677, 67115551, 33560861, 16783383])
+E        +  where 4 = len([268442665, 67115551, 33560861, 16783383])
 
 tests/test_ai_quality.py:183: AssertionError
 ------------------------------ Captured log call -------------------------------
 WARNING  mcts_agent:mcts_agent.py:350 Top 5 placement options by AI (Sorted by AvgR, V, RaveR):
-WARNING  mcts_agent:mcts_agent.py:355   #1: V=41280 AvgR=-61.37  | RV=0     RaveR=-61.37  -> As@middle[1], Ks@bottom[3], Qs@bottom[1], Js@bottom[0], Ts@bottom[2]           
-WARNING  mcts_agent:mcts_agent.py:355   #2: V=20    AvgR=-1599.80 | RV=0     RaveR=-1599.80 -> As@bottom[3], Ks@top[2], Qs@top[1], Js@bottom[2], Ts@middle[3]           
-WARNING  mcts_agent:mcts_agent.py:355   #3: V=20    AvgR=-1600.00 | RV=0     RaveR=-1600.00 -> As@top[1], Ks@top[2], Qs@bottom[4], Js@middle[4], Ts@middle[1]           
-WARNING  mcts_agent:mcts_agent.py:355   #4: V=20    AvgR=-1600.00 | RV=0     RaveR=-1600.00 -> As@top[0], Ks@bottom[4], Qs@top[1], Js@middle[3], Ts@middle[1]           
-WARNING  mcts_agent:mcts_agent.py:355   #5: V=20    AvgR=-1699.90 | RV=0     RaveR=-1699.90 -> As@top[1], Ks@middle[0], Qs@middle[2], Js@bottom[2], Ts@top[0]
+WARNING  mcts_agent:mcts_agent.py:355   #1: V=40020 AvgR=-22.72  | RV=0     RaveR=-22.72  -> As@bottom[1], Ks@middle[3], Qs@bottom[0], Js@bottom[2], Ts@bottom[3]           
+WARNING  mcts_agent:mcts_agent.py:355   #2: V=480   AvgR=-1800.00 | RV=0     RaveR=-1800.00 -> As@bottom[0], Ks@top[1], Qs@bottom[4], Js@middle[0], Ts@top[2]           
+WARNING  mcts_agent:mcts_agent.py:355   #3: V=940   AvgR=-1800.00 | RV=0     RaveR=-1800.00 -> As@top[1], Ks@bottom[1], Qs@bottom[0], Js@top[2], Ts@middle[4]           
+WARNING  mcts_agent:mcts_agent.py:355   #4: V=60    AvgR=-1800.00 | RV=0     RaveR=-1800.00 -> As@top[2], Ks@bottom[4], Qs@bottom[1], Js@top[0], Ts@bottom[0]           
+WARNING  mcts_agent:mcts_agent.py:355   #5: V=60    AvgR=-1800.00 | RV=0     RaveR=-1800.00 -> As@top[1], Ks@middle[2], Qs@middle[0], Js@bottom[2], Ts@top[0]
 =========================== short test summary info ============================
-FAILED tests/test_ai_quality.py::test_ai_handles_11_plus_3_cards_correctly - ...
-FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str1-11]
-FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str3-5]
+FAILED tests/test_ai_quality.py::test_ai_prefers_fantasy_qualification_progressive[fantasy_hand_str2-12]
 FAILED tests/test_ai_quality.py::test_ai_avoids_obvious_foul - AssertionError...
 FAILED tests/test_ai_quality.py::test_ai_first_street_strong_hand_to_bottom
-=================== 5 failed, 123 passed in 96.14s (0:01:36) ===================
+=================== 3 failed, 125 passed in 96.14s (0:01:36) ===================
