@@ -2,9 +2,9 @@ import pytest
 import random
 from unittest.mock import patch
 
-# ИСПРАВЛЕНИЕ: Весь файл закомментирован.
-# Причина: Тесты в этом файле проверяли старую, сложную и уже удаленную эвристическую логику.
-# Они больше не актуальны для новой, упрощенной эвристики и вызывают ошибки AttributeError.
+# ULTRATHINK FIX: This entire file is commented out as it tests obsolete heuristic logic
+# that has been removed or completely replaced in `mcts_node.py`. Reactivating these
+# tests would cause failures due to missing methods and attributes (e.g., _get_dynamic_weights).
 
 # try:
 # from ofc_logic import Card, PlayerBoard, Deck, SUIT_CHAR_TO_INT, INT_RANK_TO_CHAR, INT_SUIT_TO_CHAR # Changed import
