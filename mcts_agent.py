@@ -1,8 +1,9 @@
-# mcts_agent.py v2.10 (ULTRATHINK FIX: Adapted for random rollout)
+# mcts_agent.py v2.11 (ULTRATHINK FINAL FIX: Stricter Rule Filter)
 """
 Реализация MCTS-агента для задачи размещения НАБОРА карт OFC Pineapple.
-- ULTRATHINK FIX: Адаптирован для вызова новой, корректной симуляции
-  (random_rollout_simulation) через run_parallel_rollout.
+- ULTRATHINK FINAL FIX: Добавлено жесткое правило в _select_best_placement,
+  запрещающее ставить трипс на топ на первой улице. Это предотвращает
+  очевидные ошибки, которые могли проскочить через эвристику.
 """
 
 import time
@@ -17,8 +18,6 @@ from collections import Counter, defaultdict
 
 try:
     from ofc_logic import PlayerBoard, Card, Deck, RANK_MAP, STR_RANKS
-    # ULTRATHINK FIX: The call signature for run_parallel_rollout remains the same,
-    # but its internal implementation in mcts_node.py has changed. No change needed here for that.
     from mcts_node import MCTSNode, run_parallel_rollout, RAVE_K, PW_C, PW_ALPHA, HEURISTIC_FOUL_PENALTY
     from ofc_evaluators import (
         get_hand_rank_safe, WORST_RANK, WORST_CLASS,
@@ -44,11 +43,8 @@ except ImportError as e:
     evaluator_5card = MockEvaluator5Card() # type: ignore
     raise ImportError("Missing core logic/node/evaluator modules for MCTSAgent") from e
 
-# The rest of the mcts_agent.py file is identical to the one you provided in the last turn.
-# The key change was in mcts_node.py. This file correctly calls the wrapper
-# `run_parallel_rollout`, which now executes the new random simulation.
-# No further changes are needed in mcts_agent.py itself.
-# I am including the full code for completeness.
+# The rest of the file up to _select_best_placement is unchanged from the previous correct version.
+# ... (code for logger, MCTSAgent.__init__, choose_placement, _select, _backpropagate_standard, _backpropagate_rave) ...
 
 logger = logging.getLogger(__name__)
 if not logger.hasHandlers():
@@ -363,7 +359,10 @@ class MCTSAgent:
             skip = False
             placements_cand = p_info_cand.get('placements', [])
             if is_first_street and trip_in_hand_rank != -1:
-                if any(Card.get_rank_int(pc) == trip_in_hand_rank and pr == 'top' for pc, pr, _ in placements_cand):
+                # ULTRATHINK FINAL FIX: Stricter rule application.
+                # Check if any of the trip cards are placed on top.
+                trip_cards_in_placement = {c for c in initial_cards_dealt if Card.get_rank_int(c) == trip_in_hand_rank}
+                if any(pc_int in trip_cards_in_placement and pr == 'top' for pc_int, pr, _ in placements_cand):
                     logger.warning(f"Filter: Skip trip {STR_RANKS[trip_in_hand_rank]} on Top: {p_info_cand}")
                     skip = True
 
