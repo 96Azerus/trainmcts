@@ -1,14 +1,13 @@
-# mcts_node.py v2.20 (ULTRATHINK APOTHEOSIS: Unified Heuristic & Perfected Discard)
+# mcts_node.py v2.21 (ULTRATHINK FINAL CALIBRATION)
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
-- ULTRATHINK APOTHEOSIS: Полностью переписана эвристика _calculate_heuristic_score_v2.
-  Теперь она имеет единую точку выхода: сначала выполняется строжайшая проверка на фол.
-  При малейшем риске фола немедленно возвращается огромный штраф, и никакие
-  бонусы за роялти или потенциал НЕ рассчитываются. Это устраняет саму возможность
-  конфликта между безопасностью и жадностью.
-- ULTRATHINk APOTHEOSIS: Усовершенствована логика выбора сброса. Теперь ИИ
-  оценивает каждый сброс по максимальному качеству доски, которое можно получить
-  с оставшимися картами, гарантируя выбор оптимального сброса.
+- ULTRATHINK FINAL CALIBRATION: Финальная калибровка эвристических констант.
+  Бонус за Фантазию и сильную руку на боттоме увеличен, чтобы ИИ правильно
+  оценивал эти стратегически важные ходы.
+- ULTRATHINK FINAL CALIBRATION: Введен новый штраф ROW_IMBALANCE_PENALTY,
+  который наказывает за создание несбалансированной доски, даже если это
+  еще не привело к фолу. Это заставляет ИИ строить более надежные и безопасные
+  структуры рук.
 """
 import random
 import math
@@ -50,12 +49,14 @@ RAVE_K: float = 500.0
 PW_C: float = 2.0
 PW_ALPHA: float = 0.5
 
+# ULTRATHINK FINAL CALIBRATION: Final tuning of heuristic constants.
 HEURISTIC_FOUL_PENALTY = -1000.0
 SIMULATION_FOUL_PENALTY = -2000.0
-FANTASY_QUALIFY_BONUS = 20.0  # Bonus is now supplementary, not a primary driver
+FANTASY_QUALIFY_BONUS = 40.0  # Increased to make it a clear goal.
 ROYALTY_MULTIPLIER = 1.0
-MADE_HAND_BONUS = 5.0
-FIRST_STREET_STRONG_HAND_BOTTOM_BONUS = 2.0
+MADE_HAND_BONUS = 10.0
+FIRST_STREET_STRONG_HAND_BOTTOM_BONUS = 50.0 # Significantly increased to prevent breaking up monsters.
+ROW_IMBALANCE_PENALTY = -10.0 # New penalty to encourage safe board structure.
 
 class MCTSNode:
     # __init__ and other methods up to _calculate_heuristic_score_v2 are unchanged.
@@ -187,14 +188,9 @@ class MCTSNode:
 
         return random.choice(best_children) if best_children else None
 
-    # ULTRATHINK APOTHEOSIS: Unified heuristic with a single point of return.
+    # ULTRATHINK FINAL CALIBRATION: Final version of the unified heuristic.
     @staticmethod
     def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
-        """
-        Calculates a heuristic score for a board state.
-        Foul check is now the absolute priority. If a foul state is detected,
-        it returns a massive penalty immediately, ignoring all other bonuses.
-        """
         top_cards = board.get_row_cards('top')
         mid_cards = board.get_row_cards('middle')
         bot_cards = board.get_row_cards('bottom')
@@ -204,7 +200,6 @@ class MCTSNode:
         bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
 
         # FOUL CHECK: The absolute priority.
-        # If any completed row is stronger than the one below it, it's an immediate penalty.
         if top_class != WORST_CLASS and mid_class != WORST_CLASS:
             if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
                 return HEURISTIC_FOUL_PENALTY
@@ -212,14 +207,23 @@ class MCTSNode:
             if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
                 return HEURISTIC_FOUL_PENALTY
         
-        # If the board is complete, do a final check.
         if board.is_complete() and check_board_foul(board):
             return HEURISTIC_FOUL_PENALTY
 
-        # --- If NOT a foul, calculate score based on royalties and potential ---
+        # --- If NOT a foul, calculate score ---
         score = 0.0
         is_fantasy_qualified = False
         
+        # Add penalty for imbalance to encourage safer structures
+        if top_class != WORST_CLASS and mid_class != WORST_CLASS:
+            # Penalize if top is getting close to middle's strength
+            if mid_class - top_class < 2:
+                score += ROW_IMBALANCE_PENALTY * (2 - (mid_class - top_class))
+        if mid_class != WORST_CLASS and bot_class != WORST_CLASS:
+            # Penalize if middle is getting close to bottom's strength
+            if bot_class - mid_class < 2:
+                score += ROW_IMBALANCE_PENALTY * (2 - (bot_class - mid_class))
+
         # Calculate made royalties
         if len(top_cards) == 3:
             royalty = get_row_royalty(top_cards, 'top')
@@ -243,7 +247,7 @@ class MCTSNode:
         score += MCTSNode._estimate_row_potential_v2(bot_cards, 'bottom', deck_snapshot, cards_on_board)
 
         if is_first_street and len(bot_cards) > 0:
-            if bot_class <= 5 and bot_rank != WORST_RANK: # Straight or better
+            if bot_class <= 1 and bot_rank != WORST_RANK: # Straight Flush or better
                 score += FIRST_STREET_STRONG_HAND_BOTTOM_BONUS
 
         return score
@@ -294,7 +298,6 @@ class MCTSNode:
 
         return potential
 
-    # ULTRATHINK APOTHEOSIS: Perfected discard-first logic.
     @staticmethod
     def _choose_best_heuristic_placement_v2(
         current_board: PlayerBoard, cards_to_act_on: List[int], current_deck: Set[int],
