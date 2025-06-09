@@ -37,9 +37,9 @@ except ImportError as e:
     RAVE_K = 500.0; PW_C = 2.0; PW_ALPHA = 0.5; HEURISTIC_FOUL_PENALTY = -1000.0 # type: ignore
     def get_hand_rank_safe(*args): return (9999, 9, "Invalid") # type: ignore
     WORST_RANK = 9999; WORST_CLASS = 9 # type: ignore
-    # FIX: Исправлен синтаксис, определения функций на разных строках
+    # ULTRATHINK FIX: Corrected invalid syntax in except block.
     def check_board_foul(*args): return False
-    def get_row_royalty(*args): return 0 # type: ignore
+    def get_row_royalty(*args): return 0
     ROYALTY_TOP_PAIRS = {}; RANK_MAP = {}; STR_RANKS = ""; RANK_QUEEN=10;RANK_KING=11;RANK_ACE=12 # type: ignore
     class MockEvaluator5Card: evaluate = lambda s, c: 9999 # type: ignore
     evaluator_5card = MockEvaluator5Card() # type: ignore
@@ -68,9 +68,7 @@ class MCTSAgent:
         self.exploration: float = exploration if exploration is not None else self.DEFAULT_EXPLORATION
         time_limit_val: int = time_limit_ms if time_limit_ms is not None else self.DEFAULT_TIME_LIMIT_MS
         self.time_limit: float = max(0.1, time_limit_val / 1000.0)
-        # ИСПРАВЛЕНИЕ: Убрано ограничение на количество воркеров.
-        # Причина: Ограничение мешало тестам, которые проверяли создание агента с кастомным
-        # количеством воркеров, превышающим количество ядер в тестовой среде.
+        # ULTRATHINK FIX: Removed the hard limit on num_workers to allow tests to pass.
         self.num_workers: int = num_workers if num_workers is not None else self.DEFAULT_NUM_WORKERS
         self.rollouts_per_leaf: int = rollouts_per_leaf if rollouts_per_leaf is not None else self.DEFAULT_ROLLOUTS_PER_LEAF
 
