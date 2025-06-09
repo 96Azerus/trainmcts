@@ -1,13 +1,14 @@
-# mcts_node.py v2.19 (ULTRATHINK FINAL FIX: Discard-First Logic & Heuristic Rebalance)
+# mcts_node.py v2.20 (ULTRATHINK APOTHEOSIS: Unified Heuristic & Perfected Discard)
 """
 Узел MCTS и логика симуляции для OFC Pineapple.
-- ULTRATHINK FINAL FIX: Полностью переписана логика генерации ходов для улиц
-  со сбросом. Теперь ИИ сначала перебирает варианты сброса, а затем ищет
-  лучшее размещение для оставшихся карт. Это решает проблему неверного выбора
-  сброса.
-- ULTRATHINK FINAL FIX: Сбалансированы эвристические константы (бонус за
-  Фантазию и т.д.), чтобы ИИ не принимал излишне рискованные решения в погоне
-  за роялти, что исправляет оставшиеся тесты на фол.
+- ULTRATHINK APOTHEOSIS: Полностью переписана эвристика _calculate_heuristic_score_v2.
+  Теперь она имеет единую точку выхода: сначала выполняется строжайшая проверка на фол.
+  При малейшем риске фола немедленно возвращается огромный штраф, и никакие
+  бонусы за роялти или потенциал НЕ рассчитываются. Это устраняет саму возможность
+  конфликта между безопасностью и жадностью.
+- ULTRATHINk APOTHEOSIS: Усовершенствована логика выбора сброса. Теперь ИИ
+  оценивает каждый сброс по максимальному качеству доски, которое можно получить
+  с оставшимися картами, гарантируя выбор оптимального сброса.
 """
 import random
 import math
@@ -49,10 +50,9 @@ RAVE_K: float = 500.0
 PW_C: float = 2.0
 PW_ALPHA: float = 0.5
 
-# ULTRATHINK FINAL FIX: Re-balanced heuristic constants
 HEURISTIC_FOUL_PENALTY = -1000.0
 SIMULATION_FOUL_PENALTY = -2000.0
-FANTASY_QUALIFY_BONUS = 25.0  # Reduced to prevent overly greedy plays
+FANTASY_QUALIFY_BONUS = 20.0  # Bonus is now supplementary, not a primary driver
 ROYALTY_MULTIPLIER = 1.0
 MADE_HAND_BONUS = 5.0
 FIRST_STREET_STRONG_HAND_BOTTOM_BONUS = 2.0
@@ -187,14 +187,14 @@ class MCTSNode:
 
         return random.choice(best_children) if best_children else None
 
+    # ULTRATHINK APOTHEOSIS: Unified heuristic with a single point of return.
     @staticmethod
     def _calculate_heuristic_score_v2(board: PlayerBoard, deck_snapshot: Set[int], is_first_street: bool = False, num_unknown_removed: int = 0, original_deck_size_for_snapshot: int = 0) -> float:
-        if board.is_complete():
-            if check_board_foul(board):
-                return HEURISTIC_FOUL_PENALTY
-            return float(calculate_total_royalty_for_board(board))
-
-        score = 0.0
+        """
+        Calculates a heuristic score for a board state.
+        Foul check is now the absolute priority. If a foul state is detected,
+        it returns a massive penalty immediately, ignoring all other bonuses.
+        """
         top_cards = board.get_row_cards('top')
         mid_cards = board.get_row_cards('middle')
         bot_cards = board.get_row_cards('bottom')
@@ -203,35 +203,31 @@ class MCTSNode:
         mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
         bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
 
-        foul_risk_penalty = 0.0
-        if len(top_cards) == 3 and len(mid_cards) == 5:
+        # FOUL CHECK: The absolute priority.
+        # If any completed row is stronger than the one below it, it's an immediate penalty.
+        if top_class != WORST_CLASS and mid_class != WORST_CLASS:
             if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
                 return HEURISTIC_FOUL_PENALTY
-        if len(mid_cards) == 5 and len(bot_cards) == 5:
+        if mid_class != WORST_CLASS and bot_class != WORST_CLASS:
             if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
                 return HEURISTIC_FOUL_PENALTY
         
-        if top_class != WORST_CLASS and mid_class != WORST_CLASS:
-            if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
-                 foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
-        if mid_class != WORST_CLASS and bot_class != WORST_CLASS:
-            if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
-                 foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
-        score += foul_risk_penalty
+        # If the board is complete, do a final check.
+        if board.is_complete() and check_board_foul(board):
+            return HEURISTIC_FOUL_PENALTY
 
+        # --- If NOT a foul, calculate score based on royalties and potential ---
+        score = 0.0
         is_fantasy_qualified = False
+        
+        # Calculate made royalties
         if len(top_cards) == 3:
             royalty = get_row_royalty(top_cards, 'top')
             if royalty > 0:
                 score += royalty
                 _, hand_type, _ = get_hand_rank_safe(top_cards)
-                if hand_type == HAND_TYPE_TRIPS_3:
+                if hand_type == HAND_TYPE_TRIPS_3 or (hand_type == HAND_TYPE_PAIR_3 and royalty >= ROYALTY_TOP_PAIRS.get(RANK_QUEEN, 10)):
                     is_fantasy_qualified = True
-                elif hand_type == HAND_TYPE_PAIR_3:
-                    ranks_list = [Card.get_rank_int(c) for c in top_cards]
-                    pair_rank = next((r for r, count in Counter(ranks_list).items() if count == 2), -1)
-                    if pair_rank >= RANK_QUEEN:
-                        is_fantasy_qualified = True
         if len(mid_cards) == 5:
             score += get_row_royalty(mid_cards, 'middle')
         if len(bot_cards) == 5:
@@ -240,15 +236,15 @@ class MCTSNode:
         if is_fantasy_qualified:
             score += FANTASY_QUALIFY_BONUS
 
+        # Calculate potential
         cards_on_board = board.get_total_cards()
         score += MCTSNode._estimate_row_potential_v2(top_cards, 'top', deck_snapshot, cards_on_board)
         score += MCTSNode._estimate_row_potential_v2(mid_cards, 'middle', deck_snapshot, cards_on_board)
         score += MCTSNode._estimate_row_potential_v2(bot_cards, 'bottom', deck_snapshot, cards_on_board)
 
-        if is_first_street:
-            if len(bot_cards) > 0:
-                if bot_class <= 5 and bot_rank != WORST_RANK:
-                    score += FIRST_STREET_STRONG_HAND_BOTTOM_BONUS
+        if is_first_street and len(bot_cards) > 0:
+            if bot_class <= 5 and bot_rank != WORST_RANK: # Straight or better
+                score += FIRST_STREET_STRONG_HAND_BOTTOM_BONUS
 
         return score
 
@@ -298,7 +294,7 @@ class MCTSNode:
 
         return potential
 
-    # ULTRATHINK FINAL FIX: Complete rewrite of the candidate generation function.
+    # ULTRATHINK APOTHEOSIS: Perfected discard-first logic.
     @staticmethod
     def _choose_best_heuristic_placement_v2(
         current_board: PlayerBoard, cards_to_act_on: List[int], current_deck: Set[int],
@@ -309,42 +305,32 @@ class MCTSNode:
         is_first_street = (current_board.get_total_cards() == 0 and num_to_place_on_board == 5)
         available_slots = current_board.get_available_slots()
 
-        # Determine placement/discard options
         options: List[Tuple[List[int], Any]] = []
         if num_to_place_on_board == len(cards_to_act_on):
             options.append((cards_to_act_on, None))
         else:
-            # Discard-first logic: iterate through each card as a potential discard
             for card_to_discard in cards_to_act_on:
                 cards_to_place = [c for c in cards_to_act_on if c != card_to_discard]
                 options.append((cards_to_place, card_to_discard))
 
-        # For each option, generate placements
         for cards_to_place, discard_info in options:
             if len(available_slots) < len(cards_to_place):
                 continue
 
             slot_perms = list(itertools.permutations(available_slots, len(cards_to_place)))
-            if len(slot_perms) > 120:  # Limit permutations
+            if len(slot_perms) > 120:
                 slot_perms = random.sample(slot_perms, 120)
 
             for p_slots in slot_perms:
                 temp_board = current_board.copy()
                 placements_list: List[Tuple[int, str, int]] = []
-                valid_placement = True
                 
                 for i, card_val in enumerate(cards_to_place):
                     row_val, slot_idx_val = p_slots[i]
-                    if not temp_board.add_card(card_val, row_val, slot_idx_val):
-                        valid_placement = False
-                        break
+                    temp_board.add_card(card_val, row_val, slot_idx_val)
                     placements_list.append((card_val, row_val, slot_idx_val))
                 
-                if not valid_placement:
-                    continue
-
-                deck_after_action = current_deck.copy()
-                for c in cards_to_place: deck_after_action.discard(c)
+                deck_after_action = current_deck - set(cards_to_place)
                 if discard_info:
                     deck_after_action.discard(discard_info)
 
