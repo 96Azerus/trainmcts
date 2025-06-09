@@ -262,26 +262,37 @@ class MCTSNode:
         mid_cards = board.get_row_cards('middle')
         bot_cards = board.get_row_cards('bottom')
 
-        top_rank, top_class, _ = get_hand_rank_safe(top_cards)
-        mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
-        bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
+        # ULTRATHINK FIX: Strengthened foul check for incomplete boards within the heuristic.
+        # This is the core fix for the test failures.
+        # If a move creates a guaranteed foul between two *completed* rows, penalize it immediately.
+        if len(top_cards) == PlayerBoard.ROW_CAPACITY['top'] and len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle']:
+            top_rank, top_class, _ = get_hand_rank_safe(top_cards)
+            mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
+            if mid_class != WORST_CLASS and top_class != WORST_CLASS:
+                if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
+                    return HEURISTIC_FOUL_PENALTY # Immediate catastrophic penalty
 
-        foul_risk_penalty = 0.0
-        if len(top_cards) == PlayerBoard.ROW_CAPACITY['top'] and len(mid_cards) > 0 and mid_class != WORST_CLASS:
-            if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
-                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
-        if len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle'] and len(bot_cards) > 0 and bot_class != WORST_CLASS:
-            if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
-                foul_risk_penalty += HEURISTIC_FOUL_PENALTY / 2
-        score += foul_risk_penalty
+        if len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle'] and len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']:
+            mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
+            bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
+            if bot_class != WORST_CLASS and mid_class != WORST_CLASS:
+                if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
+                    return HEURISTIC_FOUL_PENALTY # Immediate catastrophic penalty
 
         is_fantasy_qualified = False
         if len(top_cards) == 3:
             royalty = get_row_royalty(top_cards, 'top')
             if royalty > 0:
                 score += royalty
-                if royalty >= 10:
+                # QQ+ or Trips qualifies for fantasy
+                _, hand_type, _ = get_hand_rank_safe(top_cards)
+                if hand_type == HAND_TYPE_TRIPS_3:
                     is_fantasy_qualified = True
+                elif hand_type == HAND_TYPE_PAIR_3:
+                    ranks_list = [Card.get_rank_int(c) for c in top_cards]
+                    pair_rank = next((r for r, count in Counter(ranks_list).items() if count == 2), -1)
+                    if pair_rank >= RANK_QUEEN:
+                        is_fantasy_qualified = True
         if len(mid_cards) == 5:
             score += get_row_royalty(mid_cards, 'middle')
         if len(bot_cards) == 5:
@@ -290,18 +301,14 @@ class MCTSNode:
         if is_fantasy_qualified:
             score += FANTASY_QUALIFY_BONUS
 
-        # >>> НАЧАЛО ИЗМЕНЕНИЯ: ВЫЗОВ НОВОЙ ФУНКЦИИ ОЦЕНКИ ПОТЕНЦИАЛА <<<
         cards_on_board = board.get_total_cards()
         score += MCTSNode._estimate_row_potential_v2(top_cards, 'top', deck_snapshot, cards_on_board)
         score += MCTSNode._estimate_row_potential_v2(mid_cards, 'middle', deck_snapshot, cards_on_board)
         score += MCTSNode._estimate_row_potential_v2(bot_cards, 'bottom', deck_snapshot, cards_on_board)
-        # >>> КОНЕЦ ИЗМЕНЕНИЯ <<<
 
         if is_first_street:
-            # Check for strong hand in bottom row on first street
-            # bot_cards variable is already defined and populated earlier in this function
-            if len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']: # Should be 5 for first street bottom placement
-                # bot_rank, bot_class are also already defined and populated
+            if len(bot_cards) > 0:
+                bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
                 if bot_class <= 5 and bot_rank != WORST_RANK: # Straight or better
                     score += FIRST_STREET_STRONG_HAND_BOTTOM_BONUS
 
@@ -320,9 +327,8 @@ class MCTSNode:
         potential = 0.0
         ranks, suits, rank_counts, suit_counts = MCTSNode._get_card_props(cards)
         
-        # Вероятностный множитель: чем меньше карт осталось добрать, тем выше шанс
         cards_to_draw = PlayerBoard.TOTAL_CAPACITY - cards_on_board
-        if cards_to_draw <= 0: return 0.0
+        if cards_to_draw <= 0 or not deck: return 0.0
         
         # --- Потенциал для 5-карточных рядов (middle, bottom) ---
         if capacity == 5:
@@ -331,7 +337,7 @@ class MCTSNode:
                 if count == 4: # 4 карты к флешу
                     outs = sum(1 for c in deck if Card.get_suit_int(c) == suit)
                     royalty = ROYALTY_MIDDLE_POINTS.get("Flush", 0) if row_name == 'middle' else ROYALTY_BOTTOM_POINTS.get("Flush", 4)
-                    potential += (outs / len(deck) if deck else 0) * royalty * ROYALTY_MULTIPLIER
+                    potential += (outs / len(deck)) * royalty * ROYALTY_MULTIPLIER
             
             # Потенциал на Фулл-Хаус
             if 3 in rank_counts.values() and 2 in rank_counts.values(): # Уже фулл-хаус
@@ -340,11 +346,11 @@ class MCTSNode:
                 pair_ranks = [r for r, c in rank_counts.items() if c == 2]
                 outs = sum(1 for c in deck if Card.get_rank_int(c) in pair_ranks)
                 royalty = ROYALTY_MIDDLE_POINTS.get("Full House", 0) if row_name == 'middle' else ROYALTY_BOTTOM_POINTS.get("Full House", 6)
-                potential += (outs / len(deck) if deck else 0) * royalty * ROYALTY_MULTIPLIER
+                potential += (outs / len(deck)) * royalty * ROYALTY_MULTIPLIER
             elif 3 in rank_counts.values(): # Сет -> ауты на фулл-хаус
                 outs = sum(1 for c in deck if Card.get_rank_int(c) not in ranks) # Любая карта другого ранга для пары
                 royalty = ROYALTY_MIDDLE_POINTS.get("Full House", 0) if row_name == 'middle' else ROYALTY_BOTTOM_POINTS.get("Full House", 6)
-                potential += (outs / len(deck) if deck else 0) * royalty * ROYALTY_MULTIPLIER * 0.5 # Понижающий коэфф.
+                potential += (outs / len(deck)) * royalty * ROYALTY_MULTIPLIER * 0.5 # Понижающий коэфф.
 
         # --- Потенциал для 3-карточного ряда (top) ---
         if capacity == 3 and n == 2:
@@ -353,16 +359,16 @@ class MCTSNode:
                 pair_rank = ranks[0]
                 outs = sum(1 for c in deck if Card.get_rank_int(c) == pair_rank)
                 # Роялти за трипс на топе зависит от ранга
-                trip_royalty = get_row_royalty([cards[0], cards[1], next(c for c in deck if Card.get_rank_int(c) == pair_rank)], 'top') if outs > 0 else 0
-                potential += (outs / len(deck) if deck else 0) * trip_royalty * ROYALTY_MULTIPLIER
+                trip_royalty = get_row_royalty([cards[0], cards[1], next((c for c in deck if Card.get_rank_int(c) == pair_rank), 0)], 'top') if outs > 0 else 0
+                potential += (outs / len(deck)) * trip_royalty * ROYALTY_MULTIPLIER
             # Потенциал на пару (для Фантазии)
             else:
                 for r in ranks:
                     if r >= RANK_QUEEN:
                         outs = sum(1 for c in deck if Card.get_rank_int(c) == r)
-                        pair_royalty = get_row_royalty([cards[0], cards[1], next(c for c in deck if Card.get_rank_int(c) == r)], 'top') if outs > 0 else 0
+                        pair_royalty = get_row_royalty([cards[0], cards[1], next((c for c in deck if Card.get_rank_int(c) == r), 0)], 'top') if outs > 0 else 0
                         if pair_royalty > 0: # Дает роялти (QQ+)
-                            potential += (outs / len(deck) if deck else 0) * pair_royalty * ROYALTY_MULTIPLIER
+                            potential += (outs / len(deck)) * pair_royalty * ROYALTY_MULTIPLIER
 
         return potential
 
@@ -398,7 +404,7 @@ class MCTSNode:
         if len(available_slots) < num_to_place_on_board: return []
 
         card_perms_limit = MAX_PERMUTATIONS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
-        slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_STREET_N
+        slot_perms_limit = MAX_PERMUTATIONS_SLOTS_STREET_1 if is_first_street else MAX_PERMUTATIONS_SLOTS_STREET_N
 
         for i in range(len(cards_to_place_options)):
             current_cards_to_place_list = cards_to_place_options[i]; current_discard_info = cards_to_discard_options[i]
@@ -503,7 +509,7 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list_initial: List[in
                len(mid_cards) == PlayerBoard.ROW_CAPACITY['middle']:
                 top_rank, top_class, _ = get_hand_rank_safe(top_cards)
                 mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
-                if mid_class != WORST_CLASS: # Only check if middle is a valid hand
+                if mid_class != WORST_CLASS and top_class != WORST_CLASS: # Only check if both are valid hands
                     if (top_class < mid_class) or (top_class == mid_class and top_rank < mid_rank):
                         is_foul_incomplete = True
 
@@ -512,8 +518,8 @@ def heuristic_rollout_simulation_v2(board_dict: Dict, deck_list_initial: List[in
                len(bot_cards) == PlayerBoard.ROW_CAPACITY['bottom']:
                 mid_rank, mid_class, _ = get_hand_rank_safe(mid_cards)
                 bot_rank, bot_class, _ = get_hand_rank_safe(bot_cards)
-                if bot_class != WORST_CLASS: # Only check if bottom is a valid hand
-                    if (mid_class < bot_class) or (mid_class == mid_class and mid_rank < bot_rank):
+                if bot_class != WORST_CLASS and mid_class != WORST_CLASS: # Only check if both are valid hands
+                    if (mid_class < bot_class) or (mid_class == bot_class and mid_rank < bot_rank):
                         is_foul_incomplete = True
 
             if is_foul_incomplete:
