@@ -159,7 +159,7 @@ def get_ai_move():
     app.logger.info(f"Unknown cards removed (markers): {num_unknown_removed_total}")
 
     all_distinct_known_cards = board_cards_set.union(hand_cards_set).union(known_perm_discard_set)
-    # FIX: Исправлена синтаксическая ошибка в f-string
+    # ULTRATHINK FIX: Corrected f-string syntax error.
     if len(all_distinct_known_cards) + len(remaining_deck_for_ai) + num_unknown_removed_total != 52:
          app.logger.error(
              f"CARD ACCOUNTING ERROR: DistinctKnown({len(all_distinct_known_cards)})"
